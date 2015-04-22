@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>Dynamic Form Demo</title>
+	
+	<script src="../../webcomponentsjs/webcomponents.js"></script>
+	
+	<link rel="import" href="../../core-ajax/core-ajax.html">
+	<link rel="import" href="../dynamic-form.html">
+	<link rel="import" href="../fieldtypes/dyn-input-text.html">
+	
+	<link href="//fonts.googleapis.com/css?family=RobotoDraft:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet" type="text/css">
+	<script>
+		PolymerExpressions.prototype.jsonStringify = function(val) {
+			if (typeof val != 'object' || val.constructor != Object)
+				return val;
+			return JSON.stringify(val);
+		};
+	</script>
+	<style>
+		body {
+			font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			font-size: 14px;
+		}
+	</style>
+</head>
+<body>
+
+<h1>Dynamic Forms Demo</h1>
+
+<template id="template-wrapper" is="auto-binding">
+	<form>
+		<core-ajax auto url="formConfig.json" handleAs="json" response="{{formConfig}}"></core-ajax>
+		
+		<dynamic-form config="{{formConfig}}" model="{{model}}"></dynamic-form>
+		
+		<p style="font-weight: bold;">Output: </p>
+		<pre>{{ model.test }}</pre>
+	</form>
+</template>
+
+<script>
+	var tpl = document.querySelector('#template-wrapper');
+	tpl.addEventListener('template-bound', function() {
+		document.querySelector('dynamic-form').model = {
+			test: ''
+		};
+	});
+</script>
+
+</body>
+</html>

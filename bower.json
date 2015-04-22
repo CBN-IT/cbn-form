@@ -1,0 +1,23 @@
+{
+  "name": "dynamic-form",
+  "version": "0.1",
+  "authors": [
+    "Stancu Florin <niflostancu@gmail.com>"
+  ],
+  "description": "A fully-configurable dynamic form component.",
+  "main": "dynamic-form.html",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "../",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5",
+    "core-input": "Polymer/core-input#~0.5.5",
+    "paper-shadow": "Polymer/paper-shadow#~0.5.5"
+  }
+}

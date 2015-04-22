@@ -1,0 +1,147 @@
+<!--
+`dynamic-form-group` groups multiple form fields together inside a logical group with several 
+visual features (preview / edit stances etc.).
+
+@group DynamicForm
+@element dynamic-form-group
+-->
+
+<!-- Imports -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-shadow/paper-shadow.html">
+
+<polymer-element name="dynamic-form-group" attributes="config model">
+	<template>
+		<link rel="stylesheet" href="dynamic-form-group.css">
+		
+		<paper-shadow id="container" z="0" animated>
+			<template if="{{config.legend}}">
+				<div class="caption">{{config.legend}}</div>
+			</template>
+			
+			<template repeat="{{field in config.fields}}">
+				
+				<template if="{{ isopen }}">
+					<dynamic-form-field config="{{field}}" model="{{model}}"></dynamic-form-field>
+				</template>
+				
+				<template if="{{ !isopen && field.preview }}">
+					<span>{{model[field.name]}}</span>
+				</template>
+				
+			</template>
+			
+		</paper-shadow>
+	</template>
+	
+	<script>
+		(function() {
+			
+			/**
+			 * Global variable that stores the currently open form group.
+			 * 
+			 * @type {HTMLElement}
+			 */
+			var currentlyOpenGroup = null;
+			
+			
+			Polymer('dynamic-form-group', {
+				
+				/**
+				 * The form configuration object.
+				 * @typedef  {Object} 	FormGroupConfig
+				 * @property {String} 	label Group's label (optional)
+				 * @property {Boolean}	toggleable Whether the group is toggleable.
+				 * @property {[Object]}	fields Form's fields to be rendered
+				 */
+				
+				/**
+				 * FieldGroup's configuration object.
+				 * 
+				 * @attribute config
+				 * @type FormGroupConfig
+				 * @default {}
+				 */
+				config: {},
+				
+				/**
+				 * The two-way model binding, i.e. the object to fetch the default input values from and/or to
+				 * put the changed values back to.
+				 *
+				 * @attribute model
+				 * @type Object
+				 * @default {}
+				 */
+				model: {},
+				
+				/**
+				 * Whether the form group is currently open / editable.
+				 * 
+				 * @type Boolean
+				 * @default false
+				 */
+				isopen: false,
+				
+				
+				/**
+				 * Fires when the element is created. Used to initialize its attributes.
+				 */
+				created: function () {
+					this.config = {};
+					this.model = {};
+				},
+				
+				/**
+				 * Called when polymer element has been fully prepared.
+				 */
+				ready: function() {
+					var currentGroup = this;
+					this.close();
+					
+					// stop click event propagation (so the group won't get closed)
+					this.addEventListener('click', function(event) {
+						event.stopPropagation();
+						currentGroup.open();
+					}, false);
+				},
+				
+				/**
+				 * Opens the group element.
+				 */
+				open: function () {
+					if (currentlyOpenGroup && currentlyOpenGroup != this)
+						currentlyOpenGroup.close();
+					this.isopen = true;
+					this.$.container.setZ(1);
+					currentlyOpenGroup = this;
+				},
+				
+				/**
+				 * Closes the current group, if open.
+				 */
+				close: function () {
+					this.isopen = false;
+					this.$.container.setZ(0);
+					
+					if (currentlyOpenGroup == this)
+						currentlyOpenGroup = null;
+				}
+				
+			});
+			
+			/*
+			 * Capture all document click events and close the currently open group.
+			 * 
+			 * The event is interrupted (i.e. its propagation is stopped) when clicking 
+			 * inside a form group element.
+			 */
+			document.addEventListener("click", function() {
+				if (currentlyOpenGroup) 
+					currentlyOpenGroup.close();
+			}, false);
+			
+		})();
+		
+	</script>
+	
+</polymer-element>

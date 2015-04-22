@@ -1,0 +1,91 @@
+<!--
+`dynamic-form` is an extensible dynamic form component that displays a custom-definable form (via config JSON object).
+
+Example:
+    <dynamic-form config="{{formConfig}}" model="{{dataModel}}"></dynamic-form>
+
+Where `config` is a custom and `model` is the data object to be used by the form fields for retrieving initial 
+values / saving modifications.
+
+Example `config` JSON definition: 
+	{
+		groups: [{
+			label: 'Main Form', 
+			fields: [
+				{
+					name: 'Name',
+					type: 'text', 
+					validate: {
+						required: true,
+						maxLength: 15, 
+						regex: /[a-z0-9 ]/i
+					}
+				}, 
+				{
+					name: 'Type',
+					type: 'select',
+					options: { 1: 'Person', 2: 'Company' }
+				}
+			]
+		}]
+	}
+
+@group DynamicForm
+@element dynamic-form
+-->
+
+<!-- Imports -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="dynamic-form-group.html">
+
+<polymer-element name="dynamic-form" attributes="config model">
+	<template>
+		
+		<template repeat="{{group in config.groups}}">
+			<dynamic-form-group config="{{group}}" model="{{model}}"></dynamic-form-group>
+		</template>
+		
+	</template>
+	
+	<script>
+		Polymer('dynamic-form', {
+			
+			/**
+			 * The form configuration object.
+			 * @typedef {Object} 				FormConfig
+			 * @property {[FormGroupConfig]} 	groups The grouped form fields
+			 */
+			
+			/**
+			 * The form configuration object that contains the model definition, the inputs to be rendered and 
+			 * their properties.
+			 * 
+			 * @attribute config
+			 * @type FormConfig
+			 * @default {}
+			 */
+			config: {}, 
+			
+			/**
+			 * The two-way model binding, i.e. the object to fetch the default input values from and/or to 
+			 * put the changed values back to.
+			 * 
+			 * @attribute model
+			 * @type Object
+			 * @default {}
+			 */
+			model: {}, 
+			
+			
+			/**
+			 * Fires when the element is created. Used to initialize its attributes.
+			 */
+			created: function () {
+				this.config = {};
+				this.model = {};
+			}
+			
+		});
+	</script>
+	
+</polymer-element>

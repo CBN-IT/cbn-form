@@ -1,0 +1,31 @@
+{
+	"groups": [
+		{
+			"legend": "Test Fieldset",
+			
+			"fields": [
+				{
+					"name": "test", 
+					"type": "text",
+					"preview": true 
+				}
+			]
+		},
+		{
+			"legend": "Test Fieldset 2",
+			
+			"fields": [
+				{
+					"name": "test", 
+					"type": "text",
+					"preview": true 
+				}, 
+				{
+					"name": "test2", 
+					"type": "text", 
+					"preview": false
+				}
+			]
+		}
+	]
+}

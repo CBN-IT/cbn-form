@@ -1,0 +1,103 @@
+<!--
+`dynamic-form-field` is a proxy element that the `dynamic-form` uses to instantiate 
+dynamic form fields based on their type.
+
+Each field element must register its type[s] via the {@link DynamicFormFields#registerType} method 
+prior to its usage.
+
+@group DynamicForm
+@element dynamic-form-field
+-->
+
+<!-- Imports -->
+<link rel="import" href="../polymer/polymer.html">
+
+<polymer-element name="dynamic-form-field" attributes="config model">
+	<template>
+		
+	</template>
+	
+	<script>
+		var DynamicFormFields = {
+			
+			_registeredTypes: {},
+			
+			/**
+			 * Registers a new field type to be usable within `dynamic-form`.
+			 */
+			registerType: function(typeName, element) {
+				if (this._registeredTypes[typeName] != undefined)
+					return false;
+				
+				this._registeredTypes[typeName] = element;
+				return true;
+			}
+			
+		};
+		
+		Polymer('dynamic-form-field', {
+			
+			/**
+			 * The form field's configuration object.
+			 * @typedef {Object} 	FormFieldConfig
+			 * @property {String} 	name Field's name (also the model property's path)
+			 * @property {String} 	type Field's type (check documentation for the available types)
+			 * @property {Object} 	validate Input's validation object (TODO: describe it).
+			 * @property {String} 	label Field's caption (a label displayed near the field)
+			 * @property {String} 	tooltip An optional tooltip to display (HTML permitted).
+			 * @property {Boolean} 	preview Whether the input's value is shown when the form group is closed.
+			 * @property {String} 	dataType Model data type override (optional); values: 'string', 'int', 'float'.
+			*/
+			
+			/**
+			 * The form configuration object that contains the model definition, the inputs to be rendered and 
+			 * their properties.
+			 * 
+			 * @attribute config
+			 * @type FormConfig
+			 * @default {}
+			 */
+			config: null, 
+			
+			/**
+			 * The two-way model binding, i.e. the object to fetch the default input values from and/or to 
+			 * put the changed values back to.
+			 * 
+			 * @attribute model
+			 * @type Object
+			 * @default {}
+			 */
+			model: null,
+			
+			
+			/**
+			 * Fires when the element is created. Used to initialize its attributes.
+			 */
+			created: function () {
+				this.config = {};
+				this.model = {};
+			}, 
+			
+			/**
+			 * Called when polymer element has been fully prepared.
+			 * 
+			 * Creates the actual input element based on the given `config.type`.
+			 */
+			ready: function() {
+				if (this.config.type && DynamicFormFields._registeredTypes[this.config.type]) {
+					var elementName = DynamicFormFields._registeredTypes[this.config.type];
+					var element = document.createElement(elementName);
+					if (!element)  
+						return;
+					
+					element.config = this.config;
+					element.model = this.model;
+					
+					this.shadowRoot.appendChild(element);
+				}
+			}
+			
+		});
+	</script>
+	
+</polymer-element>
