@@ -11,6 +11,7 @@ prior to its usage.
 
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../cbn-input/cbn-input.html">
 
 <polymer-element name="dynamic-form-field" attributes="config model">
 	<template>
@@ -54,7 +55,7 @@ prior to its usage.
 			 * their properties.
 			 * 
 			 * @attribute config
-			 * @type FormConfig
+			 * @type FormFieldConfig
 			 * @default {}
 			 */
 			config: null, 
@@ -84,17 +85,29 @@ prior to its usage.
 			 * Creates the actual input element based on the given `config.type`.
 			 */
 			ready: function() {
+				var elementName, element;
+				
 				if (this.config.type && DynamicFormFields._registeredTypes[this.config.type]) {
-					var elementName = DynamicFormFields._registeredTypes[this.config.type];
-					var element = document.createElement(elementName);
+					elementName = DynamicFormFields._registeredTypes[this.config.type];
+					element = document.createElement(elementName);
 					if (!element)  
 						return;
 					
-					element.config = this.config;
-					element.model = this.model;
+					element.setAttribute('config', this.config);
+					element.setAttribute('model', this.model);
 					
-					this.shadowRoot.appendChild(element);
+				} else {
+					element = document.createElement('cbn-input');
+					
+					for (var c in this.config) {
+						element.setAttribute(c, this.config[c]);
+					}
+					
+					// use cbn-input fallback
+					element.bind('value', new PathObserver(this.model, this.config.name));
 				}
+				
+				this.shadowRoot.appendChild(element);
 			}
 			
 		});
