@@ -7,7 +7,7 @@
 	<script src="../../webcomponentsjs/webcomponents.js"></script>
 	
 	<link rel="import" href="../../core-ajax/core-ajax.html">
-	<link rel="import" href="../dynamic-form.html">
+	<link rel="import" href="../cbn-form.html">
 	<!--link rel="import" href="../fieldtypes/dyn-input-text.html"-->
 	
 	<link href="//fonts.googleapis.com/css?family=RobotoDraft:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet" type="text/css">
@@ -33,7 +33,7 @@
 	<form>
 		<core-ajax auto url="formConfig.json" handleAs="json" response="{{formConfig}}"></core-ajax>
 		
-		<dynamic-form config="{{formConfig}}" model="{{model}}"></dynamic-form>
+		<cbn-form config="{{formConfig}}" model="{{model}}"></cbn-form>
 		
 		<p style="font-weight: bold;">Output: </p>
 		<pre>{{ model.test }}</pre>
@@ -43,7 +43,7 @@
 <script>
 	var tpl = document.querySelector('#template-wrapper');
 	tpl.addEventListener('template-bound', function() {
-		document.querySelector('dynamic-form').model = {
+		document.querySelector('cbn-form').model = {
 			test: ''
 		};
 	});

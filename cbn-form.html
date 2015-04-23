@@ -1,8 +1,8 @@
 <!--
-`dynamic-form` is an extensible dynamic form component that displays a custom-definable form (via config JSON object).
+`cbn-form` is an extensible dynamic form component that displays a custom-definable form (via config JSON object).
 
 Example:
-    <dynamic-form config="{{formConfig}}" model="{{dataModel}}"></dynamic-form>
+    <cbn-form config="{{formConfig}}" model="{{dataModel}}"></cbn-form>
 
 Where `config` is a custom and `model` is the data object to be used by the form fields for retrieving initial 
 values / saving modifications.
@@ -30,25 +30,25 @@ Example `config` JSON definition:
 		}]
 	}
 
-@group DynamicForm
-@element dynamic-form
+@group CBN-IT Form
+@element cbn-form
 -->
 
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="dynamic-form-group.html">
+<link rel="import" href="cbn-form-group.html">
 
-<polymer-element name="dynamic-form" attributes="config model">
+<polymer-element name="cbn-form" attributes="config model">
 	<template>
 		
 		<template repeat="{{group in config.groups}}">
-			<dynamic-form-group config="{{group}}" model="{{model}}"></dynamic-form-group>
+			<cbn-form-group config="{{group}}" model="{{model}}"></cbn-form-group>
 		</template>
 		
 	</template>
 	
 	<script>
-		Polymer('dynamic-form', {
+		Polymer('cbn-form', {
 			
 			/**
 			 * The form configuration object.

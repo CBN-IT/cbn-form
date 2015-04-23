@@ -1,30 +1,30 @@
 <!--
-`dynamic-form-field` is a proxy element that the `dynamic-form` uses to instantiate 
+`cbn-form-field` is a proxy element that the `cbn-form` uses to instantiate 
 dynamic form fields based on their type.
 
-Each field element must register its type[s] via the {@link DynamicFormFields#registerType} method 
+Each field element must register its type[s] via the {@link CBNFormFields#registerType} method 
 prior to its usage.
 
-@group DynamicForm
-@element dynamic-form-field
+@group CBNForm
+@element cbn-form-field
 -->
 
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../cbn-input/cbn-input.html">
 
-<polymer-element name="dynamic-form-field" attributes="config model">
+<polymer-element name="cbn-form-field" attributes="config model">
 	<template>
 		
 	</template>
 	
 	<script>
-		var DynamicFormFields = {
+		var CBNFormFields = {
 			
 			_registeredTypes: {},
 			
 			/**
-			 * Registers a new field type to be usable within `dynamic-form`.
+			 * Registers a new field type to be usable within `cbn-form`.
 			 */
 			registerType: function(typeName, element) {
 				if (this._registeredTypes[typeName] != undefined)
@@ -36,7 +36,7 @@ prior to its usage.
 			
 		};
 		
-		Polymer('dynamic-form-field', {
+		Polymer('cbn-form-field', {
 			
 			/**
 			 * The form field's configuration object.
@@ -87,8 +87,8 @@ prior to its usage.
 			ready: function() {
 				var elementName, element;
 				
-				if (this.config.type && DynamicFormFields._registeredTypes[this.config.type]) {
-					elementName = DynamicFormFields._registeredTypes[this.config.type];
+				if (this.config.type && CBNFormFields._registeredTypes[this.config.type]) {
+					elementName = CBNFormFields._registeredTypes[this.config.type];
 					element = document.createElement(elementName);
 					if (!element)  
 						return;
@@ -100,7 +100,7 @@ prior to its usage.
 					element = document.createElement('cbn-input');
 					
 					for (var c in this.config) {
-						element.setAttribute(c, this.config[c]);
+						element[c] = this.config[c];
 					}
 					
 					// use cbn-input fallback

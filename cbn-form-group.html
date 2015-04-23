@@ -1,29 +1,29 @@
 <!--
-`dynamic-form-group` groups multiple form fields together inside a logical group with several 
+`cbn-form-group` groups multiple form fields together inside a logical group with several 
 visual features (preview / edit stances etc.).
 
-@group DynamicForm
-@element dynamic-form-group
+@group CBNForm
+@element cbn-form-group
 -->
 
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-shadow/paper-shadow.html">
-<link rel="import" href="dynamic-form-field.html">
+<link rel="import" href="cbn-form-field.html">
 
-<polymer-element name="dynamic-form-group" attributes="config model">
+<polymer-element name="cbn-form-group" attributes="config model">
 	<template>
-		<link rel="stylesheet" href="dynamic-form-group.css">
+		<link rel="stylesheet" href="cbn-form-group.css">
 		
 		<paper-shadow id="container" z="0" animated>
 			<template if="{{config.legend}}">
-				<div class="caption">{{config.legend}}</div>
+				<div class="legend">{{config.legend}}</div>
 			</template>
 			
 			<template repeat="{{field in config.fields}}">
 				
 				<template if="{{ isopen }}">
-					<dynamic-form-field config="{{field}}" model="{{model}}"></dynamic-form-field>
+					<cbn-form-field config="{{field}}" model="{{model}}"></cbn-form-field>
 				</template>
 				
 				<template if="{{ !isopen && field.preview }}">
@@ -46,7 +46,7 @@ visual features (preview / edit stances etc.).
 			var currentlyOpenGroup = null;
 			
 			
-			Polymer('dynamic-form-group', {
+			Polymer('cbn-form-group', {
 				
 				/**
 				 * The form configuration object.
@@ -136,9 +136,11 @@ visual features (preview / edit stances etc.).
 			 * The event is interrupted (i.e. its propagation is stopped) when clicking 
 			 * inside a form group element.
 			 */
-			document.addEventListener("click", function() {
-				if (currentlyOpenGroup) 
+			document.addEventListener("click", function(event) {
+				if (currentlyOpenGroup) {
+					console.log(event);
 					currentlyOpenGroup.close();
+				}
 			}, false);
 			
 		})();

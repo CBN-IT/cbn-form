@@ -16,6 +16,15 @@
 					"class": "sameWidth",
 					"type": "input",
 					"preview": true 
+				}, 
+				{
+					"name": "test2",
+					"label": "Da sau nu", 
+					"error": "Required", 
+					"required":"true", 
+					"type": "select",
+					"options": [ "mda", "mnu", "lalala" ],
+					"preview": true 
 				}
 			]
 		},

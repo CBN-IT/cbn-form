@@ -1,12 +1,8 @@
 {
-  "name": "dynamic-form",
+  "name": "cbn-form",
   "version": "0.1",
-  "authors": [
-    "Stancu Florin <niflostancu@gmail.com>"
-  ],
   "description": "A fully-configurable dynamic form component.",
-  "main": "dynamic-form.html",
-  "license": "MIT",
+  "main": "cbn-form.html",
   "ignore": [
     "**/.*",
     "node_modules",
@@ -18,6 +14,7 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^0.5",
     "core-input": "Polymer/core-input#~0.5.5",
-    "paper-shadow": "Polymer/paper-shadow#~0.5.5"
+    "paper-shadow": "Polymer/paper-shadow#~0.5.5", 
+    "cbn-select": "https://bogdan_nourescu@bitbucket.org/bogdan_nourescu/cbn-input.git~0.1"
   }
 }
