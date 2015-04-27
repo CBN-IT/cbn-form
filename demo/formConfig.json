@@ -2,28 +2,19 @@
 	"groups": [
 		{
 			"legend": "Test Fieldset",
+			"toggleable" : true,
 			
 			"fields": [
 				{
 					"name": "test",
-					"label": "Your Name", 
+					"caption": "Your Name", 
 					"error": "Required", 
-					"format": "cazPropozitie", 
 					"info": "Intre 3 si 15 de caractere",
 					"required":"true", 
 					"maxlength":"15", 
 					"minlength": "3", 
 					"class": "sameWidth",
-					"type": "input",
-					"preview": true 
-				}, 
-				{
-					"name": "test2",
-					"label": "Da sau nu", 
-					"error": "Required", 
-					"required":"true", 
-					"type": "select",
-					"options": [ "mda", "mnu", "lalala" ],
+					"type": "basic-text",
 					"preview": true 
 				}
 			]
@@ -33,13 +24,15 @@
 			
 			"fields": [
 				{
-					"name": "test", 
-					"type": "input",
+					"name": "test",
+					"type": "basic-text",
+					"caption": "Tot nume",
 					"preview": true 
 				}, 
 				{
 					"name": "test2", 
-					"type": "input", 
+					"type": "basic-text", 
+					"caption": "Test 2",
 					"preview": false
 				}
 			]

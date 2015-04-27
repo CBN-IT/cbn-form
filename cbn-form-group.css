@@ -2,9 +2,17 @@
  * `cbn-form-group` component styling definitions.
  */
 
+:host {
+	display: block;
+}
+
 #container {
 	padding: 10px;
 	margin: 10px;
+}
+
+#content.preview #nonpreviewable {
+	display: none;
 }
 
 .legend {

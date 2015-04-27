@@ -1,36 +1,14 @@
 <!--
-`cbn-form` is an extensible dynamic form component that displays a custom-definable form (via config JSON object).
+`cbn-form` is an extensible ajax form component that manages a set of custom input elements and submits the data via XHR.
+
+Supports AJAX file upload.
 
 Example:
-    <cbn-form config="{{formConfig}}" model="{{dataModel}}"></cbn-form>
+    <cbn-form url="/do/something/save" method="post">
+    	Form fields here...
+    </cbn-form>
 
-Where `config` is a custom and `model` is the data object to be used by the form fields for retrieving initial 
-values / saving modifications.
-
-Example `config` JSON definition: 
-	{
-		groups: [{
-			label: 'Main Form', 
-			fields: [
-				{
-					name: 'Name',
-					type: 'text', 
-					validate: {
-						required: true,
-						maxLength: 15, 
-						regex: /[a-z0-9 ]/i
-					}
-				}, 
-				{
-					name: 'Type',
-					type: 'select',
-					options: { 1: 'Person', 2: 'Company' }
-				}
-			]
-		}]
-	}
-
-@group CBN-IT Form
+@group cbn-form
 @element cbn-form
 -->
 
@@ -38,12 +16,11 @@ Example `config` JSON definition:
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="cbn-form-group.html">
 
-<polymer-element name="cbn-form" attributes="config model">
+<polymer-element name="cbn-form" attributes="model url method params xhrOptions serializationOptions">
 	<template>
 		
-		<template repeat="{{group in config.groups}}">
-			<cbn-form-group config="{{group}}" model="{{model}}"></cbn-form-group>
-		</template>
+		<!-- Insert form's content -->
+		<content></content>
 		
 	</template>
 	
@@ -57,32 +34,384 @@ Example `config` JSON definition:
 			 */
 			
 			/**
-			 * The form configuration object that contains the model definition, the inputs to be rendered and 
-			 * their properties.
+			 * Fired when submit command was issued.
+			 * The event takes place before the actual submission (to the URL, if specified) is made and you can alter 
+			 * its behavior or cancel it.
 			 * 
-			 * @attribute config
-			 * @type FormConfig
-			 * @default {}
+			 * @event cbn-form-submit
 			 */
-			config: {}, 
 			
 			/**
-			 * The two-way model binding, i.e. the object to fetch the default input values from and/or to 
-			 * put the changed values back to.
+			 * Fired if / when the form was successfully submitted.
 			 * 
-			 * @attribute model
-			 * @type Object
+			 * @event cbn-form-ajaxSuccess
+			 */
+			
+			/**
+			 * Fired if the submission AJAX request failed.
+			 * 
+			 * @event cbn-form-ajaxError
+			 */
+			
+			/**
+			 * Fired if the submission AJAX request finished (with either error or success status; see core-xhr 
+			 * documentation).
+			 * 
+			 * @event cbn-form-ajaxComplete
+			 */
+			
+			// Element attributes
+			
+			/**
+			 * The URL to submit the form to.
+			 * 
+			 * @type {String}
+			 * @default ""
+			 */
+			url: "",
+			
+			/**
+			 * The method to use for the submission.
+			 * 
+			 * @type {String}
+			 * @default "POST"
+			 */
+			method: "POST",
+			
+			/**
+			 * Additional URL parameters to use.
+			 * 
+			 * @type {Object}
 			 * @default {}
 			 */
-			model: {}, 
+			params: {},
 			
+			/**
+			 * Additional options to pass to the XHR (see core-xhr documentation).
+			 * 
+			 * @type {Object}
+			 * @default {}
+			 */
+			xhrOptions: {},
+			
+			/**
+			 * Form serialization method to use for submitting the form values via XHR.
+			 * 
+			 * Serialization types:
+			 * - plain: passes the form data as a standard parameters map (each field has a separate parameter);
+			 * - json: pass the entire model JSON as a form parameter (specified by the `param` property).
+			 * 
+			 * If asFormData is true, a FormData object will be returned (instead of a plain map).
+			 * 
+			 * If useBrackets is true, for multiple-valued inputs, array append brackets ('[]') will be automatically 
+			 * added after the input's name.
+			 * 
+			 * @type {{ type: String, param?: String, asFormData: Boolean, useBrackets: Boolean }}
+			 * @default { type: 'plain', param: 'data', useBrackets: false }
+			 */
+			serializationOptions: {},
+			
+			
+			// Internal fields
+			
+			/**
+			 * Stores the list of input elements inside the form.
+			 * 
+			 * The list is currently created at form initialization and so the form doesn't support the dynamic 
+			 * addition / removal of input fields. Call {@link #refreshFields} in order to recalculate the fields list.
+			 * 
+			 * @private
+			 * @type {[HTMLElement]}
+			 */
+			_formFields: [],
+			
+			
+			// Functions and event handlers
 			
 			/**
 			 * Fires when the element is created. Used to initialize its attributes.
 			 */
-			created: function () {
-				this.config = {};
+			created: function() {
 				this.model = {};
+				this.params = {};
+				this.xhrOptions = {};
+				this.serializationOptions = { type: 'plain', param: 'data', useBrackets: false };
+				this._formFields = [];
+			},
+			
+			/**
+			 * Called when polymer element has been fully prepared.
+			 * 
+			 * Listens for input attached / detached events and initializes them.
+			 */
+			ready: function() {
+				var form = this;
+				
+				this.addEventListener('cbn-form-input-attached', function (event) {
+					var target = event.path[0];
+					if (target.parentForm != form) {
+						target.parentForm = form;
+						this._formFields.push(target);
+						
+						target.bind('value', new PathObserver(this.model, target.name));
+					}
+				});
+				
+				this.addEventListener('cbn-form-input-detached', function (event) {
+					var target = event.path[0];
+					if (target.parentForm == form) {
+						target.parentForm = null;
+						var idx = this._formFields.indexOf(target);
+						if (idx >= 0)
+							this._formFields.splice(idx, 1);
+						
+						target.unbind('value');
+					}
+				});
+			},
+			
+			/**
+			 * Requests form validation from all inputs and returns the boolean result.
+			 * 
+			 * @return {Boolean} The validation result (true if passed).
+			 */
+			validate: function() {
+				var i;
+				var passed = true;
+				
+				for (i=0; i<this._formFields.length; i++) {
+					if (!this._formFields[i].element.checkValidity()) {
+						passed = false;
+						break;
+					}
+				}
+				
+				return passed;
+			}, 
+			
+			/**
+			 * Submits the form to the specified URL and, if successful, executes the callback (optional).
+			 * 
+			 * If no URL was specified, it will execute the callback with the form data as argument.
+			 * 
+			 * @return {Boolean} If the form validates and the request successfully started.
+			 */
+			submit: function() {
+				var form = this;
+				
+				// process all Observer events so we have an up-to-date model
+				Platform.performMicrotaskCheckpoint();
+				
+				if (!this.validate()) 
+					return false;
+				
+				var i, j;
+				var hasFiles = false;
+				
+				for (i=0; i<this._formFields.length; i++) {
+					// special case: file inputs
+					if (this._formFields[i].isFileInput) {
+						// check if any files were posted
+						var files = this._formFields[i].getFiles();
+						for (j=0; j<files.length; j++) {
+							hasFiles = true;
+						}
+					}
+				}
+				
+				// build the body
+				var body;
+				if (hasFiles) {
+					// we must use the FormData API to submit the file
+					body = new FormData();
+					
+				} else {
+					// just submit the model as body
+					body = this.model;
+				}
+				
+				var event = this.fire('cbn-form-submit', {
+					data: this.model, 
+					hasFiles: hasFiles
+					
+				}, null, false, true); // cancelable
+				if (event.defaultPrevented) 
+					return false;
+				
+				var xhr = this._buildXHR(
+					Polymer.mixin({
+						url: this.url,
+						method: this.method,
+						params: this.params
+					}, xhrOptions) );
+				
+				// bind XHR events
+				xhr.onreadystatechange = function() {
+					if (xhr.readyState==4) {
+						// fire some events!
+						if (xhr.status == 200) {
+							// success!
+							form.fire('cbn-form-ajaxSuccess', {
+								xhr: xhr
+							}, null, false, false);
+						} else {
+							// error!
+							form.fire('cbn-form-ajaxError', {
+								xhr: xhr
+							}, null, false, false);
+						}
+						form.fire('cbn-form-ajaxComplete', {
+							xhr: xhr
+						}, null, false, false);
+					}
+				};
+				
+				xhr.send(body);
+				
+				return true;
+			},
+			
+			/**
+			 * Serializes the form data.
+			 * 
+			 * @param {Object} serializationOptions If specified, will override the element's serialization options.
+			 * @return {String|FormData} The serialized form string / FormData object.
+			 */
+			serialize: function(serializationOptions) {
+				var i, n, f;
+				
+				if (!serializationOptions) {
+					serializationOptions = this.serializationOptions;
+					
+				} else {
+					serializationOptions = Polymer.mixin({ param: 'data' }, 
+						this.serializationOptions, serializationOptions);
+				}
+				
+				var fields = []; // array of { key:String, value:String } pairs
+				var fileInputs = {}; // the File input objects
+				
+				var data = null;
+				if (serializationOptions == 'plain') {
+					// flatten the model object
+					for (n in this.model) {
+						if (this.model.hasOwnProperty(n)) {
+							if (serializationOptions.useBrackets && 
+									(Object.prototype.toString.call( this.model[n] ) === '[object Array]')) {
+								fields.push({ key: n+"[]", value: this.model[n].toString() });
+							} else {
+								fields.push({ key: n, value: this.model[n].toString() });
+							}
+						}
+					}
+					
+				} else if (serializationOptions == 'json') {
+					// send the JSON object as string
+					fields.push({ key: serializationOptions.param, value: JSON.stringify(this.model) });
+				}
+				
+				// determine the file inputs
+				for (i=0; i<this._formFields.length; i++) {
+					f = this._formFields[i];
+					if (f.isFileInput) {
+						fileInputs[f.name] = f;
+					}
+				}
+				
+				if (serializationOptions.asFormData) {
+					data = new FormData();
+					for (i=0; i<fields.length; i++) {
+						data.append(fields[i].key, fields[i].value);
+					}
+					
+					for (f in fileInputs) {
+						if (!fileInputs.hasOwnProperty(f))
+							continue;
+						var files = fileInputs[f].getFiles();
+						for (i=0; i<files.length; i++) {
+							if (serializationOptions.useBrackets && fileInputs[f].multiple) {
+								data.append(f+"[]", files[i]);
+							} else {
+								data.append(f, files[i]);
+							}
+						}
+					}
+				}
+				
+				return data;
+			},
+			
+			
+			// Utility methods
+			
+			/**
+			 * Builds a XHR object and returns it. 
+			 * 
+			 * Similar to `core-xhr`, but with some enhancements and the difference that it doesn't send the request 
+			 * automatically after building it.
+			 * 
+			 * @private
+			 * @param {Object} options XHR options object.
+			 *    @param {String}  options.url The url to which the request is sent.
+			 *    @param {String}  options.method The HTTP method to use (default is GET).
+			 *    @param {Boolean} options.sync To send synchronous requests, set to true. Default is false (asynchronous).
+			 *    @param {Object}  options.params URL parameters to be sent to the server.
+			 *    @param {Object}  options.headers HTTP request headers.
+			 *    @param {String}  options.responseType The response type. Default is 'text'.
+			 *    @param {Boolean} options.withCredentials Whether or not to send credentials on the request. Default is false.
+			 * @return {XMLHttpRequest} The resulting XMLHttpRequest object.
+			 */
+			_buildXHR: function(options) {
+				var xhr = new XMLHttpRequest();
+				var url = options.url;
+				var method = options.method || 'GET';
+				var async = !options.sync;
+				
+				if (options.params) {
+					// serialize the parameters
+					var strParams = null;
+					if (typeof options.params == 'object') {
+						strParams = this._serializeFormData(options.params);
+					} else {
+						strParams = options.params.toString();
+					}
+					// append them to the URL
+					url += (url.indexOf('?') > 0 ? '&' : '?') + strParams;
+				}
+				
+				xhr.open(method, url, async);
+				
+				if (options.responseType) 
+					xhr.responseType = options.responseType;
+				if (options.withCredentials) 
+					xhr.withCredentials = true;
+				
+				// set headers
+				if (headers) {
+					for (var name in headers) {
+						if (headers.hasOwnProperty(name))
+							xhr.setRequestHeader(name, headers[name]);
+					}
+				}
+				
+				return xhr;
+			},
+			
+			/**
+			 * Serializes the specified parameters map using the 'application/x-www-form-urlencoded' convention.
+			 * 
+			 * @private
+			 * @param   {Object} params The parameters map to serialize.
+			 * @returns {String} The serialized parameters.
+			 */
+			_serializeFormData: function(params) {
+				var r = [];
+				for (var n in params) {
+					if (params.hasOwnProperty(n))
+						r.push(params[n] == null ? n : (encodeURIComponent(n) +
+								'=' + encodeURIComponent(params[n])));
+				}
+				return r.join('&');
 			}
 			
 		});

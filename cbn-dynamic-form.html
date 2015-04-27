@@ -1,0 +1,92 @@
+<!--
+`cbn-dynamic-form` is an extensible dynamic form component that renders dynamic form fields (via an user-supplied 
+configuration object).
+
+Example:
+    <cbn-form url="/do/something/save" method="post">
+    	<cbn-dynamic-form config="{{formInputs}}"></cbn-dynamic-form>
+    	<button is="cbn-form-button" type="submit"></button>
+    </cbn-form>
+
+Where `config` is a custom object that describes the form's layout and the input fields to be dynamically generated.
+
+Example config JSON definition: 
+	{
+		groups: [{
+			label: 'Main Form', 
+			fields: [
+				{
+					name: 'Name',
+					type: 'text', 
+					validate: {
+						required: true,
+						maxLength: 15, 
+						regex: /[a-z0-9 ]/i
+					}
+				}, 
+				{
+					name: 'Type',
+					type: 'select',
+					options: { 1: 'Person', 2: 'Company' }
+				}
+			]
+		}]
+	}
+
+@group cbn-form
+@element cbn-dynamic-form
+-->
+
+<!-- Imports -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="cbn-form-group.html">
+<link rel="import" href="cbn-abstract-input.html">
+
+<polymer-element name="cbn-dynamic-form" attributes="config">
+	<template>
+		
+		<div id="groups">
+			<template repeat="{{group in config.groups}}">
+				
+				<cbn-form-group>
+					<template repeat="{{field in group.fields}}">
+						<cbn-abstract-input class="{{ { preview: field.preview } | tokenList }}" 
+											config="{{field}}"></cbn-abstract-input>
+					</template>
+				</cbn-form-group>
+				
+			</template>
+		</div>
+		
+	</template>
+	
+	<script>
+		Polymer('cbn-dynamic-form', {
+			
+			/**
+			 * The form configuration object.
+			 * @typedef {Object} 				FormConfig
+			 * @property {[FormGroupConfig]} 	groups The grouped form fields
+			 */
+			
+			/**
+			 * The form configuration object.
+			 * @typedef  {Object} 	FormGroupConfig
+			 * @property {String} 	label Group's label (optional)
+			 * @property {Boolean}	toggleable Whether the group is toggleable.
+			 * @property {[Object]}	fields Form's fields to be rendered
+			 */
+			
+			/**
+			 * The form configuration object that contains the model definition, the inputs to be rendered and 
+			 * their properties.
+			 * 
+			 * @type FormConfig
+			 * @default {}
+			 */
+			config: {}
+			
+		});
+	</script>
+	
+</polymer-element>
