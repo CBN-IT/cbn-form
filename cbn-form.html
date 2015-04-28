@@ -16,7 +16,7 @@ Example:
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="cbn-form-group.html">
 
-<polymer-element name="cbn-form" attributes="model url method params xhrOptions serializationOptions">
+<polymer-element name="cbn-form" attributes="model url method params xhr-options serialization-options">
 	<template>
 		
 		<!-- Insert form's content -->
@@ -26,12 +26,6 @@ Example:
 	
 	<script>
 		Polymer('cbn-form', {
-			
-			/**
-			 * The form configuration object.
-			 * @typedef {Object} 				FormConfig
-			 * @property {[FormGroupConfig]} 	groups The grouped form fields
-			 */
 			
 			/**
 			 * Fired when submit command was issued.
@@ -73,6 +67,7 @@ Example:
 			/**
 			 * The method to use for the submission.
 			 * 
+			 * @attribute method
 			 * @type {String}
 			 * @default "POST"
 			 */
@@ -81,6 +76,7 @@ Example:
 			/**
 			 * Additional URL parameters to use.
 			 * 
+			 * @attribute params
 			 * @type {Object}
 			 * @default {}
 			 */
@@ -89,6 +85,7 @@ Example:
 			/**
 			 * Additional options to pass to the XHR (see core-xhr documentation).
 			 * 
+			 * @attribute xhr-options
 			 * @type {Object}
 			 * @default {}
 			 */
@@ -106,6 +103,7 @@ Example:
 			 * If useBrackets is true, for multiple-valued inputs, array append brackets ('[]') will be automatically 
 			 * added after the input's name.
 			 * 
+			 * @attribute serialization-options
 			 * @type {{ type: String, param?: String, asFormData: Boolean, useBrackets: Boolean }}
 			 * @default { type: 'plain', param: 'data', useBrackets: false }
 			 */
@@ -117,8 +115,8 @@ Example:
 			/**
 			 * Stores the list of input elements inside the form.
 			 * 
-			 * The list is currently created at form initialization and so the form doesn't support the dynamic 
-			 * addition / removal of input fields. Call {@link #refreshFields} in order to recalculate the fields list.
+			 * The list is maintained by listening for bubbling `cbn-form-input-attached` / `cbn-form-input-detached` 
+			 * events.
 			 * 
 			 * @private
 			 * @type {[HTMLElement]}

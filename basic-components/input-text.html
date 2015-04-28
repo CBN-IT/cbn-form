@@ -1,5 +1,5 @@
 <!--
-`cbn-input-text` implements a basic text input.
+`cbn-basic-input` implements a basic text input.
 
 @group cbn-form
 @element input-text
@@ -9,15 +9,13 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../cbn-abstract-input.html">
 
-<link rel="import" href="../../core-input/core-input.html">
-
 <polymer-element name="cbn-basic-input" attributes="is-form-input type name caption value preview previewstate">
 	
 	<template>
 		<label>
 			<span>{{caption}}</span>
 			<input class="{{ { preview: previewstate } | tokenList }}"
-				   title="{{config.label}}" type="text" name="{{name}}" value="{{value}}" />
+				   title="{{config.label}}" type="{{type}}" name="{{name}}" value="{{value}}" />
 		</label>
 	</template>
 	
@@ -25,39 +23,36 @@
 		Polymer('cbn-basic-input', Polymer.mixin({}, CbnAbstractInputMixin, {
 			
 			/**
-			 * Input's type.
+			 * The HTML type of the input.
+			 * 
+			 * @attribute type
+			 * @type {String}
 			 */
 			type: 'text',
 			
 			/**
-			 * Input's name.
+			 * Input's name (also the model value path).
 			 */
 			name: '',
 			
 			/**
-			 * Label caption to show next to the input.
-			 */
-			caption: '', 
-			
-			/**
-			 * Input's value.
+			 * Input's value (as text).
+			 * @type {String}
 			 */
 			value: '',
 			
 			/**
-			 * Whether the current instance should be shown as preview in form groups.
+			 * Input label text / caption to show next to the input.
+			 * 
+			 * @attribute caption
+			 * @type {String}
 			 */
-			preview: false,
+			label: '', 
 			
 			/**
-			 * Is the input in a previewed state? (by form-group)
+			 * Element's dynamically-configurable attributes.
 			 */
-			previewstate: false,
-			
-			/**
-			 * Enumerates all dynamic config attributes.
-			 */
-			inputAttributes: [ 'type', 'name', 'caption', 'value', 'preview' ], 
+			inputAttributes: [ 'type', 'name', 'caption', 'preview' ], 
 			
 			/**
 			 * Fires when the element is created. Used to initialize its attributes.
