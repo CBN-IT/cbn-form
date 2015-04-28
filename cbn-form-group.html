@@ -11,13 +11,13 @@ visual features (preview / edit stances etc.).
 <link rel="import" href="../paper-shadow/paper-shadow.html">
 <link rel="import" href="cbn-abstract-input.html">
 
-<polymer-element name="cbn-form-group" attributes="legend toggleable preview-state preview-height">
+<polymer-element name="cbn-form-group" attributes="caption toggleable preview-state">
 	<template>
 		<link rel="stylesheet" href="cbn-form-group.css">
 		
 		<paper-shadow id="container" z="0" animated>
-			<template if="{{legend}}">
-				<div class="legend">{{legend}}</div>
+			<template if="{{caption}}">
+				<div class="caption">{{caption}}</div>
 			</template>
 			
 			<div id="content" class="{{ {  preview: previewState } | tokenList}}">
@@ -42,14 +42,22 @@ visual features (preview / edit stances etc.).
 			 */
 			var currentlyOpenGroup = null;
 			
-			
 			Polymer('cbn-form-group', {
+				
+				/**
+				 * Form group's caption.
+				 * 
+				 * @attribute caption
+				 * @type {String}
+				 * @default ''
+				 */
+				caption: '',
 				
 				/**
 				 * Whether the group is toggleable (with preview / edit states) or not (edit-only).
 				 * 
 				 * @attribute toggleable
-				 * @type Boolean
+				 * @type {Boolean}
 				 * @default true
 				 */
 				toggleable: true,
@@ -58,7 +66,7 @@ visual features (preview / edit stances etc.).
 				 * Whether the form group is currently preview-only or in editable state.
 				 * 
 				 * @attribute preview-state
-				 * @type Boolean
+				 * @type {Boolean}
 				 * @default true
 				 */
 				previewState: true,

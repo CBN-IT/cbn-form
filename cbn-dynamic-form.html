@@ -13,19 +13,18 @@ Where `config` is a custom object that describes the form's layout and the input
 Example config JSON definition: 
 	{
 		groups: [{
-			label: 'Main Form', 
+			caption: 'Main Form', 
 			fields: [
 				{
-					name: 'Name',
+					name: 'name',
+					label: 'Name: ', 
 					type: 'text', 
-					validate: {
-						required: true,
-						maxLength: 15, 
-						regex: /[a-z0-9 ]/i
-					}
+					element: 'cbn-basic-input', 
+					preview: true
 				}, 
 				{
-					name: 'Type',
+					name: 'type',
+					label: 'Type: ', 
 					type: 'select',
 					options: { 1: 'Person', 2: 'Company' }
 				}
@@ -48,10 +47,10 @@ Example config JSON definition:
 		<div id="groups">
 			<template repeat="{{group in config.groups}}">
 				
-				<cbn-form-group>
+				<cbn-form-group caption="[[group.caption]]">
 					<template repeat="{{field in group.fields}}">
-						<cbn-abstract-input class="{{ { preview: field.preview } | tokenList }}" 
-											config="{{field}}"></cbn-abstract-input>
+						<cbn-abstract-input class="[[ { preview: field.preview } | tokenList ]]"
+											config="[[field]]"></cbn-abstract-input>
 					</template>
 				</cbn-form-group>
 				
@@ -65,21 +64,20 @@ Example config JSON definition:
 			
 			/**
 			 * The form configuration object.
-			 * @typedef {Object} 				FormConfig
-			 * @property {[FormGroupConfig]} 	groups The grouped form fields
-			 */
-			
-			/**
-			 * The form configuration object.
 			 * @typedef  {Object} 	FormGroupConfig
-			 * @property {String} 	label Group's label (optional)
+			 * @property {String} 	caption Group's caption / title (optional)
 			 * @property {Boolean}	toggleable Whether the group is toggleable.
 			 * @property {[Object]}	fields Form's fields to be rendered
 			 */
 			
 			/**
-			 * The form configuration object that contains the model definition, the inputs to be rendered and 
-			 * their properties.
+			 * The form configuration object.
+			 * @typedef {Object} 				FormConfig
+			 * @property {[FormGroupConfig]} 	groups The grouped form fields
+			 */
+			
+			/**
+			 * The form configuration object that contains the inputs to be rendered, their layout and their properties.
 			 * 
 			 * @type FormConfig
 			 * @default {}

@@ -9,13 +9,14 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../cbn-abstract-input.html">
 
-<polymer-element name="cbn-basic-input" attributes="is-form-input type name caption value preview previewstate">
+<polymer-element name="cbn-basic-input" attributes="is-form-input type name label value preview previewstate">
 	
 	<template>
 		<label>
-			<span>{{caption}}</span>
-			<input class="{{ { preview: previewstate } | tokenList }}"
-				   title="{{config.label}}" type="{{type}}" name="{{name}}" value="{{value}}" />
+			<span>{{label}}</span>
+			<input id="input" name="{{name}}" value="{{value}}" type="{{type}}" 
+				   class="{{ { preview: previewstate } | tokenList }}"
+				   title="{{config.label}}" />
 		</label>
 	</template>
 	
@@ -42,9 +43,9 @@
 			value: '',
 			
 			/**
-			 * Input label text / caption to show next to the input.
+			 * Input label text to show next to the input.
 			 * 
-			 * @attribute caption
+			 * @attribute label
 			 * @type {String}
 			 */
 			label: '', 
@@ -52,7 +53,7 @@
 			/**
 			 * Element's dynamically-configurable attributes.
 			 */
-			inputAttributes: [ 'type', 'name', 'caption', 'preview' ], 
+			inputAttributes: [ 'type', 'name', 'label', 'preview' ], 
 			
 			/**
 			 * Fires when the element is created. Used to initialize its attributes.
@@ -62,7 +63,7 @@
 			
 		}));
 		
-		CbnFormInputs.registerType('basic-text', 'cbn-basic-input');
+		CbnFormInputs.registerType('text', 'cbn-basic-input');
 		
 	</script>
 	

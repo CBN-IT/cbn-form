@@ -1,38 +1,40 @@
 {
 	"groups": [
 		{
-			"legend": "Test Fieldset",
+			"caption": "Test Fieldset",
 			"toggleable" : true,
 			
 			"fields": [
 				{
 					"name": "test",
-					"caption": "Your Name", 
+					"type": "text",
+					"element": "cbn-basic-input",
+					"preview": true,
+					"label": "Your Name", 
+					
 					"error": "Required", 
 					"info": "Intre 3 si 15 de caractere",
-					"required":"true", 
-					"maxlength":"15", 
+					"required": "true", 
+					"maxlength": "15", 
 					"minlength": "3", 
-					"class": "sameWidth",
-					"type": "basic-text",
-					"preview": true 
+					"class": "sameWidth"
 				}
 			]
 		},
 		{
-			"legend": "Test Fieldset 2",
+			"caption": "Test Fieldset 2",
 			
 			"fields": [
 				{
 					"name": "test",
 					"type": "basic-text",
-					"caption": "Tot nume",
+					"label": "Tot nume",
 					"preview": true 
 				}, 
 				{
 					"name": "test2", 
 					"type": "basic-text", 
-					"caption": "Test 2",
+					"label": "Test 2",
 					"preview": false
 				}
 			]
