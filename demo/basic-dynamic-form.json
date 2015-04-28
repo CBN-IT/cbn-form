@@ -10,14 +10,7 @@
 					"type": "text",
 					"element": "cbn-basic-input",
 					"preview": true,
-					"label": "Your Name", 
-					
-					"error": "Required", 
-					"info": "Intre 3 si 15 de caractere",
-					"required": "true", 
-					"maxlength": "15", 
-					"minlength": "3", 
-					"class": "sameWidth"
+					"label": "Your Name"
 				}
 			]
 		},
@@ -27,13 +20,13 @@
 			"fields": [
 				{
 					"name": "test",
-					"type": "basic-text",
+					"type": "text",
 					"label": "Tot nume",
-					"preview": true 
+					"preview": true
 				}, 
 				{
 					"name": "test2", 
-					"type": "basic-text", 
+					"type": "text", 
 					"label": "Test 2",
 					"preview": false
 				}

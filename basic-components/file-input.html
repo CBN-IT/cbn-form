@@ -1,0 +1,84 @@
+<!--
+`cbn-basic-input` implements a basic text input.
+
+@group cbn-form
+@element input-text
+-->
+
+<!-- Imports -->
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../cbn-abstract-input.html">
+
+<polymer-element name="cbn-basic-file" attributes="is-form-input is-file-input type name label value preview previewstate">
+	
+	<template>
+		<label>
+			<span>{{label}}</span>
+			<input id="input" name="{{name}}" value="{{value}}" 
+				   type="file" multiple?="{{multiple}}"
+				   class="{{ { preview: previewstate } | tokenList }}" 
+				   title="{{config.label}}" />
+		</label>
+	</template>
+	
+	<script>
+		Polymer('cbn-basic-file', Polymer.mixin({}, CbnAbstractInputMixin, {
+			
+			/**
+			 * Input's name (also the model value path).
+			 */
+			name: '',
+			
+			/**
+			 * Input's value (as text).
+			 * @type {String}
+			 */
+			value: '',
+			
+			/**
+			 * Whether multiple file uploads are permitted.
+			 * 
+			 * @attribute multiple
+			 * @type {Boolean}
+			 */
+			multiple: false,
+			
+			/**
+			 * Input label text to show next to the input.
+			 * 
+			 * @attribute label
+			 * @type {String}
+			 */
+			label: '', 
+			
+			
+			/**
+			 * Element's dynamically-configurable attributes.
+			 */
+			inputAttributes: [ 'type', 'name', 'label', 'preview', 'multiple' ], 
+			
+			
+			/**
+			 * Fires when the element is created. Used to initialize its attributes.
+			 */
+			created: function () {
+			},
+			
+			// Own methods:
+			
+			/**
+			 * Returns the input's FileList object that contains the selected files.
+			 * 
+			 * @return {FileList} A FileList object that contains the selected files.
+			 */
+			getFiles: function () {
+				return this.$.input.files;
+			}
+			
+		}));
+		
+		CbnFormInputs.registerType('file', 'cbn-basic-file');
+		
+	</script>
+	
+</polymer-element>

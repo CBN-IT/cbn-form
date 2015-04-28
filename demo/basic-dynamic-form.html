@@ -9,7 +9,7 @@
 	<link rel="import" href="../../core-ajax/core-ajax.html">
 	<link rel="import" href="../cbn-form.html">
 	<link rel="import" href="../cbn-dynamic-form.html">
-	<link rel="import" href="../basic-components/input-text.html">
+	<link rel="import" href="../basic-components/basic-input.html">
 	
 	<link href="//fonts.googleapis.com/css?family=RobotoDraft:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet" type="text/css">
 	
@@ -26,7 +26,7 @@
 
 <template id="template-wrapper" is="auto-binding">
 	
-	<core-ajax auto url="formConfig.json" handleAs="json" response="{{formConfig}}"></core-ajax>
+	<core-ajax auto url="basic-dynamic-form.json" handleAs="json" response="{{formConfig}}"></core-ajax>
 	
 	<cbn-form model="{{model}}">
 		<cbn-dynamic-form config="{{formConfig}}"></cbn-dynamic-form>
