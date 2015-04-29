@@ -13,6 +13,14 @@
 	
 	<link href="//fonts.googleapis.com/css?family=RobotoDraft:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet" type="text/css">
 	
+	<script>
+		PolymerExpressions.prototype.stringify = function(val) {
+			if (typeof val != 'object' || val.constructor != Object)
+				return val;
+			return JSON.stringify(val);
+		};
+	</script>
+	
 	<style>
 		body {
 			font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -26,24 +34,45 @@
 
 <template id="template-wrapper" is="auto-binding">
 	
-	<core-ajax auto url="basic-dynamic-form.json" handleAs="json" response="{{formConfig}}"></core-ajax>
+	<core-ajax auto url="basic-dynamic-form.json" handleAs="json" on-core-complete="{{onCoreComplete}}" response="{{formConfig}}"></core-ajax>
 	
-	<cbn-form model="{{model}}">
+	<cbn-form model="{{formModel}}" style="width: 500px;">
 		<cbn-dynamic-form config="{{formConfig}}"></cbn-dynamic-form>
 	</cbn-form>
 	
 	<p style="font-weight: bold;">Output: </p>
-	<pre>{{ model.test }}</pre>
+	<pre id="stringifiedJson"></pre>
 	
 </template>
 
 <script>
 	var tpl = document.querySelector('#template-wrapper');
+	var observer = new CompoundObserver();
+	
+	tpl.formModel = {
+		name: {}
+	};
+	tpl.onCoreComplete = function(){
+		var groupsConfig = tpl.formConfig.groups;
+		
+		for (var g in groupsConfig) {
+			if (!groupsConfig.hasOwnProperty(g)) continue;
+			for (var f in groupsConfig[g].fields) {
+				if (!groupsConfig[g].fields.hasOwnProperty(f)) continue;
+				var field = groupsConfig[g].fields[f];
+				observer.addPath(tpl.formModel, field.name);
+			}
+		}
+		
+		observer.open(function() {
+			document.querySelector('#stringifiedJson').innerHTML = JSON.stringify(tpl.formModel, null, 4);
+		});
+	};
+	
 	tpl.addEventListener('template-bound', function() {
-		document.querySelector('cbn-form').model = {
-			test: ''
-		};
+		// nothing yet
 	});
+	
 </script>
 
 </body>

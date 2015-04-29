@@ -1,16 +1,23 @@
 {
 	"groups": [
 		{
-			"caption": "Test Fieldset",
+			"caption": "Personal Data",
 			"toggleable" : true,
 			
 			"fields": [
 				{
-					"name": "test",
+					"name": "name.first",
 					"type": "text",
 					"element": "cbn-basic-input",
 					"preview": true,
-					"label": "Your Name"
+					"label": "First Name"
+				},
+				{
+					"name": "name.last",
+					"type": "text",
+					"element": "cbn-basic-input",
+					"preview": true,
+					"label": "Last Name"
 				}
 			]
 		},
