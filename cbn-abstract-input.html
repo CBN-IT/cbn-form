@@ -5,6 +5,9 @@ Each input element must implement CbnAbstractInputMixin's abstract methods, have
 attribute and register its input type[s] via the {@link CbnFormInputs#registerType} (used for dynamic form input 
 type discovery).
 
+Several special element attributes are supported: 'class' (can be an Array of Strings or a String) and 'style' (which 
+can be a CSS String or an object with CSS properties to set).
+
 @group cbn-form
 @element cbn-abstract-input
 -->
@@ -237,7 +240,7 @@ type discovery).
 			}
 			
 		};
-
+		
 		/**
 		 * The abstract input element is a proxy Polymer element that automatically loads a registered input by its
 		 * type.
@@ -261,7 +264,7 @@ type discovery).
 			/**
 			 * The form input configuration object. Should contain at least the 'type' (or 'element') and 'name' 
 			 * properties.
-			 *
+			 * 
 			 * @attribute config
 			 * @type FormFieldConfig
 			 * @default {}
@@ -270,7 +273,7 @@ type discovery).
 			
 			/**
 			 * The HTML element of the created input.
-			 *
+			 * 
 			 * @type {HTMLElement}
 			 * @default null
 			 */
@@ -286,12 +289,10 @@ type discovery).
 			
 			/**
 			 * Called when polymer element has been fully prepared.
-			 *
+			 * 
 			 * Creates the actual input element based on the given `type` or `element` parameter.
 			 */
 			ready: function () {
-				var i;
-				
 				var elementName;
 				if (this.config.element) {
 					elementName = this.config.element;
@@ -309,11 +310,31 @@ type discovery).
 					elementName + "')");
 					return false;
 				}
-
+				
 				// set element attributes
-				for (i = 0; i < this.element.inputAttributes.length; i++) {
-					var c = this.element.inputAttributes[i];
-					if (this.config.hasOwnProperty(c)) {
+				for (var c in this.config) {
+					if (!this.config.hasOwnProperty(c)) 
+						continue;
+					
+					if (c == 'style') {
+						if (typeof this.config[c] == 'object') {
+							for (var s in this.config[c]) {
+								if (this.config[c].hasOwnProperty(s))
+									this.element.style[s] = this.config[c][s];
+							}
+							
+						} else {
+							this.element.style.cssText = this.config[c];
+						}
+						
+					} else if (c == 'class') {
+						if (typeof this.config[c] == 'object' && this.config[c].length) {
+							this.element.className = this.config[c].join(' ');
+						} else {
+							this.element.className = this.config[c].toString();
+						}
+						
+					} else if (this.element.inputAttributes.indexOf(c) >= 0) {
 						this.element[c] = this.config[c];
 					}
 				}

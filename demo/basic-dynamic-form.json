@@ -6,18 +6,28 @@
 			
 			"fields": [
 				{
-					"name": "name.first",
+					"name": "personal.firstname",
 					"type": "text",
 					"element": "cbn-basic-input",
 					"preview": true,
-					"label": "First Name"
+					"label": "First Name",
+					"style": { "width": "228px", "marginRight": "20px;" }
 				},
 				{
-					"name": "name.last",
+					"name": "personal.lastname",
 					"type": "text",
 					"element": "cbn-basic-input",
 					"preview": true,
-					"label": "Last Name"
+					"label": "Last Name", 
+					"style": { "width": "228px" }
+				},
+				{
+					"name": "personal.address",
+					"type": "text",
+					"element": "cbn-basic-input",
+					"preview": false,
+					"label": "Address", 
+					"style": { "width": "100%" }
 				}
 			]
 		},

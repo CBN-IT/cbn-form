@@ -12,10 +12,12 @@
 <polymer-element name="cbn-basic-input" attributes="is-form-input type name label value preview previewstate">
 	
 	<template>
+		<link rel="stylesheet" href="basic-input.css" />
+		
 		<label>
 			<span>{{label}}</span>
-			<input id="input" name="{{name}}" value="{{value}}" type="{{type}}" 
-				   class="{{ { preview: previewstate } | tokenList }}"
+			<input id="input" name="{{name}}" value="{{value}}" type="{{type}}"
+				   class="{{ { preview: previewstate } | tokenList }}" 
 				   title="{{config.label}}" />
 		</label>
 	</template>
