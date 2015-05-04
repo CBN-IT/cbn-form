@@ -165,7 +165,6 @@ Example:
 						this._formFields.push(input);
 						
 						if (event.detail.bindValue) {
-							console.log('form: value bound for ', input, this.model);
 							input.bind('value', new PathObserver(this.model, input.name));
 							event.detail.bindValue = false;
 						}

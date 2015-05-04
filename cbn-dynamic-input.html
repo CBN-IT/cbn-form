@@ -1,0 +1,126 @@
+<!--
+`cbn-dynamic-input` is a proxy Polymer element that automatically renders a dynamic input (using its config object).
+
+Each input element must implement CbnAbstractInputMixin and have several required properties specified 
+(see 'cbn-form-abstract.html').
+
+Several special element attributes are supported: 'class' (can be an Array of Strings or a String) and 'style' (which 
+can be a CSS String or an object with CSS properties to set).
+
+@group cbn-form
+@element cbn-dynamic-input
+-->
+
+<!-- Imports -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="cbn-form-abstract.html">
+
+<polymer-element name="cbn-dynamic-input" attributes="config preview">
+	
+	<template>
+		<!-- The local DOM will be filled dynamically by {@link #ready} -->
+	</template>
+	
+	<script>
+		Polymer('cbn-dynamic-input', {
+			
+			/**
+			 * The input field's configuration object.
+			 * 
+			 * @typedef  {Object}	FormFieldConfig
+			 * @property {String} 	type 	The element's type (used to instantiate the element based on type).
+			 * @property {String} 	element	The name of the element to instantiate (forced, overrides the type). Optional.
+			 * @property {String}	name	The input name / model value's path (that describes where in the model the 
+			 * 								data should be read / written).
+			 * @property {String}	preview	Whether the element is visible in a preview-state form group.
+			 * 
+			 * All other properties are directly passed as attributes to the instantiated element only if they were 
+			 * specified inside the {@link CbnAbstractInputMixin#inputAttributes} array.
+			 */
+			
+			/**
+			 * The form input configuration object. Should contain at least the 'type' (or 'element') and 'name' 
+			 * properties.
+			 * 
+			 * @attribute config
+			 * @type FormFieldConfig
+			 * @default {}
+			 */
+			config: null,
+			
+			/**
+			 * The HTML element of the created input.
+			 * 
+			 * @type {HTMLElement}
+			 * @default null
+			 */
+			element: null,
+			
+			/**
+			 * Fires when the element is created. Used to initialize its attributes.
+			 */
+			created: function () {
+				this.config = {};
+				this.model = {};
+			},
+			
+			/**
+			 * Called when polymer element has been fully prepared.
+			 * 
+			 * Creates the actual input element based on the given `type` or `element` parameter.
+			 */
+			ready: function () {
+				var elementName;
+				if (this.config.element) {
+					elementName = this.config.element;
+				} else {
+					elementName = CbnFormInputs._registeredTypes[this.config.type];
+					if (!elementName) {
+						console.error("Polymer(\"cbn-dynamic-input\"): input type not registered ('" +
+						this.config.type + "')");
+						return false;
+					}
+				}
+				this.element = document.createElement(elementName);
+				if (!this.element || !this.element.isFormInput || !this.element.inputAttributes) {
+					console.error("Polymer(\"cbn-dynamic-input\"): invalid input element ('" +
+					elementName + "')");
+					return false;
+				}
+				
+				// set element attributes
+				for (var c in this.config) {
+					if (!this.config.hasOwnProperty(c)) 
+						continue;
+					
+					if (c == 'style') {
+						if (typeof this.config[c] == 'object') {
+							for (var s in this.config[c]) {
+								if (this.config[c].hasOwnProperty(s))
+									this.element.style[s] = this.config[c][s];
+							}
+							
+						} else {
+							this.element.style.cssText = this.config[c];
+						}
+						
+					} else if (c == 'class') {
+						if (typeof this.config[c] == 'object' && this.config[c].length) {
+							this.element.className = this.config[c].join(' ');
+						} else {
+							this.element.className = this.config[c].toString();
+						}
+						
+					} else if (this.element.inputAttributes.indexOf(c) >= 0) {
+						this.element[c] = this.config[c];
+					}
+				}
+				
+				// append the element to the local DOM
+				this.shadowRoot.appendChild(this.element);
+			}
+			
+		});
+	</script>
+	
+</polymer-element>
