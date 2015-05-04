@@ -185,8 +185,12 @@ can be a CSS String or an object with CSS properties to set).
 			 * Use `CbnAbstractInputMixin.attached.apply(this)` if you want to override it.
 			 */
 			attached: function () {
+				var input = this;
 				this.async(function(){
-					this.fire('cbn-form-input-attached', {}, null, true, false);
+					this.fire('cbn-form-input-attached', {
+						input: input, 
+						bindValue: true
+					}, null, true, false);
 				});
 			},
 			
@@ -196,7 +200,11 @@ can be a CSS String or an object with CSS properties to set).
 			 * Use `CbnAbstractInputMixin.detached.apply(this)` if you want to override it.
 			 */
 			detached: function () {
-				this.fire('cbn-form-input-detached', {}, null, true, false);
+				var input = this;
+				this.fire('cbn-form-input-detached', {
+					input: input, 
+					unbindValue: true
+				}, null, true, false);
 			},
 			
 			// Fired events:

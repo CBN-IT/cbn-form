@@ -159,24 +159,31 @@ Example:
 				var form = this;
 				
 				this.addEventListener('cbn-form-input-attached', function (event) {
-					var target = event.path[0];
-					if (target.parentForm != form) {
-						target.parentForm = form;
-						this._formFields.push(target);
+					var input = event.detail.input;
+					if (input.parentForm != form) {
+						input.parentForm = form;
+						this._formFields.push(input);
 						
-						target.bind('value', new PathObserver(this.model, target.name));
+						if (event.detail.bindValue) {
+							console.log('form: value bound for ', input, this.model);
+							input.bind('value', new PathObserver(this.model, input.name));
+							event.detail.bindValue = false;
+						}
 					}
 				});
 				
 				this.addEventListener('cbn-form-input-detached', function (event) {
-					var target = event.path[0];
-					if (target.parentForm == form) {
-						target.parentForm = null;
-						var idx = this._formFields.indexOf(target);
+					var input = event.detail.input;
+					if (input.parentForm == form) {
+						input.parentForm = null;
+						var idx = this._formFields.indexOf(input);
 						if (idx >= 0)
 							this._formFields.splice(idx, 1);
 						
-						target.unbind('value');
+						if (event.detail.unbindValue) {
+							input.unbind('value');
+							event.detail.unbindValue = false;
+						}
 					}
 				});
 			},

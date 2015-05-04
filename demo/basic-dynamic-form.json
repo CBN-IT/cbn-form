@@ -45,7 +45,7 @@
 					"name": "test2", 
 					"type": "text", 
 					"label": "Test 2",
-					"preview": false
+					"preview": true
 				}
 			]
 		}
