@@ -4,7 +4,7 @@
 Each input element must implement CbnAbstractInputMixin and have several required properties specified 
 (see 'cbn-form-abstract.html').
 
-Several special element attributes are supported: 'class' (can be an Array of Strings or a String) and 'style' (which 
+Several special element attributes are supported: 'className' (can be an Array of Strings or a String) and 'style' (which 
 can be a CSS String or an object with CSS properties to set).
 
 @group cbn-form
@@ -104,7 +104,7 @@ can be a CSS String or an object with CSS properties to set).
 							this.element.style.cssText = this.config[c];
 						}
 						
-					} else if (c == 'class') {
+					} else if (c == 'className') {
 						if (typeof this.config[c] == 'object' && this.config[c].length) {
 							this.element.className = this.config[c].join(' ');
 						} else {

@@ -47,7 +47,9 @@ Example config JSON definition:
 		<div id="groups">
 			<template repeat="{{group in config.groups}}">
 				
-				<cbn-form-group caption="[[group.caption]]">
+				<cbn-form-group caption="[[group.caption]]" 
+								class="[[group.className | toClassList]]"
+								style="[[group.style | styleObject]]">
 					<template repeat="{{field in group.fields}}">
 						<cbn-dynamic-input class="[[ { preview: field.preview } | tokenList ]]"
 											config="[[field]]"></cbn-dynamic-input>
@@ -125,6 +127,18 @@ Example config JSON definition:
 						}
 					});
 				}
+			},
+
+			/**
+			 * Converts an array of strings to HTML space-separated classes list.
+			 * 
+			 * @param {String|String[]} classes The input.
+			 * @return {String} The resulting HTML classes list.
+			 */
+			toClassList: function(classes) {
+				if (!classes || typeof classes == 'string')
+					return classes;
+				return classes.join(' ');
 			}
 			
 		});
