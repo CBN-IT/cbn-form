@@ -18,7 +18,7 @@ can be a CSS String or an object with CSS properties to set).
 <polymer-element name="cbn-dynamic-input" attributes="config preview">
 	
 	<template>
-		<!-- The local DOM will be filled dynamically by {@link #ready} -->
+		<!-- No local DOM necessary; the element appends the generated content as sibling -->
 	</template>
 	
 	<script>
@@ -110,14 +110,22 @@ can be a CSS String or an object with CSS properties to set).
 						} else {
 							this.element.className = this.config[c].toString();
 						}
+					} else if (c == "preview") {
+						if (this.config[c])
+							this.element.setAttribute(c, this.config[c]);
 						
 					} else if (this.element.inputAttributes.indexOf(c) >= 0) {
 						this.element[c] = this.config[c];
 					}
 				}
 				
-				// append the element to the local DOM
-				this.shadowRoot.appendChild(this.element);
+				// append the element as sibling
+				if (this.nextSibling) {
+					this.parentnode.insertBefore(this.element, this.nextSibling);
+					
+				} else {
+					this.parentNode.appendChild(this.element);
+				}
 			}
 			
 		});

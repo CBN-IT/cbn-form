@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>Dynamic Form Demo</title>
+	
+	<script src="../../webcomponentsjs/webcomponents.js"></script>
+	
+	<link rel="import" href="../../core-ajax/core-ajax.html">
+	<link rel="import" href="../cbn-form.html">
+	<link rel="import" href="../cbn-dynamic-form.html">
+	<link rel="import" href="../basic-components/basic-input.html">
+	
+	<link rel="stylesheet" href="../../flexboxgrid/dist/flexboxgrid.min.css">
+	
+	<link href="//fonts.googleapis.com/css?family=RobotoDraft:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet" type="text/css">
+	<style>
+		body {
+			font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			font-size: 14px;
+		}
+	</style>
+</head>
+<body>
+
+<h1>Basic Forms Demo</h1>
+
+<template id="template-wrapper" is="auto-binding">
+	
+	<core-ajax auto url="basic-dynamic-form.json" handleAs="json" response="{{formConfig}}"></core-ajax>
+	
+	<cbn-form model="{{formModel}}" style="width: 400px;">
+		
+		<cbn-form-group caption="Personal Data">
+			<div class="group-inner row">
+				<cbn-basic-input label="First Name" class="col-xs-6" preview 
+							 name="first_name" value="1"></cbn-basic-input>
+				
+				<cbn-basic-input label="Last Name" class="col-xs-6"
+								 name="last_name"></cbn-basic-input>
+			</div>
+		</cbn-form-group>
+		
+	</cbn-form>
+	
+	<p style="font-weight: bold;">Output: </p>
+	<pre id="stringifiedJson"></pre>
+	
+</template>
+
+<script>
+	var tpl = document.querySelector('#template-wrapper');
+	tpl.formModel = {
+		first_name: '',
+		last_name: ''
+	};
+	
+	tpl.addEventListener('template-bound', function() {
+		var observer = new ObjectObserver(tpl.formModel);
+		observer.open(function() {
+			document.querySelector('#stringifiedJson').innerHTML = JSON.stringify(tpl.formModel);
+		});
+	});
+	
+</script>
+
+</body>
+</html>

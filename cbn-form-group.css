@@ -6,17 +6,21 @@
 	display: block;
 }
 
+.caption {
+	font-size: 1.5em;
+	color: #333;
+	margin-bottom: 15px;
+}
+
 #container {
 	padding: 10px;
 	margin: 10px;
 }
 
-#content.preview #nonpreviewable {
+#content.preview ::content > :not([preview], .group-inner) {
 	display: none;
 }
 
-.caption {
-	font-size: 1.5em;
-	color: #333;
-	margin-bottom: 15px;
+#content.preview ::content > .group-inner > :not([preview]) {
+	display: none;
 }

@@ -2,7 +2,8 @@
 	"groups": [
 		{
 			"caption": "Personal Data",
-			"toggleable" : true,
+			"toggleable" : true, 
+			"flexgrid": true,
 			
 			"fields": [
 				{
@@ -11,7 +12,7 @@
 					"element": "cbn-basic-input",
 					"preview": true,
 					"label": "First Name",
-					"style": { "width": "228px", "marginRight": "20px;" }
+					"className": "col-xs-6"
 				},
 				{
 					"name": "personal.lastname",
@@ -19,7 +20,7 @@
 					"element": "cbn-basic-input",
 					"preview": true,
 					"label": "Last Name", 
-					"style": { "width": "228px" }
+					"className": "col-xs-6"
 				},
 				{
 					"name": "personal.address",
@@ -27,7 +28,7 @@
 					"element": "cbn-basic-input",
 					"preview": false,
 					"label": "Address", 
-					"style": { "width": "100%" }
+					"className": "col-xs-12"
 				}
 			]
 		},

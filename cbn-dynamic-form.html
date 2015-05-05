@@ -43,6 +43,7 @@ Example config JSON definition:
 
 <polymer-element name="cbn-dynamic-form" attributes="config model">
 	<template>
+		<link rel="stylesheet" href="../flexboxgrid/dist/flexboxgrid.min.css">
 		
 		<div id="groups">
 			<template repeat="{{group in config.groups}}">
@@ -50,10 +51,11 @@ Example config JSON definition:
 				<cbn-form-group caption="[[group.caption]]" 
 								class="[[group.className | toClassList]]"
 								style="[[group.style | styleObject]]">
-					<template repeat="{{field in group.fields}}">
-						<cbn-dynamic-input class="[[ { preview: field.preview } | tokenList ]]"
-											config="[[field]]"></cbn-dynamic-input>
-					</template>
+					<div class="{{ { 'group-inner': true, 'row': group.flexgrid } | tokenList }}">
+						<template repeat="{{field in group.fields}}">
+							<cbn-dynamic-input config="[[field]]"></cbn-dynamic-input>
+						</template>
+					</div>
 				</cbn-form-group>
 				
 			</template>
