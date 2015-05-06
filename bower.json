@@ -1,7 +1,7 @@
 {
   "name": "cbn-form",
   "version": "0.1",
-  "description": "A fully-configurable dynamic form component.",
+  "description": "An AJAX form component with dynamic fields creation features and more.",
   "main": "cbn-form.html",
   "ignore": [
     "**/.*",
@@ -13,8 +13,9 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^0.5",
+    "core-ajax": "Polymer/core-ajax#~0.5.5",
     "core-input": "Polymer/core-input#~0.5.5",
     "paper-shadow": "Polymer/paper-shadow#~0.5.5", 
-    "cbn-select": "https://bogdan_nourescu@bitbucket.org/bogdan_nourescu/cbn-input.git~0.1"
+    "flexboxgrid": "~6.1.1"
   }
 }

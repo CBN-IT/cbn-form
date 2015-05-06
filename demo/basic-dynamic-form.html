@@ -13,14 +13,6 @@
 	
 	<link href="//fonts.googleapis.com/css?family=RobotoDraft:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet" type="text/css">
 	
-	<script>
-		PolymerExpressions.prototype.stringify = function(val) {
-			if (typeof val != 'object' || val.constructor != Object)
-				return val;
-			return JSON.stringify(val);
-		};
-	</script>
-	
 	<style>
 		body {
 			font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -46,33 +38,34 @@
 </template>
 
 <script>
-	var tpl = document.querySelector('#template-wrapper');
-	var observer = new CompoundObserver();
-	
-	tpl.formModel = {
-		personal: {}
-	};
-	tpl.onCoreComplete = function(){
-		var groupsConfig = tpl.formConfig.groups;
+	document.addEventListener("HTMLImportsLoaded", function(event) {
+		var tpl = document.querySelector('#template-wrapper');
+		var observer = new CompoundObserver();
 		
-		for (var g in groupsConfig) {
-			if (!groupsConfig.hasOwnProperty(g)) continue;
-			for (var f in groupsConfig[g].fields) {
-				if (!groupsConfig[g].fields.hasOwnProperty(f)) continue;
-				var field = groupsConfig[g].fields[f];
-				observer.addPath(tpl.formModel, field.name);
+		tpl.formModel = {
+			personal: {}
+		};
+		tpl.onCoreComplete = function(){
+			var groupsConfig = tpl.formConfig.groups;
+			
+			for (var g in groupsConfig) {
+				if (!groupsConfig.hasOwnProperty(g)) continue;
+				for (var f in groupsConfig[g].fields) {
+					if (!groupsConfig[g].fields.hasOwnProperty(f)) continue;
+					var field = groupsConfig[g].fields[f];
+					observer.addPath(tpl.formModel, field.name);
+				}
 			}
-		}
+			
+			observer.open(function() {
+				document.querySelector('#stringifiedJson').innerHTML = JSON.stringify(tpl.formModel, null, 4);
+			});
+		};
 		
-		observer.open(function() {
-			document.querySelector('#stringifiedJson').innerHTML = JSON.stringify(tpl.formModel, null, 4);
+		tpl.addEventListener('template-bound', function() {
+			// nothing yet
 		});
-	};
-	
-	tpl.addEventListener('template-bound', function() {
-		// nothing yet
 	});
-	
 </script>
 
 </body>
