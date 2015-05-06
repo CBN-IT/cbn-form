@@ -86,7 +86,7 @@ Example config JSON definition:
 			 * @type {FormConfig}
 			 * @default {}
 			 */
-			config: {},
+			config: null,
 			
 			/**
 			 * Dynamic form's data model to use for its inputs. If not set, the parent form will manage the fields.
@@ -105,6 +105,14 @@ Example config JSON definition:
 			parentForm: null,
 			
 			/**
+			 * Fires when the element is created. Used to initialize its attributes.
+			 */
+			created: function() {
+				if (!this.config) 
+					this.config = {};
+			}, 
+			
+			/**
 			 * Called when polymer element has been fully prepared.
 			 * 
 			 * Listens for input attached / detached events and initializes them.
@@ -116,21 +124,21 @@ Example config JSON definition:
 					this.addEventListener('cbn-form-input-attached', function (event) {
 						var input = event.detail.input;
 						if (event.detail.bindValue) {
-							input.bind('value', new PathObserver(this.model, input.name));
+							this.bindValue(input);
 							event.detail.bindValue = false; // first-come, first-served
 						}
 					});
-
+					
 					this.addEventListener('cbn-form-input-detached', function (event) {
 						var input = event.detail.input;
 						if (event.detail.unbindValue) {
-							input.unbind('value');
+							this.unbindValue(input);
 							event.detail.unbindValue = false;
 						}
 					});
 				}
 			},
-
+			
 			/**
 			 * Converts an array of strings to HTML space-separated classes list.
 			 * 

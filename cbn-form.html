@@ -28,7 +28,7 @@ Example:
 	</template>
 	
 	<script>
-		Polymer('cbn-form', {
+		Polymer('cbn-form', Polymer.mixin({
 			
 			/**
 			 * Fired when submit command was issued.
@@ -66,7 +66,7 @@ Example:
 			 * @type {Object}
 			 * @default {}
 			 */
-			model: {},
+			model: null,
 			
 			/**
 			 * The URL to submit the form to.
@@ -93,7 +93,7 @@ Example:
 			 * @type {Object}
 			 * @default {}
 			 */
-			params: {},
+			params: null,
 			
 			/**
 			 * Additional options to pass to the XHR (see core-xhr documentation).
@@ -102,7 +102,7 @@ Example:
 			 * @type {Object}
 			 * @default {}
 			 */
-			xhrOptions: {},
+			xhrOptions: null,
 			
 			/**
 			 * Form serialization method to use for submitting the form values via XHR.
@@ -120,7 +120,7 @@ Example:
 			 * @type {{ type: String, param?: String, asFormData: Boolean, useBrackets: Boolean }}
 			 * @default { type: 'plain', param: 'data', useBrackets: false }
 			 */
-			serializationOptions: {},
+			serializationOptions: null,
 			
 			
 			// Internal fields
@@ -133,8 +133,9 @@ Example:
 			 * 
 			 * @private
 			 * @type {[HTMLElement]}
+			 * @default []
 			 */
-			_formFields: [],
+			_formFields: null,
 			
 			
 			// Functions and event handlers
@@ -143,10 +144,15 @@ Example:
 			 * Fires when the element is created. Used to initialize its attributes.
 			 */
 			created: function() {
-				this.model = {};
-				this.params = {};
-				this.xhrOptions = {};
-				this.serializationOptions = { type: 'plain', param: 'data', useBrackets: false };
+				if (!this.model)
+					this.model = {};
+				if (!this.params)
+					this.params = {};
+				if (!this.xhrOptions)
+					this.xhrOptions = {};
+				if (!this.serializationOptions)
+					this.serializationOptions = { type: 'plain', param: 'data', useBrackets: false };
+				
 				this._formFields = [];
 			},
 			
@@ -165,7 +171,7 @@ Example:
 						this._formFields.push(input);
 						
 						if (event.detail.bindValue) {
-							input.bind('value', new PathObserver(this.model, input.name));
+							this.bindValue(input);
 							event.detail.bindValue = false;
 						}
 					}
@@ -180,12 +186,26 @@ Example:
 							this._formFields.splice(idx, 1);
 						
 						if (event.detail.unbindValue) {
-							input.unbind('value');
+							this.unbindValue(input);
 							event.detail.unbindValue = false;
 						}
 					}
 				});
 			},
+			
+			/**
+			 * Called when the model is changed.
+			 */
+			modelChanged: function() {
+				var i;
+				
+				for (i=0; i<this._formFields.length; i++) {
+					var input = this._formFields[i];
+					if (input._valueBoundParent == this) {
+						this.bindValue(input);
+					}
+				}
+			}, 
 			
 			/**
 			 * Requests form validation from all inputs and returns the boolean result.
@@ -217,7 +237,7 @@ Example:
 				var form = this;
 				
 				// process all Observer events so we have an up-to-date model
-				Platform.performMicrotaskCheckpoint();
+				WebComponents.performMicrotaskCheckpoint();
 				
 				if (!this.validate()) 
 					return false;
@@ -431,7 +451,7 @@ Example:
 				return r.join('&');
 			}
 			
-		});
+		}, CbnFormModelBindingMixin));
 	</script>
 	
 </polymer-element>

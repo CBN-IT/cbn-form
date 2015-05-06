@@ -38,13 +38,15 @@
 </template>
 
 <script>
+	var tpl = document.querySelector('#template-wrapper');
+	
 	document.addEventListener("HTMLImportsLoaded", function(event) {
-		var tpl = document.querySelector('#template-wrapper');
 		var observer = new CompoundObserver();
 		
 		tpl.formModel = {
 			personal: {}
 		};
+		
 		tpl.onCoreComplete = function(){
 			var groupsConfig = tpl.formConfig.groups;
 			
@@ -61,10 +63,10 @@
 				document.querySelector('#stringifiedJson').innerHTML = JSON.stringify(tpl.formModel, null, 4);
 			});
 		};
-		
-		tpl.addEventListener('template-bound', function() {
-			// nothing yet
-		});
+	});
+	
+	tpl.addEventListener('template-bound', function() {
+		// nothing yet
 	});
 </script>
 

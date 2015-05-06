@@ -1,5 +1,5 @@
 <!--
-This file defines the common interfaces that all `cbn-form` input elements must implement.
+This file defines the common utilities and interfaces necessary by some components.
 
 Each input element must implement CbnAbstractInputMixin's abstract methods, have a declared `is-form-input` HTML 
 attribute and register its input type[s] via the {@link CbnFormInputs#registerType} (used for dynamic form input 
@@ -228,6 +228,46 @@ type discovery).
 		 */
 		getFiles: function () {
 			throw "Not implemented!";
+		}
+		
+	};
+	
+	/**
+	 * A mixin that implements model value binding.
+	 * 
+	 * Used by model containers (cbn-form, cbn-dynamic-form etc.) to bind when an input is attached.
+	 * 
+	 * Example:
+	 *     Polymer('your-element', Polymer.mixin({
+	 *         // element's properties
+	 *     }, CbnFormModelBindingMixin));
+	 */
+	var CbnFormModelBindingMixin = {
+		
+		/**
+		 * Binds an observer to the given model to an input's value attribute.
+		 * 
+		 * @param {HTMLElement} input The target input to bind to.
+		 */
+		bindValue: function(input) {
+			this.unbindValue(input, true);
+			input.bind('value', new PathObserver(this.model, input.name));
+			input._valueBoundParent = this;
+		},
+		
+		/**
+		 * Unbinds the observers for an input's value attribute.
+		 * 
+		 * @param {HTMLElement} input The target input to unbind.
+		 * @param {Boolean} force Set to true to force unbinding (even if the owner is not 'this').
+		 */
+		unbindValue: function(input, force) {
+			if (force || input._valueBoundParent == this) {
+				if (input.valueObservable_ && input.valueObservable_.close) {
+					input.valueObservable_.close();
+				}
+				input._valueBoundParent = null;
+			}
 		}
 		
 	};
