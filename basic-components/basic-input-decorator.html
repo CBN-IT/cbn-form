@@ -1,0 +1,51 @@
+<!--
+`cbn-basic-input` implements a basic text input.
+
+@group cbn-form
+@element input-text
+-->
+
+<!-- Imports -->
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../cbn-form-abstract.html">
+
+<polymer-element name="cbn-basic-input-decorator" attributes="label preview previewstate">
+	
+	<template>
+		<link rel="stylesheet" href="basic-input-decorator.css" />
+		
+		<label>
+			<span>{{label}}</span>
+			
+			<content></content>
+		</label>
+	</template>
+	
+	<script>
+		Polymer('cbn-basic-input-decorator', Polymer.mixin({}, CbnAbstractInputDecoratorMixin, {
+			
+			/**
+			 * Input label text to show next to the input.
+			 * 
+			 * @attribute label
+			 * @type {String}
+			 */
+			label: '', 
+			
+			/**
+			 * Element's dynamically-configurable attributes.
+			 */
+			inputAttributes: [ 'label', 'preview' ], 
+			
+			/**
+			 * Fires when the element is created. Used to initialize its attributes.
+			 */
+			created: function () {
+				CbnAbstractInputDecoratorMixin.created.apply(this);
+			}
+			
+		}));
+		
+	</script>
+	
+</polymer-element>

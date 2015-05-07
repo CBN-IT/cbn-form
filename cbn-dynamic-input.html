@@ -4,8 +4,11 @@
 Each input element must implement CbnAbstractInputMixin and have several required properties specified 
 (see 'cbn-form-abstract.html').
 
-Several special element attributes are supported: 'className' (can be an Array of Strings or a String) and 'style' (which 
-can be a CSS String or an object with CSS properties to set).
+Several special config attributes are supported: 
+- 'element': set to override automatic element detection by using the 'type' attribute;
+- 'className': HTML classes to apply to the decorator/input, if the decorator is null (can be an Array of Strings or a String); 
+- 'style': the style to apply to the root decorator/input (can be a CSS String or an object with CSS properties to set);
+- 'decorator': the name of the HTML element to use as decorator (set to null to skip decorating).
 
 @group cbn-form
 @element cbn-dynamic-input
@@ -57,6 +60,14 @@ can be a CSS String or an object with CSS properties to set).
 			element: null,
 			
 			/**
+			 * The HTML element of the created decorator.
+			 * 
+			 * @type {HTMLElement}
+			 * @default null
+			 */
+			decorator: null,
+			
+			/**
 			 * Fires when the element is created. Used to initialize its attributes.
 			 */
 			created: function () {
@@ -88,43 +99,98 @@ can be a CSS String or an object with CSS properties to set).
 					return false;
 				}
 				
+				// create the decorator element
+				var root = this.element;
+				this.decorator = null;
+				if (this.config.decorator) {
+					this.decorator = document.createElement(this.config.decorator);
+					if (!this.decorator || !this.decorator.decoratorAttributes) {
+						console.error("Polymer(\"cbn-dynamic-input\"): invalid decorator element ('" +
+						this.config.decorator + "')");
+						return false;
+					}
+					root = this.decorator;
+					
+					// set the element's display to 'block'
+					this.element.style.display = 'block';
+					
+					// set decorator default config attributes (from the element's 'decoratorConfig' property)
+					if (this.element.decoratorConfig) {
+						for (var dc in this.element.decoratorConfig) {
+							if (!this.element.decoratorConfig.hasOwnProperty(dc)) 
+								continue;
+							
+							this.applyConfig(this.decorator, dc, this.element.decoratorConfig[dc]);
+						}
+					}
+				}
+				
 				// set element attributes
 				for (var c in this.config) {
 					if (!this.config.hasOwnProperty(c)) 
 						continue;
 					
-					if (c == 'style') {
-						if (typeof this.config[c] == 'object') {
-							for (var s in this.config[c]) {
-								if (this.config[c].hasOwnProperty(s))
-									this.element.style[s] = this.config[c][s];
-							}
-							
-						} else {
-							this.element.style.cssText = this.config[c];
-						}
+					if (c == 'style' || c == 'className') {
+						// always apply to the root element
+						this.applyConfig(root, c, this.config[c]);
 						
-					} else if (c == 'className') {
-						if (typeof this.config[c] == 'object' && this.config[c].length) {
-							this.element.className = this.config[c].join(' ');
-						} else {
-							this.element.className = this.config[c].toString();
+					} else {
+						if (this.decorator && this.decorator.decoratorAttributes.indexOf(c) >= 0) {
+							this.applyConfig(this.decorator, c, this.config[c]);
 						}
-					} else if (c == "preview") {
-						if (this.config[c])
-							this.element.setAttribute(c, this.config[c]);
-						
-					} else if (this.element.inputAttributes.indexOf(c) >= 0) {
-						this.element[c] = this.config[c];
+						if (this.element.inputAttributes.indexOf(c) >= 0) {
+							this.applyConfig(this.element, c, this.config[c]);
+						}
 					}
+				}
+				
+				if (this.decorator) {
+					root.appendChild(this.element);
 				}
 				
 				// append the element as sibling
 				if (this.nextSibling) {
-					this.parentnode.insertBefore(this.element, this.nextSibling);
+					this.parentnode.insertBefore(root, this.nextSibling);
 					
 				} else {
-					this.parentNode.appendChild(this.element);
+					this.parentNode.appendChild(root);
+				}
+			},
+			
+			/**
+			 * Applies the specified configuration parameter to the element.
+			 * 
+			 * @param element The element to set the config attribute for.
+			 * @param c The config attribute.
+			 * @param value The config value to set.
+			 */
+			applyConfig: function(element, c, value) {
+				if (c == 'style') {
+					if (typeof value == 'object') {
+						for (var s in value) {
+							if (value.hasOwnProperty(s))
+								element.style[s] = value[s];
+						}
+						
+					} else {
+						element.style.cssText = value;
+					}
+					
+				} else if (c == 'className') {
+					if (typeof value == 'object' && value.length) {
+						element.className = value.join(' ');
+					} else {
+						element.className = value.toString();
+					}
+					
+				} else if (c == "preview") {
+					if (value)
+						element.setAttribute(c, value);
+					else 
+						element.removeAttribute(c);
+					
+				} else {
+					element[c] = value;
 				}
 			}
 			

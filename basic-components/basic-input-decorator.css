@@ -1,0 +1,19 @@
+/**
+ * Default styles for the `cbn-basic-input` and related components.
+ */
+
+:host {
+	display: inline-block;
+}
+
+label {
+	display: block;
+	margin-bottom: 0.5em;
+	margin-right: 0.5em;
+}
+
+/* Label on top of the input */
+label > span {
+	display: block;
+	margin: 0.2em 0 0.4em 0;
+}
