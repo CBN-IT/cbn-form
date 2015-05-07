@@ -64,7 +64,7 @@ type discovery).
 		
 		/**
 		 * All `cbn-form`-embeddable inputs must have this set as a HTML attribute (which can be used as selector 
-		 * to query the inputs).
+		 * to query for the inputs).
 		 * 
 		 * @attribute is-form-input
 		 * @type {Boolean}
@@ -77,6 +77,7 @@ type discovery).
 		 * All file inputs must also expose a {@link #getFiles} method that returns a FileList-compatible interface 
 		 * to the selected files.
 		 * 
+		 * @attribute is-file-input
 		 * @type {Boolean}
 		 */
 		isFileInput: false,
@@ -164,11 +165,7 @@ type discovery).
 		 * Use `CbnAbstractInputMixin.ready.apply(this)` if you want to override it.
 		 */
 		ready: function () {
-			this.setAttribute('is-form-input', true);
-			
-			if (this.isFileInput)
-				this.setAttribute('is-file-input', this.isFileInput);
-			else this.removeAttribute('is-file-input');
+			// nothing yet
 		},
 		
 		/**

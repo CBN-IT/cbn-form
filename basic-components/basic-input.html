@@ -9,7 +9,8 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../cbn-form-abstract.html">
 
-<polymer-element name="cbn-basic-input" attributes="is-form-input type name label value preview previewstate">
+<polymer-element name="cbn-basic-input" is-form-input
+				 attributes="type name label value preview previewstate">
 	
 	<template>
 		<link rel="stylesheet" href="basic-input.css" />
@@ -65,6 +66,9 @@
 		}));
 		
 		CbnFormInputs.registerType('text', 'cbn-basic-input');
+		CbnFormInputs.registerType('password', 'cbn-basic-input');
+		CbnFormInputs.registerType('email', 'cbn-basic-input');
+		CbnFormInputs.registerType('number', 'cbn-basic-input');
 		
 	</script>
 	
