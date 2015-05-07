@@ -1,0 +1,148 @@
+<!--
+`cbn-basic-input` implements a basic text input.
+
+@group cbn-form
+@element input-text
+-->
+
+<!-- Imports -->
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../cbn-abstract-input.html">
+
+<polymer-element name="cbn-basic-file" attributes="is-form-input is-file-input type name label value uploadedFiles preview previewstate">
+	
+	<template>
+		<label>
+			<span>{{label}}</span>
+			<input id="input" name="{{name}}" on-change="{{fileSelected}}"
+				   type="file" multiple?="{{multiple}}"
+				   class="{{ { preview: previewstate } | tokenList }}" 
+				   title="{{config.label}}" />
+		</label>
+	</template>
+	
+	<script>
+		Polymer('cbn-basic-file', Polymer.mixin({}, CbnAbstractInputMixin, {
+			
+			/**
+			 * The file model object that describes a selected / already uploaded file.
+			 * 
+			 * @typedef  {Object}	FileModel
+			 * @property {String} 	name The name of the selected/uploaded file.
+			 * @property {Boolean}	uploaded Whether the file is uploaded.
+			 * @property {int}		size The size of the file, in bytes.
+			 * @property {String}	type The MIME type of the file (warning: unreliable).
+			 * 
+			 * For uploaded files that are found in the value before the input is created, the object can contain any 
+			 * additional properties which are guaranteed to be preserved.
+			 */
+			
+			/**
+			 * Input's name (also the model value path).
+			 */
+			name: '',
+			
+			/**
+			 * Stores the selected files (both previous/uploaded and currently-selected) as an object or array of 
+			 * objects (if multiple is true).
+			 * 
+			 * @type {FileModel | FileModel[]}
+			 * @default {} | []
+			 */
+			value: {},
+			
+			/**
+			 * Stores the already-uploaded file(s) (found inside the model before the file input was initialized).
+			 * 
+			 * If multiple is false, the value will be overridden when a new file will be selected.
+			 * If multiple is true, the values will be preserved.
+			 * 
+			 * @type {FileModel | FileModel[]}
+			 */
+			uploadedFiles: {}, 
+			
+			/**
+			 * Whether multiple file uploads are permitted.
+			 * 
+			 * @attribute multiple
+			 * @type {Boolean}
+			 */
+			multiple: false,
+			
+			/**
+			 * Input label text to show next to the input.
+			 * 
+			 * @attribute label
+			 * @type {String}
+			 */
+			label: '', 
+			
+			
+			/**
+			 * Element's dynamically-configurable attributes.
+			 */
+			inputAttributes: [ 'type', 'name', 'label', 'preview', 'multiple' ], 
+			
+			
+			/**
+			 * Fires when the element is created. Used to initialize its attributes.
+			 */
+			created: function () {
+				CbnAbstractInputMixin.created.apply(this);
+				
+				if (this.multiple) {
+					this.value = [];
+					this.uploadedFiles = [];
+				} else {
+					this.value = {};
+					this.uploadedFiles = {};
+				}
+			},
+			
+			// Own methods:
+			
+			/**
+			 * Returns the input's FileList object that contains the selected files.
+			 * 
+			 * @return {FileList} A FileList object that contains the selected files.
+			 */
+			getFiles: function () {
+				return this.$.input.files;
+			},
+
+			/**
+			 * File input changed event, called when a file is selected.
+			 * 
+			 * Used to update the input's value.
+			 */
+			fileSelected: function() {
+				var i;
+				var filesModel = [];
+				var files = this.getFiles();
+				if (files && files.length) {
+					for (i=0; i<files.length; i++) {
+						filesModel.push({
+							uploaded: false,
+							name: files[i].name, 
+							size: files[i].size,
+							type: files[i].type
+						});
+					}
+				}
+				
+				if (multiple) {
+					this.value = filesModel;
+				} else {
+					if (filesModel.length > 0)
+						this.value = filesModel[0];
+					else this.value = {};
+				}
+			}
+			
+		}));
+		
+		CbnFormInputs.registerType('file', 'cbn-basic-file');
+		
+	</script>
+	
+</polymer-element>
