@@ -85,17 +85,26 @@ Several special config attributes are supported:
 				if (this.config.element) {
 					elementName = this.config.element;
 				} else {
-					elementName = CbnFormInputs._registeredTypes[this.config.type];
+					elementName = CbnFormInputs.getElementForType(this.config.type);
 					if (!elementName) {
-						console.error("Polymer(\"cbn-dynamic-input\"): input type not registered ('" +
-						this.config.type + "')");
+						console.error("Polymer(\"cbn-dynamic-input\"): no input registered for type '" +
+								this.config.type + "'");
 						return false;
 					}
 				}
-				this.element = document.createElement(elementName);
-				if (!this.element || !this.element.isFormInput || !this.element.inputAttributes) {
+				
+				var elementDef = CbnFormInputs.getElement(elementName);
+				if (elementDef) {
+					if (elementDef.extends) {
+						this.element = document.createElement(elementDef.extends, elementName);
+					} else {
+						this.element = document.createElement(elementName);
+					}
+				}
+				
+				if (!elementDef || !this.element || !this.element.isFormInput || !this.element.inputAttributes) {
 					console.error("Polymer(\"cbn-dynamic-input\"): invalid input element ('" +
-					elementName + "')");
+							elementName + "')");
 					return false;
 				}
 				
@@ -106,7 +115,7 @@ Several special config attributes are supported:
 					this.decorator = document.createElement(this.config.decorator);
 					if (!this.decorator || !this.decorator.decoratorAttributes) {
 						console.error("Polymer(\"cbn-dynamic-input\"): invalid decorator element ('" +
-						this.config.decorator + "')");
+								this.config.decorator + "')");
 						return false;
 					}
 					root = this.decorator;

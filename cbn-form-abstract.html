@@ -2,7 +2,7 @@
 This file defines the common utilities and interfaces necessary by some components.
 
 Each input element must implement CbnAbstractInputMixin's abstract methods, have a declared `is-form-input` HTML 
-attribute and register its input type[s] via the {@link CbnFormInputs#registerType} (used for dynamic form input 
+attribute and register its input type[s] via the {@link CbnFormInputs#registerElement} (used for dynamic form input 
 type discovery).
 -->
 
@@ -17,6 +17,7 @@ type discovery).
 		 * Stores the registered inputs by type.
 		 * The key is the input type and the value is the element's name.
 		 * 
+		 * @private
 		 * @type { Object.<String, String> }
 		 */
 		_registeredTypes: {},
@@ -24,24 +25,60 @@ type discovery).
 		/**
 		 * Stores the registered elements as a Boolean map.
 		 * 
+		 * @private
 		 * @type { Object.<String, Boolean> }
 		 */
 		_registeredElements: {},
 		
+		
+		/**
+		 * @typedef {Object}    RegisterElementOptions
+		 * @property {String[]} types The input types handled by the element.
+		 * @property {String}   extended If the element extends another one, set this to the extended element 
+		 *                          (e.g.: 'input')
+		 */
+		
 		/**
 		 * Registers a new input element to be usable within `cbn-form`.
 		 * 
-		 * @param {String} typeName The input `type` (e.g. text / number / date) provided by the element.
-		 * @param {String} element The name of the custom input element.
+		 * @param {String} name The name of the custom input element.
+		 * @param {RegisterElementOptions} options Element's definition object.
 		 */
-		registerType: function (typeName, element) {
-			if (this._registeredTypes[typeName] != undefined)
+		registerElement: function (name, options) {
+			if (this._registeredElements[name] != undefined) {
+				console.error("\"cbn-form-abstract.html\": element '" + name + "' is already registered");
 				return false;
+			}
 			
-			this._registeredTypes[typeName] = element;
-			this._registeredElements[element] = true;
+			if (options.types && options.types.length) {
+				for (var i=0; i<options.types.length; i++) {
+					this._registeredTypes[options.types[i]] = name;
+				}
+			}
+			
+			this._registeredElements[name] = options;
 			
 			return true;
+		}, 
+		
+		/**
+		 * Returns a registered element's definition object.
+		 * 
+		 * @name {String} name The element's name.
+		 * @return {RegisterElementOptions} Element's registration options.
+		 */
+		getElement: function(name) {
+			return this._registeredElements[name];
+		}, 
+		
+		/**
+		 * Returns the name of an element that was last registered for the requested type.
+		 * 
+		 * @name {String} type The input type.
+		 * @return {String} The element's name.
+		 */
+		getElementForType: function(type) {
+			return this._registeredTypes[type];
 		}
 		
 	};
@@ -304,7 +341,7 @@ type discovery).
 		
 	};
 	
-	
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * A mixin that implements utility model value binding methods.
 	 * 
@@ -319,27 +356,30 @@ type discovery).
 	var CbnFormModelBindingMixin = {
 		
 		/**
-		 * Binds an observer to the given model to an input's value attribute.
+		 * Binds an observer to the given model to an input's value property.
 		 * 
 		 * @param {HTMLElement} input The target input to bind to.
 		 */
 		bindValue: function(input) {
-			this.unbindValue(input, true);
+			// HACK / workaround for a typo bug in the Node.bind() library 
+			if (input.bindings_ && input.bindings_['value']) {
+				input.bindings_['value'].close();
+				input.bindings_['value'] = undefined;
+			}
 			input.bind('value', new PathObserver(this.model, input.name));
 			input._valueBoundParent = this;
 		},
 		
 		/**
-		 * Unbinds the observers for an input's value attribute.
+		 * Unbinds the observer for an input's value property.
 		 * 
 		 * @param {HTMLElement} input The target input to unbind.
 		 * @param {Boolean} force Set to true to force unbinding (even if the owner is not 'this').
 		 */
 		unbindValue: function(input, force) {
 			if (force || input._valueBoundParent == this) {
-				if (input.valueObservable_ && input.valueObservable_.close) {
-					input.valueObservable_.close();
-				}
+				// the element will automatically be unbound by Polymer after being detached
+				// so we only need to update the input's model controller
 				input._valueBoundParent = null;
 			}
 		}

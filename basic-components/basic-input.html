@@ -9,17 +9,39 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../cbn-form-abstract.html">
 
-<polymer-element name="cbn-basic-input" is-form-input
-				 attributes="type name label value preview previewstate">
+<style shim-shadowdom>
+	html /deep/ input[is=cbn-basic-input] {
+		width: 20em;
+		display: inline-block;
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0.3em;
+		
+		font: inherit;
+		background-color: transparent;
+		box-shadow: none;
+		outline: none;
+		border: solid 1px #dcdcdc;
+		transition: box-shadow 0.3s, border 0.3s;
+	}
+	html /deep/ input[is=cbn-basic-input]:focus {
+		outline: none;
+		border: solid 1px #707070;
+		box-shadow: 0 0 5px 1px #969696;
+	}
 	
-	<template>
-		<link rel="stylesheet" href="basic-input.css" />
-		
-		<input id="input" name="{{name}}" value="{{value}}" type="{{type}}"
-			   class="{{ { preview: previewstate } | tokenList }}" 
-			   title="{{label}}" />
-		
-	</template>
+	/*noinspection CssUnusedSymbol*/
+	html /deep/ input[is=cbn-basic-input].unstyled {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		transition: none;
+		box-shadow: none;
+	}
+</style>
+
+<polymer-element name="cbn-basic-input" constructor="CbnBasicInput" extends="input" is-form-input
+				 attributes="preview previewstate">
 	
 	<script>
 		Polymer('cbn-basic-input', Polymer.mixin({}, CbnAbstractInputMixin, {
@@ -33,17 +55,6 @@
 			type: 'text',
 			
 			/**
-			 * Input's name (also the model value path).
-			 */
-			name: '',
-			
-			/**
-			 * Input's value (as text).
-			 * @type {String}
-			 */
-			value: '',
-			
-			/**
 			 * Input's label text to be set as title.
 			 * 
 			 * @attribute label
@@ -52,9 +63,17 @@
 			label: '', 
 			
 			/**
+			 * Input's placeholder text.
+			 * 
+			 * @attribute label
+			 * @type {String}
+			 */
+			placeholder: '', 
+			
+			/**
 			 * Element's dynamically-configurable attributes.
 			 */
-			inputAttributes: [ 'type', 'name', 'label', 'preview' ], 
+			inputAttributes: [ 'type', 'name', 'label', 'placeholder', 'preview' ], 
 			
 			/**
 			 * Fires when the element is created. Used to initialize its attributes.
@@ -65,10 +84,10 @@
 			
 		}));
 		
-		CbnFormInputs.registerType('text', 'cbn-basic-input');
-		CbnFormInputs.registerType('password', 'cbn-basic-input');
-		CbnFormInputs.registerType('email', 'cbn-basic-input');
-		CbnFormInputs.registerType('number', 'cbn-basic-input');
+		CbnFormInputs.registerElement('cbn-basic-input', {
+				types: ['text', 'password', 'email', 'number'], 
+				extends: 'input'
+			});
 		
 	</script>
 	

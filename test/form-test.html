@@ -19,11 +19,11 @@
 <cbn-form id="firstForm">
 	<div>
 		
-		<cbn-basic-input type="text" id="firstInput" name="first"></cbn-basic-input>
-		<cbn-basic-input type="text" id="secondInput" name="second"></cbn-basic-input>
-		<cbn-basic-input type="text" id="firstInput2" name="first"></cbn-basic-input>
+		<input is="cbn-basic-input" type="text" id="firstInput" name="first" />
+		<input is="cbn-basic-input" type="text" id="secondInput" name="second" />
+		<input is="cbn-basic-input" type="text" id="firstInput2" name="first" />
 		
-		<cbn-basic-input type="text" id="advancedInput" name="advanced.text"></cbn-basic-input>
+		<input is="cbn-basic-input" type="text" id="advancedInput" name="advanced.text" />
 		
 	</div>
 </cbn-form>
@@ -49,9 +49,9 @@
 		test('inputs are visible', function () {
 			assert(form.isVisible(), 'form is not visible');
 			
-			assert(form.querySelector('#firstInput /deep/ input').isVisible(), '#firstInput is not visible');
-			assert(form.querySelector('#secondInput /deep/ input').isVisible(), '#secondInput is not visible');
-			assert(form.querySelector('#advancedInput /deep/ input').isVisible(), '#advancedInput is not visible');
+			assert(form.querySelector('#firstInput').isVisible(), '#firstInput is not visible');
+			assert(form.querySelector('#secondInput').isVisible(), '#secondInput is not visible');
+			assert(form.querySelector('#advancedInput').isVisible(), '#advancedInput is not visible');
 		});
 		
 		test('inputs detected by the form', function () {
