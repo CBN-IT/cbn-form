@@ -19,7 +19,7 @@
         "flexboxgrid": "~6.1.1"
     },
     "devDependencies": {
-        "cbn-input": "git@bitbucket.org:bogdan_nourescu/cbn-input.git~0.1.1", 
-        "cbn-select": "git@bitbucket.org:bogdan_nourescu/cbn-select.git~0.1.1"
+        "cbn-input": "git@bitbucket.org:bogdan_nourescu/cbn-input.git#^0.1", 
+        "cbn-select": "git@bitbucket.org:bogdan_nourescu/cbn-select.git#^0.1"
     }
 }
