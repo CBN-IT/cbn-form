@@ -1,6 +1,6 @@
 {
     "name": "cbn-form",
-    "version": "0.2",
+    "version": "0.2.0",
     "description": "An AJAX form component with dynamic fields creation features and more.",
     "main": "cbn-form.html",
     "ignore": [
