@@ -40,40 +40,16 @@
 	}
 </style>
 
-<polymer-element name="cbn-basic-input" constructor="CbnBasicInput" extends="input" is-form-input
+<polymer-element name="cbn-basic-input" extends="input" is-form-input
 				 attributes="preview previewstate">
 	
 	<script>
 		Polymer('cbn-basic-input', Polymer.mixin({}, CbnAbstractInputMixin, {
 			
 			/**
-			 * The HTML type of the input.
-			 * 
-			 * @attribute type
-			 * @type {String}
-			 */
-			type: 'text',
-			
-			/**
-			 * Input's label text to be set as title.
-			 * 
-			 * @attribute label
-			 * @type {String}
-			 */
-			label: '', 
-			
-			/**
-			 * Input's placeholder text.
-			 * 
-			 * @attribute label
-			 * @type {String}
-			 */
-			placeholder: '', 
-			
-			/**
 			 * Element's dynamically-configurable attributes.
 			 */
-			inputAttributes: [ 'type', 'name', 'label', 'placeholder', 'preview' ], 
+			inputAttributes: [ 'type', 'name', 'title', 'placeholder', 'preview' ], 
 			
 			/**
 			 * Fires when the element is created. Used to initialize its attributes.

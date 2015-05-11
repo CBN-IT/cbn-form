@@ -20,5 +20,5 @@ label > span {
 
 ::content input, 
 ::content *[is-form-input] {
-	width: 100%;
+	width: 100% !important;
 }

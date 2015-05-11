@@ -97,7 +97,7 @@ type discovery).
 	 */
 	var CbnAbstractInputMixin = {
 		
-		// Attributes and properties:
+		// Attributes and properties (just for documentation purposes):
 		
 		/**
 		 * All `cbn-form`-embeddable inputs must have this set as a HTML attribute (which can be used as selector 
@@ -119,6 +119,7 @@ type discovery).
 		 */
 		isFileInput: false,
 		
+		
 		/**
 		 * Input's name. 
 		 * 
@@ -128,7 +129,6 @@ type discovery).
 		 * @attribute name
 		 * @type {String}
 		 */
-		name: '',
 		
 		/**
 		 * Input's value attribute.
@@ -138,7 +138,6 @@ type discovery).
 		 * @attribute value
 		 * @type { Array | Object | [String] | [Object]}
 		 */
-		value: null,
 		
 		/**
 		 * Whether the current instance should be shown as preview in form groups.
@@ -146,7 +145,6 @@ type discovery).
 		 * @attribute preview
 		 * @type {Boolean}
 		 */
-		preview: false,
 		
 		/**
 		 * Is the input currently in a preview state?
@@ -156,10 +154,12 @@ type discovery).
 		 * @attribute previewstate
 		 * @type {Boolean}
 		 */
-		previewstate: false,
+		
+		
+		// DOM Properties:
 		
 		/**
-		 * Defines input element's dynamically-configurable attributes. Again, should be just a DOM property.
+		 * Defines input element's dynamically-configurable attributes.
 		 * 
 		 * Note that 'value' and 'previewstate' are automatically-bound attributes and don't need to be enumerated 
 		 * here.
@@ -178,14 +178,14 @@ type discovery).
 		decoratorConfig: {},
 		
 		/**
-		 * Stores the parent `cbn-form` element. DOM property.
+		 * Stores the parent `cbn-form` element.
 		 * 
 		 * @type {HTMLElement}
 		 */
 		parentForm: null,
 		
 		
-		// Element lifecycle methods:
+		// Element lifecycle handlers:
 		
 		/**
 		 * Element instance created callback.
@@ -250,7 +250,7 @@ type discovery).
 		 */
 		
 		
-		// Element methods: 
+		// Element API methods: 
 		
 		/**
 		 * Requests validation of the input (called by the form element before submit).

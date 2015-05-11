@@ -114,7 +114,7 @@ Element.prototype.isVisible = function() {
 	function _elementInDocument(element) {
 		var parent = element;
 		while (parent) {
-			if (parent == document) {
+			if (9 === parent.nodeType) {
 				return true;
 			}
 			if (window.ShadowRoot && parent instanceof ShadowRoot) {
@@ -125,6 +125,7 @@ Element.prototype.isVisible = function() {
 		}
 		return false;
 	}
+	console.log('WTF', this);
 	
 	return _isVisible(this);
 };
