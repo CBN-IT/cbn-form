@@ -65,7 +65,7 @@ Example config JSON definition:
 			<div id="groups">
 				<template repeat="{{group in config.groups}}">
 					
-					<cbn-form-group caption="[[group.caption]]" 
+					<cbn-form-group caption="[[group.caption]]" toggleable="[[group.toggleable]]"
 									class="[[group.className | toClassList]]"
 									style="[[group.style | styleObject]]">
 						<div class="{{ { 'group-inner': true, 'row': group.flexGrid } | tokenList }}">
@@ -87,15 +87,17 @@ Example config JSON definition:
 			/**
 			 * The form configuration object.
 			 * @typedef  {Object} 	FormGroupConfig
-			 * @property {String} 	caption Group's caption / title (optional)
+			 * @property {String} 	caption Group's caption / title (optional).
 			 * @property {Boolean}	toggleable Whether the group is toggleable.
-			 * @property {[Object]}	fields Form's fields to be rendered
+			 * @property {[Object]}	fields Form's fields to be rendered.
 			 */
 			
 			/**
 			 * The form configuration object.
 			 * @typedef {Object} 				FormConfig
-			 * @property {[FormGroupConfig]} 	groups The grouped form fields
+			 * @property {Object}				fieldDefaults Default configuration object, applied to all fields.
+			 * @property {[FormGroupConfig]} 	groups The grouped form fields.
+			 * @property {[Object]} 			flatFields Flat form fields to render.
 			 */
 			
 			/**
@@ -137,6 +139,7 @@ Example config JSON definition:
 			 */
 			ready: function() {
 				var form = this;
+				this.configChanged();
 				
 				if (this.model) {
 					this.addEventListener('cbn-form-input-attached', function (event) {
@@ -158,6 +161,44 @@ Example config JSON definition:
 			},
 			
 			/**
+			 * Called when the config property is changed.
+			 * Used to infer defaults to the form fields' configuration objects.
+			 */
+			configChanged: function() {
+				var config = this.config;
+				if (!config)
+					return;
+				
+				if (config.fieldDefaults) {
+					// lightweight object extend function (right to left processing order)
+					// first argument is the destination object
+					function extendObject() {
+						for (var i=arguments.length - 1; i >= 1; i--) {
+							for (var key in arguments[i]) 
+								if (arguments[i].hasOwnProperty(key))
+									arguments[0][key] = arguments[i][key];
+						}
+						return arguments[0];
+					}
+					// utility function to extend a list of objects with some defaults 
+					function extendObjectsList(list, defaults) {
+						for (var k=0; k<list.length; k++) {
+							if (!list.hasOwnProperty(k)) continue;
+							list[k] = extendObject({}, list[k], defaults);
+						}
+					}
+					
+					if (config.groups) 
+						for (var i=0; i<config.groups.length; i++) {
+							extendObjectsList(config.groups[i].fields, config.fieldDefaults);
+						}
+					if (config.flatFields) {
+						extendObjectsList(config.flatFields, config.fieldDefaults);
+					}
+				}
+			}, 
+			
+			/**
 			 * Converts an array of strings to HTML space-separated classes list.
 			 * 
 			 * @param {String|String[]} classes The input.
@@ -167,6 +208,32 @@ Example config JSON definition:
 				if (!classes || typeof classes == 'string')
 					return classes;
 				return classes.join(' ');
+			},
+			
+			/**
+			 * Converts a style object to its string representation. Ignores CSS as string (returns it).
+			 * 
+			 * @param {Object|String} value The object to convert.
+			 * @returns {String} The resulting CSS text.
+			 */
+			styleObject: function(value) {
+				if (!value)
+					return '';
+				if (typeof value == 'string')
+					return value;
+				
+				function convertStylePropertyName(name) {
+					return String(name).replace(/[A-Z]/g, function(c) {
+						return '-' + c.toLowerCase();
+					});
+				}
+				
+				var parts = [];
+				for (var key in value) {
+					if (value.hasOwnProperty(key))
+						parts.push(convertStylePropertyName(key) + ': ' + value[key]);
+				}
+				return parts.join('; ');
 			}
 			
 		});

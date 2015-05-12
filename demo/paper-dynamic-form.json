@@ -1,4 +1,8 @@
 {
+	"fieldDefaults": {
+		"decorator": "cbn-input-decorator",
+		"preview": false
+	},
 	"groups": [
 		{
 			"caption": "Personal Data",
@@ -9,8 +13,6 @@
 				{
 					"name": "personal.firstname",
 					"type": "text",
-					"element": "cbn-basic-input",
-					"decorator": "cbn-input-decorator",
 					"floatingLabel": true,
 					"preview": true,
 					"label": "First Name",
@@ -19,8 +21,6 @@
 				{
 					"name": "personal.lastname",
 					"type": "text",
-					"element": "cbn-basic-input",
-					"decorator": "cbn-input-decorator",
 					"floatingLabel": true,
 					"preview": true,
 					"label": "Last Name", 
@@ -29,8 +29,6 @@
 				{
 					"name": "personal.address",
 					"type": "text",
-					"element": "cbn-basic-input",
-					"decorator": "cbn-input-decorator",
 					"floatingLabel": true,
 					"preview": false,
 					"label": "Address", 
@@ -45,7 +43,6 @@
 				{
 					"name": "test",
 					"type": "text",
-					"decorator": "cbn-input-decorator",
 					"floatingLabel": true,
 					"label": "Tot nume",
 					"preview": true
@@ -53,7 +50,6 @@
 				{
 					"name": "test2", 
 					"type": "text", 
-					"decorator": "cbn-input-decorator",
 					"floatingLabel": true,
 					"label": "Test 2",
 					"preview": true

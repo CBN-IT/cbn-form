@@ -1,4 +1,8 @@
 {
+	"fieldDefaults": {
+		"decorator": "cbn-basic-input-decorator",
+		"preview": false
+	},
 	"groups": [
 		{
 			"caption": "Personal Data",
@@ -10,7 +14,6 @@
 					"name": "personal.firstname",
 					"type": "text",
 					"element": "cbn-basic-input",
-					"decorator": "cbn-basic-input-decorator",
 					"preview": true,
 					"label": "First Name",
 					"className": "col-xs-6"
@@ -19,7 +22,6 @@
 					"name": "personal.lastname",
 					"type": "text",
 					"element": "cbn-basic-input",
-					"decorator": "cbn-basic-input-decorator", 
 					"preview": true,
 					"label": "Last Name", 
 					"className": "col-xs-6"
@@ -28,7 +30,6 @@
 					"name": "personal.address",
 					"type": "text",
 					"element": "cbn-basic-input",
-					"decorator": "cbn-basic-input-decorator",
 					"preview": false,
 					"label": "Address", 
 					"className": "col-xs-12"
@@ -42,16 +43,12 @@
 				{
 					"name": "test",
 					"type": "text",
-					"decorator": "cbn-basic-input-decorator",
-					"label": "Tot nume",
-					"preview": true
+					"label": "Tot nume"
 				}, 
 				{
 					"name": "test2", 
 					"type": "text", 
-					"decorator": "cbn-basic-input-decorator",
-					"label": "Test 2",
-					"preview": true
+					"label": "Test 2"
 				}
 			]
 		}

@@ -155,7 +155,8 @@ visual features (preview / edit stances etc.).
 					var found = false;
 					if (event.path) {
 						for (i = 0; i < event.path.length; i++) {
-							if (event.path[i].tagName && event.path[i].tagName.toLowerCase() == 'cbn-form-group')
+							if (event.path[i].tagName && event.path[i].tagName.toLowerCase() == 'cbn-form-group' && 
+									currentlyOpenGroup == this)
 								found = true;
 						}
 					}
