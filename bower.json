@@ -1,25 +1,26 @@
 {
-    "name": "cbn-form",
-    "version": "0.2.0",
-    "description": "An AJAX form component with dynamic fields creation features and more.",
-    "main": "cbn-form.html",
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "../",
-        "test",
-        "tests"
-    ],
-    "dependencies": {
-        "polymer": "Polymer/polymer#^0.5",
-        "core-ajax": "Polymer/core-ajax#~0.5.5",
-        "core-input": "Polymer/core-input#~0.5.5",
-        "paper-shadow": "Polymer/paper-shadow#~0.5.5",
-        "flexboxgrid": "~6.1.1"
-    },
-    "devDependencies": {
-        "cbn-input": "git@bitbucket.org:bogdan_nourescu/cbn-input.git#^0.1", 
-        "cbn-select": "git@bitbucket.org:bogdan_nourescu/cbn-select.git#^0.1"
-    }
+  "name": "cbn-form",
+  "version": "0.2.0",
+  "description": "An AJAX form component with dynamic fields creation features and more.",
+  "main": "cbn-form.html",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "../",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5",
+    "core-ajax": "Polymer/core-ajax#^0.5",
+    "core-input": "Polymer/core-input#^0.5",
+    "paper-shadow": "Polymer/paper-shadow#^0.5",
+    "flexboxgrid": "~6.1.1"
+  },
+  "devDependencies": {
+    "cbn-input": "git@bitbucket.org:bogdan_nourescu/cbn-input.git#^0.1",
+    "cbn-select": "git@bitbucket.org:bogdan_nourescu/cbn-select.git#^0.1",
+    "core-component-page": "Polymer/core-component-page#^0.5"
+  }
 }

@@ -8,6 +8,10 @@ The dynamic form configuration object has the following format:
 
 ```javascript
 config = {
+	"fieldDefaults": {
+		"preview": true, 
+		"decorator": "cbn-basic-decorator"
+	},
 	"groups": [{
 		"caption": "Group Caption", 
 		"fields": [
@@ -22,6 +26,29 @@ config = {
 	}]
 }
 ```
+
+Alternatively, you can specify a `fields` key directly if you want to have a flat structure: 
+```javascript
+config = {
+	"flatFields": [
+		{
+			"name": "example",
+			"type": "text",
+			"label": "Example Field"
+		}, // etc.
+	]
+}
+```
+
+<br>
+### Available config object properties:
+- `groups` (*FormGroupConfig[]*): form groups to render;
+- `flatFields` (*FormFieldConfig[]*): if you want to directly print form fields (outside any group), use this instead 
+   of specifying the fields inside `groups`;
+- `flatFlexGrid` (*Boolean*): set to true to activate flexbox grid for `flatFields`;
+- `fieldDefaults` (*FormFieldConfig*): use this to specify the default field properties that will be applied for all 
+   `FormFieldConfig` objects (for fields inside `groups` or `flatFields`).
+
 <br>
 ### Available `cbn-form-group` properties: 
 
@@ -39,10 +66,14 @@ config = {
 
 - `name` (*String*): input's unique identifier / name;
 - `type` (*String*): the type of the form field to render;
+- `element` (*String*): override the name of the HTML input element to render; the element must implement   
+   the `CbnAbstractInputMixin` mixin / interface; optional: usually, the element is autodetected from the input type;
+- `decorator` (*String*): the name of the decorator (HTML element) to use for decorating the input; the element must 
+   implement the `CbnAbstractInputDecoratorMixin` interface; set to false (default) if no decorator is desired; 
 - `preview` (*Boolean*): for use with toggleable groups, specified whether the input is visible initially;
 - `className` (*String|String[]*): the HTML classes to add to the group element;
 - `style` (*String|Object*): the CSS to add to the group element.
-- `flexgrid` (*Boolean*): Set to true to activate the flexboxgrid row class for the contained inputs, 
+- `flexGrid` (*Boolean*): Set to true to activate the flexboxgrid row class for the contained inputs, 
    see http://flexboxgrid.com for documentation;
 
 <br>

@@ -11,26 +11,32 @@ Example:
 Where `config` is a custom object that describes the form's layout and the input fields to be dynamically generated.
 
 Example config JSON definition: 
+```
 	{
-		groups: [{
-			caption: 'Main Form', 
-			fields: [
+		"fieldDefaults": {
+			"preview": true, 
+			"decorator": "cbn-basic-decorator"
+		},
+		"groups": [{
+			"caption": "Main Form", 
+			"fields": [
 				{
-					name: 'name',
-					label: 'Name: ', 
-					type: 'text', 
-					element: 'cbn-basic-input', 
-					preview: true
+					"name": "name",
+					"label": "Name: ", 
+					"type": "text", 
+					"element": "cbn-basic-input", 
+					"preview": true
 				}, 
 				{
-					name: 'type',
-					label: 'Type: ', 
-					type: 'select',
-					options: { 1: 'Person', 2: 'Company' }
+					"name": "type",
+					"label": "Type: ", 
+					"type": "select",
+					"options": { "1": "Person", "2": "Company" }
 				}
 			]
 		}]
 	}
+```
 
 @group cbn-form
 @element cbn-dynamic-form
@@ -45,21 +51,33 @@ Example config JSON definition:
 	<template>
 		<link rel="stylesheet" href="../flexboxgrid/dist/flexboxgrid.min.css">
 		
-		<div id="groups">
-			<template repeat="{{group in config.groups}}">
-				
-				<cbn-form-group caption="[[group.caption]]" 
-								class="[[group.className | toClassList]]"
-								style="[[group.style | styleObject]]">
-					<div class="{{ { 'group-inner': true, 'row': group.flexgrid } | tokenList }}">
-						<template repeat="{{field in group.fields}}">
-							<cbn-dynamic-input config="[[field]]"></cbn-dynamic-input>
-						</template>
-					</div>
-				</cbn-form-group>
-				
-			</template>
-		</div>
+		<template if="{{ config.flatFields }}">
+			<!-- Print flat fields -->
+			<div class="{{ { 'flat-fields': true, 'row': config.flatFlexGrid } | tokenList }}">
+				<template repeat="{{field in config.fields}}">
+					<cbn-dynamic-input config="[[field]]"></cbn-dynamic-input>
+				</template>
+			</div>
+		</template>
+		
+		<template if="{{ config.groups }}">
+			<!-- Print groups / their fields -->
+			<div id="groups">
+				<template repeat="{{group in config.groups}}">
+					
+					<cbn-form-group caption="[[group.caption]]" 
+									class="[[group.className | toClassList]]"
+									style="[[group.style | styleObject]]">
+						<div class="{{ { 'group-inner': true, 'row': group.flexGrid } | tokenList }}">
+							<template repeat="{{field in group.fields}}">
+								<cbn-dynamic-input config="[[field]]"></cbn-dynamic-input>
+							</template>
+						</div>
+					</cbn-form-group>
+					
+				</template>
+			</div>
+		</template>
 		
 	</template>
 	

@@ -3,7 +3,7 @@
 		{
 			"caption": "Personal Data",
 			"toggleable" : true, 
-			"flexgrid": true,
+			"flexGrid": true,
 			
 			"fields": [
 				{
