@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	
+	<script src="../../webcomponentsjs/webcomponents.min.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	
+	<script src="utils/functions.js"></script>
+	
+	<!-- Elements to be tested -->
+	<link rel="import" href="../cbn-form.html">
+	<link rel="import" href="../basic-components/basic-input.html">
+	
+</head>
+<body>
+
+<cbn-form id="firstForm" url="/test/post.do" method="POST">
+	<div>
+		
+		<input is="cbn-basic-input" type="text" title="First" id="firstInput" name="first" />
+		<input is="cbn-basic-input" type="text" title="Second" id="secondInput" name="second" />
+		
+		<input is="cbn-basic-input" type="text" title="Advanced" id="advancedInput" name="advanced.text" />
+		<input is="cbn-basic-input" type="text" title="Advanced2" id="advancedInput2" name="advanced.text2" />
+		<input is="cbn-basic-input" type="text" title="Advanced3" id="advancedInput3" name="advanced3.text2" />
+		
+	</div>
+</cbn-form>
+
+<script>
+	
+	var form = document.querySelector('#firstForm');
+	
+	// Set-up the test suite
+	suiteSetup(function(done){
+		// hack for polyfilled elements, need to refetch the proxied element
+		form = document.querySelector('#firstForm');
+		flush(done);
+	});
+	
+	setup(function(){
+		// emulate XHR
+		this.xhr = sinon.useFakeXMLHttpRequest();
+		var requests = this.requests = [];
+		
+		this.xhr.onCreate = function(xhr) {
+			requests.push(xhr);
+		}.bind(this);
+	});
+	
+	teardown(function(){
+		this.xhr.restore();
+	});
+	
+	test('JSON form submission', function(done) {
+		var requests = this.requests;
+		
+		var testJson = {
+			first: '1st', 
+			second: '2nd', 
+			advanced: {
+				text: 'advanced text', 
+				text2: 'advanced2text'
+			}, 
+			advanced2: {
+				text3: 'advanced3tree'
+			}
+		};
+		form.model = testJson;
+		form.serializationOptions = {
+			type: 'json', param: 'data'
+		};
+		
+		flush(function(){
+			form.submit();
+			
+			assert.deepEqual(requests[0].requestBody, "data=" + encodeURIComponent(
+				JSON.stringify(testJson)), 'JSON request body');
+			
+			done();
+		});
+	});
+	
+</script>
+
+</body>
+</html>

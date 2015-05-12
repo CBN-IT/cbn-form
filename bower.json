@@ -21,6 +21,7 @@
   "devDependencies": {
     "cbn-input": "git@bitbucket.org:bogdan_nourescu/cbn-input.git#^0.1",
     "cbn-select": "git@bitbucket.org:bogdan_nourescu/cbn-select.git#^0.1",
-    "core-component-page": "Polymer/core-component-page#^0.5"
+    "core-component-page": "Polymer/core-component-page#^0.5",
+    "web-component-tester": "Polymer/web-component-tester#^3.1"
   }
 }

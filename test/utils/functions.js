@@ -125,7 +125,6 @@ Element.prototype.isVisible = function() {
 		}
 		return false;
 	}
-	console.log('WTF', this);
 	
 	return _isVisible(this);
 };

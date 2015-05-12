@@ -219,7 +219,7 @@ Example:
 				var passed = true;
 				
 				for (i=0; i<this._formFields.length; i++) {
-					if (!this._formFields[i].element.checkValidity()) {
+					if (!this._formFields[i].validate()) {
 						passed = false;
 						break;
 					}
@@ -260,14 +260,10 @@ Example:
 				
 				// build the body
 				var body;
-				if (hasFiles) {
-					// we must use the FormData API to submit the file
-					body = new FormData();
-					
-				} else {
-					// just submit the model as body
-					body = this.model;
-				}
+				var serializationOptionsOverride = {
+					asFormData: hasFiles
+				};
+				body = this.serialize(serializationOptionsOverride);
 				
 				var event = this.fire('cbn-form-submit', {
 					data: this.model, 
@@ -282,7 +278,7 @@ Example:
 						url: this.url,
 						method: this.method,
 						params: this.params
-					}, xhrOptions) );
+					}, this.xhrOptions) );
 				
 				// bind XHR events
 				xhr.onreadystatechange = function() {
@@ -331,7 +327,7 @@ Example:
 				var fileInputs = {}; // the File input objects
 				
 				var data = null;
-				if (serializationOptions == 'plain') {
+				if (serializationOptions.type == 'plain') {
 					// flatten the model object
 					for (n in this.model) {
 						if (this.model.hasOwnProperty(n)) {
@@ -344,7 +340,7 @@ Example:
 						}
 					}
 					
-				} else if (serializationOptions == 'json') {
+				} else if (serializationOptions.type == 'json') {
 					// send the JSON object as string
 					fields.push({ key: serializationOptions.param, value: JSON.stringify(this.model) });
 				}
@@ -375,6 +371,13 @@ Example:
 							}
 						}
 					}
+				} else {
+					data = [];
+					for (i=0; i<fields.length; i++) {
+						data.push(encodeURIComponent(fields[i].key) + '=' + 
+								encodeURIComponent(fields[i].value));
+					}
+					data = data.join('&');
 				}
 				
 				return data;
@@ -426,10 +429,10 @@ Example:
 					xhr.withCredentials = true;
 				
 				// set headers
-				if (headers) {
-					for (var name in headers) {
-						if (headers.hasOwnProperty(name))
-							xhr.setRequestHeader(name, headers[name]);
+				if (options.headers) {
+					for (var name in options.headers) {
+						if (options.headers.hasOwnProperty(name))
+							xhr.setRequestHeader(name, options.headers[name]);
 					}
 				}
 				

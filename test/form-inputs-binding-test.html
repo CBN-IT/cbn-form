@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	
+	<script src="../../webcomponentsjs/webcomponents.min.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	
+	<script src="utils/functions.js"></script>
+	
+	<!-- Elements to be tested -->
+	<link rel="import" href="../cbn-form.html">
+	<link rel="import" href="../basic-components/basic-input.html">
+	
+</head>
+<body>
+
+<cbn-form id="firstForm">
+	<div>
+		
+		<input is="cbn-basic-input" type="text" title="First" id="firstInput" name="first" />
+		<input is="cbn-basic-input" type="text" title="Second" id="secondInput" name="second" />
+		<input is="cbn-basic-input" type="text" title="First2" id="firstInput2" name="first" />
+		
+		<input is="cbn-basic-input" type="text" title="Advanced" id="advancedInput" name="advanced.text" />
+		
+	</div>
+</cbn-form>
+
+<script>
+	
+	var form = document.querySelector('#firstForm');
+	form.model = {
+		first: '1st', 
+		second: '2nd', 
+		advanced: { text: 'advanced data binding' }
+	};
+	
+	// Set-up the test suite
+	suiteSetup(function(done){
+		// hack for polyfilled elements, need to refetch the proxied element
+		form = document.querySelector('#firstForm');
+		flush(done);
+	});
+	
+	test('inputs are visible', function () {
+		assert(form.isVisible(), 'form is not visible');
+		
+		assert(form.querySelector('#firstInput').isVisible(), '#firstInput is not visible');
+		assert(form.querySelector('#secondInput').isVisible(), '#secondInput is not visible');
+		assert(form.querySelector('#advancedInput').isVisible(), '#advancedInput is not visible');
+	});
+	
+	test('inputs detected by the form', function () {
+		assert.equal(form._formFields.length, 4 );
+	});
+	
+	test('two-way data binding test', function (done) {
+		var first = form.querySelector('#firstInput');
+		var second = form.querySelector('#secondInput');
+		var first2 = form.querySelector('#firstInput2');
+		var advanced = form.querySelector('#advancedInput');
+		
+		// test model initialization
+		assert.equal(form.model.first, '1st', 'form.model.first');
+		assert.equal(form.model.second, '2nd', 'form.model.first');
+		assert.equal(form.model.advanced.text, 'advanced data binding', 'form.model.advanced.text');
+		
+		// model -> input
+		assert.equal(first.value, '1st', '#firstInput value');
+		assert.equal(second.value, '2nd', '#secondInput value');
+		assert.equal(advanced.value, 'advanced data binding', '#advancedInput value');
+		assert.equal(first2.value, '1st', '#firstInput2 value');
+		
+		// input -> model
+		form.model.first = '1st~modified';
+		form.model.advanced.text = 'advanced~modified';
+		
+		flush(function() {
+			assert.equal(first.value, '1st~modified', '#firstInput model value');
+			assert.equal(advanced.value, 'advanced~modified', '#advancedInput model value');
+			
+			done();
+		});
+	});
+	
+	test('form model change', function(done) {
+		var first = form.querySelector('#firstInput');
+		var first2 = form.querySelector('#firstInput2');
+		var advanced = form.querySelector('#advancedInput');
+		
+		form.model = {
+			first: '1st~newmodel', 
+			second: '2nd~newmodel', 
+			advanced: { text: 'advanced~newmodel' }
+		};
+		
+		flush(function() {
+			assert.equal(first.value, '1st~newmodel', '#firstInput model value');
+			assert.equal(advanced.value, 'advanced~newmodel', '#advancedInput model value');
+			assert.equal(first2.value, '1st~newmodel', '#firstInput2 model value');
+			
+			done();
+		});
+	});
+	
+</script>
+
+</body>
+</html>
