@@ -17,7 +17,7 @@
 	margin: 10px;
 }
 
-#content.preview ::content > :not([preview], .group-inner) {
+#content.preview ::content > :not([preview]):not(.group-inner) {
 	display: none;
 }
 

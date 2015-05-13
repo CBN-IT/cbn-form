@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	
+	<script src="../../webcomponentsjs/webcomponents.min.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	
+	<script src="utils/functions.js"></script>
+	
+	<!-- Elements to be tested -->
+	<link rel="import" href="../cbn-form.html">
+	<link rel="import" href="../basic-components/basic-input.html">
+	<link rel="import" href="../cbn-form-group.html">
+	
+</head>
+<body>
+
+<cbn-form id="firstForm">
+	<div>
+		
+		<cbn-form-group id="group1" caption="Test Group 1" toggleable="true">
+			<input is="cbn-basic-input" type="text" title="Preview" id="input1_1" preview name="one" />
+			<input is="cbn-basic-input" type="text" title="Hidden" id="input1_2" name="two" />
+		</cbn-form-group>
+		
+		<cbn-form-group id="group2" caption="Test Group 2" toggleable="false">
+			<input is="cbn-basic-input" type="text" title="Preview" id="input2_1" preview name="one" />
+			<input is="cbn-basic-input" type="text" title="Hidden" id="input2_2" name="two" />
+		</cbn-form-group>
+		
+	</div>
+</cbn-form>
+
+<script>
+	
+	var form = document.querySelector('#firstForm');
+	form.model = {
+		one: 1, two: 2
+	};
+	
+	// Set-up the test suite
+	suiteSetup(function(done){
+		// hack for polyfilled elements, need to refetch the proxied element
+		form = document.querySelector('#firstForm');
+		flush(done);
+	});
+	
+	test('groups / inputs are visible', function () {
+		var group1 = form.querySelector('#group1');
+		var group2 = form.querySelector('#group2');
+		
+		assert(form.isVisible(), 'form is visible');
+		assert(group1.isVisible(), 'group1 is visible');
+		assert(group2.isVisible(), 'group2 is visible');
+		
+		assert(form.querySelector('#input1_1').isVisible(), '#input1_1 is visible');
+		assert(!form.querySelector('#input1_2').isVisible(), '#input1_2 is NOT visible');
+		
+		assert(form.querySelector('#input2_1').isVisible(), '#input2_1 is visible');
+		assert(form.querySelector('#input2_2').isVisible(), '#input2_2 is visible');
+	});
+	
+	test('group open', function (done) {
+		var group1 = form.querySelector('#group1');
+		group1.open();
+		
+		flush(function(){
+			assert(form.querySelector('#input1_1').isVisible(), '#input1_1 is visible');
+			assert(form.querySelector('#input1_2').isVisible(), '#input1_2 is visible');
+			
+			done();
+		});
+	});
+	test('group open and close', function (done) {
+		var group1 = form.querySelector('#group1');
+		group1.open();
+		group1.close();
+		
+		flush(function(){
+			assert(form.querySelector('#input1_1').isVisible(), '#input1_1 is visible');
+			assert(!form.querySelector('#input1_2').isVisible(), '#input1_2 is NOT visible');
+			
+			done();
+		});
+	});
+	
+</script>
+
+</body>
+</html>
