@@ -260,10 +260,14 @@ Example:
 				
 				// build the body
 				var body;
-				var serializationOptionsOverride = {
-					asFormData: hasFiles
-				};
-				body = this.serialize(serializationOptionsOverride);
+				var url = this._getUrlWithParams(this.url, this.params);
+				if (this.method.toUpperCase() == 'GET') {
+					url += (url.indexOf('?') > 0 ? '&' : '?') + 
+						this.serialize({ asFormData: false });
+					body = null;
+				} else {
+					body = this.serialize({ asFormData: hasFiles });
+				}
 				
 				var event = this.fire('cbn-form-submit', {
 					data: this.model, 
@@ -275,9 +279,9 @@ Example:
 				
 				var xhr = this._buildXHR(
 					Polymer.mixin({
-						url: this.url,
-						method: this.method,
-						params: this.params
+						url: url,
+						method: this.method
+						
 					}, this.xhrOptions) );
 				
 				// bind XHR events
@@ -410,15 +414,7 @@ Example:
 				var async = !options.sync;
 				
 				if (options.params) {
-					// serialize the parameters
-					var strParams = null;
-					if (typeof options.params == 'object') {
-						strParams = this._serializeFormData(options.params);
-					} else {
-						strParams = options.params.toString();
-					}
-					// append them to the URL
-					url += (url.indexOf('?') > 0 ? '&' : '?') + strParams;
+					url = this._getUrlWithParams(url, options.params);
 				}
 				
 				xhr.open(method, url, async);
@@ -440,7 +436,32 @@ Example:
 			},
 			
 			/**
-			 * Serializes the specified parameters map using the 'application/x-www-form-urlencoded' convention.
+			 * Returns the url with the specified query string parameters appended to it.
+			 * Uses the same params format as `core-xhr`.
+			 * 
+			 * @private
+			 * @param {String} url The original URL. Can already contain query string parameters.
+			 * @param {Object|String} params The query string parameters to add.
+			 * @return {String} The URL with the parameters appended.
+			 */
+			_getUrlWithParams: function(url, params) {
+				if (!this._isEmpty(params)) {
+					// serialize the parameters
+					var strParams = null;
+					if (typeof params == 'object') {
+						strParams = this._serializeFormData(params);
+					} else {
+						strParams = params.toString();
+					}
+					// append them to the URL
+					url += (url.indexOf('?') > 0 ? '&' : '?') + strParams;
+				}
+				return url;
+			}, 
+			
+			/**
+			 * Serializes the specified parameters map using the 'application/x-www-form-urlencoded' (query string) 
+			 * format.
 			 * 
 			 * @private
 			 * @param   {Object} params The parameters map to serialize.
@@ -449,11 +470,27 @@ Example:
 			_serializeFormData: function(params) {
 				var r = [];
 				for (var n in params) {
-					if (params.hasOwnProperty(n))
-						r.push(params[n] == null ? n : (encodeURIComponent(n) +
-								'=' + encodeURIComponent(params[n])));
+					if (params.hasOwnProperty(n)) {
+						if (params[n] === true) {
+							r.push(params[n] == null ? n : encodeURIComponent(n));
+						} else {
+							r.push(params[n] == null ? n : (encodeURIComponent(n) +
+									'=' + encodeURIComponent(params[n])));
+						}
+					}
 				}
 				return r.join('&');
+			},
+
+			/**
+			 * Checks whether the specified object is empty / false.
+			 * 
+			 * @param {mixed} obj The object to check. 
+			 * @private
+			 */
+			_isEmpty: function(obj) {
+				if (!obj) return true;
+				return Object.getOwnPropertyNames(obj).length == 0;
 			}
 			
 		}, CbnFormModelBindingMixin));

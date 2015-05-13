@@ -12,52 +12,60 @@
 	<!-- Elements to be tested -->
 	<link rel="import" href="../cbn-form.html">
 	<link rel="import" href="../basic-components/basic-input.html">
+	<link rel="import" href="../basic-components/file-input.html">
 	
 </head>
 <body>
 
-<cbn-form id="firstForm" url="/test/post.do" method="POST">
+<cbn-form id="firstForm" url="/test/first.do" method="POST">
 	<div>
 		
-		<input is="cbn-basic-input" type="text" title="First" id="firstInput" name="first" />
-		<input is="cbn-basic-input" type="text" title="Second" id="secondInput" name="second" />
+		<input is="cbn-basic-input" type="text" title="First" name="first" />
+		<input is="cbn-basic-input" type="text" title="Second" name="second" />
+		<input is="cbn-basic-input" type="text" title="Second" name="third" />
 		
-		<input is="cbn-basic-input" type="text" title="Advanced" id="advancedInput" name="advanced.text" />
-		<input is="cbn-basic-input" type="text" title="Advanced2" id="advancedInput2" name="advanced.text2" />
-		<input is="cbn-basic-input" type="text" title="Advanced3" id="advancedInput3" name="advanced3.text2" />
+	</div>
+</cbn-form>
+
+<cbn-form id="secondForm" url="/test/second.do" method="POST">
+	<div>
+		
+		<input is="cbn-basic-input" type="text" title="First" name="first" />
+		<input is="cbn-basic-input" type="text" title="Second" name="second" />
+		
+		<input is="cbn-basic-input" type="text" title="Advanced" name="advanced.text" />
+		<input is="cbn-basic-input" type="text" title="Advanced2" name="advanced.text2" />
+		<input is="cbn-basic-input" type="text" title="Advanced3" name="advanced3.text2" />
+		
+	</div>
+</cbn-form>
+
+<cbn-form id="thirdForm" url="/test/first.do" method="POST">
+	<div>
+		
+		<input is="cbn-basic-input" type="text" title="First" id="input3_1" name="first" />
+		
+		<cbn-basic-file type="file" title="Upload file" id="fileInput" name="file"></cbn-basic-file>
 		
 	</div>
 </cbn-form>
 
 <script>
 	
-	var form = document.querySelector('#firstForm');
+	var form1 = document.querySelector('#firstForm');
+	var form2 = document.querySelector('#secondForm');
+	var form3 = document.querySelector('#thirdForm');
 	
-	// Set-up the test suite
-	suiteSetup(function(done){
-		// hack for polyfilled elements, need to refetch the proxied element
-		form = document.querySelector('#firstForm');
-		flush(done);
-	});
+	// Test Data:
 	
-	setup(function(){
-		// emulate XHR
-		this.xhr = sinon.useFakeXMLHttpRequest();
-		var requests = this.requests = [];
-		
-		this.xhr.onCreate = function(xhr) {
-			requests.push(xhr);
-		}.bind(this);
-	});
+	var testModel1 = {
+		first: '1st', 
+		second: '2nd',
+		third: '3rd'
+	};
+	var testModel1_plainExpected = "first=1st&second=2nd&third=3rd";
 	
-	teardown(function(){
-		this.xhr.restore();
-	});
-	
-	test('JSON form submission', function(done) {
-		var requests = this.requests;
-		
-		var testJson = {
+	var testModel2 = {
 			first: '1st', 
 			second: '2nd', 
 			advanced: {
@@ -68,16 +76,226 @@
 				text3: 'advanced3tree'
 			}
 		};
-		form.model = testJson;
-		form.serializationOptions = {
+	
+	
+	// Test routines:
+	
+	// Set-up the test suite
+	suiteSetup(function(done){
+		// hack for polyfilled elements, need to refetch the proxied element
+		form1 = document.querySelector('#firstForm');
+		form2 = document.querySelector('#secondForm');
+		flush(done);
+		
+		// addEventListener with automatic cleanup at the end of a test
+		this._eventListeners = [];
+		this.addEventListener = function (obj, event, callback) {
+			obj.addEventListener(event, callback);
+			this._eventListeners.push( [ obj, event, callback ] );
+		};
+		
+		this.cleanupEventListeners = function() {
+			for (var i=0; i<this._eventListeners.length; i++) {
+				var listener = this._eventListeners[i];
+				var obj = listener[0], event = listener[1], callback = listener[2];
+				obj.removeEventListener(event, callback);
+			}
+			this._eventListeners = [];
+		};
+	});
+	
+	setup(function(){
+		// emulate XHR
+		this.xhr = sinon.useFakeXMLHttpRequest();
+		var requests = this.requests = [];
+		
+		this.xhr.onCreate = function(xhr) {
+			requests.push(xhr);
+		}.bind(this);
+		
+		// fake FormData
+		this._origFormData = window.FormData;
+		window.FormData = function(){
+			this._data = [];
+			this.append = function(name, value) {
+				this._data.push({ name: name, value: value });
+			};
+		};
+		window.FormData.prototype = Object.create(this._origFormData.prototype);
+	});
+	
+	teardown(function() {
+		this.cleanupEventListeners();
+		this.xhr.restore();
+		window.FormData = this._origFormData;
+	});
+	
+	test('request parameters (POST)', function(done) {
+		var requests = this.requests;
+		
+		var testParams = {
+			'test': true, 
+			'it': 'works'
+		};
+		
+		form1.model = testModel1;
+		form1.method = 'POST';
+		form1.params = testParams;
+		form1.xhrOptions = {
+			headers: {
+				'X-Test-Header': 'thisisatestheader'
+			}
+		};
+		
+		flush(function(){
+			form1.submit();
+			
+			assert.equal(requests[0].url, '/test/first.do?test&it=works');
+			assert.deepEqual(requests[0].requestBody, testModel1_plainExpected, 'POST request body');
+			
+			assert.equal(requests[0].requestHeaders['X-Test-Header'], 'thisisatestheader', 'request headers');
+			
+			done();
+		});
+	});
+	
+	test('request parameters (GET)', function(done) {
+		var requests = this.requests;
+		
+		var testParams = {
+			'test': true, 
+			'it': 'works'
+		};
+		
+		form1.model = testModel1;
+		form1.method = 'GET';
+		form1.params = testParams;
+		
+		flush(function(){
+			form1.submit();
+			
+			assert.equal(requests[0].url, '/test/first.do?test&it=works&' + testModel1_plainExpected);
+			assert.deepEqual(requests[0].requestBody, null, 'null request body');
+			
+			done();
+		});
+	});
+	
+	test('JSON form submission', function(done) {
+		var requests = this.requests;
+		
+		form2.model = testModel2;
+		form2.serializationOptions = {
 			type: 'json', param: 'data'
 		};
 		
 		flush(function(){
-			form.submit();
+			form2.submit();
 			
 			assert.deepEqual(requests[0].requestBody, "data=" + encodeURIComponent(
-				JSON.stringify(testJson)), 'JSON request body');
+				JSON.stringify(testModel2)), 'JSON request body');
+			
+			done();
+		});
+	});
+	
+	test('form ajax success handler', function(done) {
+		var requests = this.requests;
+		
+		var formSubmitHandler = sinon.spy();
+		var ajaxSuccessHandler = sinon.spy();
+		var ajaxErrorHandler = sinon.spy();
+		var ajaxCompleteHandler = sinon.spy();
+		
+		form1.model = testModel1;
+		form1.serializationOptions = { type: 'plain' };
+		
+		this.addEventListener(form1, 'cbn-form-submit', formSubmitHandler);
+		this.addEventListener(form1, 'cbn-form-ajaxSuccess', ajaxSuccessHandler);
+		this.addEventListener(form1, 'cbn-form-ajaxError', ajaxErrorHandler);
+		this.addEventListener(form1, 'cbn-form-ajaxComplete', ajaxCompleteHandler);
+		
+		flush(function() {
+			form1.submit();
+			
+			assert(formSubmitHandler.called ,'cbn-form-submit called');
+			
+			requests[0].respond(200, { "Content-Type": "application/json" }, 'true');
+			
+			assert(ajaxSuccessHandler.called, 'cbn-form-ajaxSuccess called');
+			assert(!ajaxErrorHandler.called, 'cbn-form-ajaxError not called');
+			assert(ajaxCompleteHandler.called, 'cbn-form-ajaxComplete called');
+			
+			done();
+		});
+	});
+	
+	test('form ajax error handler', function(done) {
+		var requests = this.requests;
+		
+		var formSubmitHandler = sinon.spy();
+		var ajaxSuccessHandler = sinon.spy();
+		var ajaxErrorHandler = sinon.spy();
+		var ajaxCompleteHandler = sinon.spy();
+		
+		form1.model = testModel1;
+		form1.serializationOptions = { type: 'plain' };
+		
+		this.addEventListener(form1, 'cbn-form-submit', formSubmitHandler);
+		this.addEventListener(form1, 'cbn-form-ajaxSuccess', ajaxSuccessHandler);
+		this.addEventListener(form1, 'cbn-form-ajaxError', ajaxErrorHandler);
+		this.addEventListener(form1, 'cbn-form-ajaxComplete', ajaxCompleteHandler);
+		
+		flush(function() {
+			form1.submit();
+			
+			assert(formSubmitHandler.called ,'cbn-form-submit called');
+			
+			requests[0].respond(503, { "Content-Type": "application/json" }, 
+				'{ "error": "unknown" }');
+			
+			assert(!ajaxSuccessHandler.called, 'cbn-form-ajaxSuccess not called');
+			assert(ajaxErrorHandler.called, 'cbn-form-ajaxError called');
+			assert(ajaxCompleteHandler.called, 'cbn-form-ajaxComplete called');
+			
+			done();
+		});
+	});
+	
+	test('FormData / file submission', function(done) {
+		var requests = this.requests;
+		var fileInput = form3.querySelector("#fileInput");
+		
+		form3.model = {
+			first: 'file test', 
+			file: {}
+		};
+		form3.serializationOptions = {
+			type: 'json', param: 'data'
+		};
+		var expectedModel = {
+			first: 'file test', 
+			file: { name: 'test_file.txt', size: 51, type: 'text/plain', uploaded: false }
+		};
+		
+		flush(function(){
+			// mock file input's getFiles function to emulate a file upload
+			var fileParts = [ "some test binary file here\r\nwith newlines	and tabs!" ];
+			var uploadFile = new File(fileParts, "test_file.txt", { type: 'text/plain' });
+			fileInput.getFiles = function() {
+				return [ uploadFile ];
+			};
+			fileInput.fileSelected();
+			
+			form3.submit();
+			
+			assert(requests[0].requestBody instanceof FormData, 'body is FormData');
+			var formData = requests[0].requestBody._data;
+			
+			assert.deepEqual( { name: formData[0].name, value: JSON.parse(formData[0].value) }, 
+				{ name: 'data', value: expectedModel }, 'FormData json value');
+			assert.deepEqual(formData[1], { name: 'file', value: uploadFile }, 
+				'FormData file object');
 			
 			done();
 		});

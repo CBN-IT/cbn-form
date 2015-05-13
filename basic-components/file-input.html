@@ -39,6 +39,11 @@
 			 */
 			
 			/**
+			 * It's a file input!
+			 */
+			isFileInput: true,
+			
+			/**
 			 * Input's name (also the model value path).
 			 */
 			name: '',
@@ -110,7 +115,7 @@
 			getFiles: function () {
 				return this.$.input.files;
 			},
-
+			
 			/**
 			 * File input changed event, called when a file is selected.
 			 * 
@@ -131,7 +136,7 @@
 					}
 				}
 				
-				if (multiple) {
+				if (this.multiple) {
 					this.value = filesModel;
 				} else {
 					if (filesModel.length > 0)
