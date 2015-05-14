@@ -3,10 +3,12 @@
 configuration object).
 
 Example:
+```
     <cbn-form url="/do/something/save" method="post">
     	<cbn-dynamic-form config="{{formInputs}}"></cbn-dynamic-form>
     	<button is="cbn-form-button" type="submit"></button>
     </cbn-form>
+```
 
 Where `config` is a custom object that describes the form's layout and the input fields to be dynamically generated.
 
@@ -83,22 +85,6 @@ Example config JSON definition:
 	
 	<script>
 		Polymer('cbn-dynamic-form', {
-			
-			/**
-			 * The form configuration object.
-			 * @typedef  {Object} 	FormGroupConfig
-			 * @property {String} 	caption Group's caption / title (optional).
-			 * @property {Boolean}	toggleable Whether the group is toggleable.
-			 * @property {[Object]}	fields Form's fields to be rendered.
-			 */
-			
-			/**
-			 * The form configuration object.
-			 * @typedef {Object} 				FormConfig
-			 * @property {Object}				fieldDefaults Default configuration object, applied to all fields.
-			 * @property {[FormGroupConfig]} 	groups The grouped form fields.
-			 * @property {[Object]} 			flatFields Flat form fields to render.
-			 */
 			
 			/**
 			 * The form configuration object that contains the inputs to be rendered, their layout and their properties.
@@ -201,6 +187,7 @@ Example config JSON definition:
 			/**
 			 * Converts an array of strings to HTML space-separated classes list.
 			 * 
+			 * @private
 			 * @param {String|String[]} classes The input.
 			 * @return {String} The resulting HTML classes list.
 			 */
@@ -213,6 +200,7 @@ Example config JSON definition:
 			/**
 			 * Converts a style object to its string representation. Ignores CSS as string (returns it).
 			 * 
+			 * @private
 			 * @param {Object|String} value The object to convert.
 			 * @returns {String} The resulting CSS text.
 			 */

@@ -5,10 +5,10 @@ Each input element must implement CbnAbstractInputMixin and have several require
 (see 'cbn-form-abstract.html').
 
 Several special config attributes are supported: 
-- 'element': set to override automatic element detection by using the 'type' attribute;
-- 'className': HTML classes to apply to the decorator/input, if the decorator is null (can be an Array of Strings or a String); 
-- 'style': the style to apply to the root decorator/input (can be a CSS String or an object with CSS properties to set);
-- 'decorator': the name of the HTML element to use as decorator (set to null to skip decorating).
+- `element` - set to override automatic element detection by using the 'type' attribute;
+- `className` - HTML classes to apply to the decorator/input, if the decorator is null (can be an Array of Strings or a String); 
+- `style` - the style to apply to the root decorator/input (can be a CSS String or an object with CSS properties to set);
+- `decorator` - the name of the HTML element to use as decorator (set to null to skip decorating).
 
 @group cbn-form
 @element cbn-dynamic-input
@@ -26,20 +26,6 @@ Several special config attributes are supported:
 	
 	<script>
 		Polymer('cbn-dynamic-input', {
-			
-			/**
-			 * The input field's configuration object.
-			 * 
-			 * @typedef  {Object}	FormFieldConfig
-			 * @property {String} 	type 	The element's type (used to instantiate the element based on type).
-			 * @property {String} 	element	The name of the element to instantiate (forced, overrides the type). Optional.
-			 * @property {String}	name	The input name / model value's path (that describes where in the model the 
-			 * 								data should be read / written).
-			 * @property {String}	preview	Whether the element is visible in a preview-state form group.
-			 * 
-			 * All other properties are directly passed as attributes to the instantiated element only if they were 
-			 * specified inside the {@link CbnAbstractInputMixin#inputAttributes} array.
-			 */
 			
 			/**
 			 * The form input configuration object. Should contain at least the 'type' (or 'element') and 'name' 
@@ -169,6 +155,7 @@ Several special config attributes are supported:
 			/**
 			 * Applies the specified configuration parameter to the element.
 			 * 
+			 * @private
 			 * @param element The element to set the config attribute for.
 			 * @param c The config attribute.
 			 * @param value The config value to set.

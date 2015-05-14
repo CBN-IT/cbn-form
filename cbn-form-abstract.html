@@ -8,6 +8,39 @@ type discovery).
 
 <script>
 	
+	// JSDoc types
+	
+	/**
+	 * The form configuration object.
+	 * @typedef  {Object} 	FormGroupConfig
+	 * @property {String} 	caption Group's caption / title (optional).
+	 * @property {Boolean}	toggleable Whether the group is toggleable.
+	 * @property {[Object]}	fields Form's fields to be rendered.
+	 */
+	
+	/**
+	 * The form configuration object.
+	 * @typedef {Object} 				FormConfig
+	 * @property {Object}				fieldDefaults Default configuration object, applied to all fields.
+	 * @property {[FormGroupConfig]} 	groups The grouped form fields.
+	 * @property {[Object]} 			flatFields Flat form fields to render.
+	 */
+	
+	/**
+	 * The input field's configuration object.
+	 * 
+	 * @typedef  {Object}	FormFieldConfig
+	 * @property {String} 	type 	The element's type (used to instantiate the element based on type).
+	 * @property {String} 	element	The name of the element to instantiate (forced, overrides the type). Optional.
+	 * @property {String}	name	The input name / model value's path (that describes where in the model the 
+	 * 								data should be read / written).
+	 * @property {String}	preview	Whether the element is visible in a preview-state form group.
+	 * 
+	 * All other properties are directly passed as attributes to the instantiated element only if they were 
+	 * specified inside the {@link CbnAbstractInputMixin#inputAttributes} array.
+	 */
+	
+	
 	/**
 	 * Class used by the inputs to register their capabilities with the `cbn-form` library.
 	 */
@@ -278,7 +311,7 @@ type discovery).
 	/**
 	 * Defines the abstract interface to be implemented by the custom input decorators.
 	 * 
-	 * An input decorator is an element that wraps the actual input inside (via local DOM) and can show several other UI 
+	 * An input decorator is an element that wraps the actual input inside (via light DOM) and can show several other UI 
 	 * elements around it (such as labels, validation errors etc.).
 	 * 
 	 * Note: you need to insert this mixin before your actual component definition in order to override the
