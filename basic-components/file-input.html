@@ -10,7 +10,7 @@
 <link rel="import" href="../cbn-form-abstract.html">
 
 <polymer-element name="cbn-basic-file" is-form-input is-file-input 
-				 attributes="type name label value uploadedFiles preview previewstate">
+				 attributes="type name label value uploadedFiles">
 	
 	<template>
 		<label>
@@ -23,39 +23,80 @@
 	</template>
 	
 	<script>
+		
+		// JSDoc type defs:
+		
+		/**
+		 * The file model object that describes a selected / already uploaded file.
+		 * 
+		 * @typedef  {Object}	FileModel
+		 * @property {String} 	name The name of the selected/uploaded file.
+		 * @property {Boolean}	uploaded Whether the file is uploaded.
+		 * @property {int}		size The size of the file, in bytes.
+		 * @property {String}	type The MIME type of the file (warning: unreliable).
+		 * 
+		 * For uploaded files that are found in the value before the input is created, the object can contain any 
+		 * additional properties which are guaranteed to be preserved.
+		 */
+		
+		// Element definition
+		
 		Polymer('cbn-basic-file', Polymer.mixin({}, CbnAbstractInputMixin, {
 			
-			/**
-			 * The file model object that describes a selected / already uploaded file.
-			 * 
-			 * @typedef  {Object}	FileModel
-			 * @property {String} 	name The name of the selected/uploaded file.
-			 * @property {Boolean}	uploaded Whether the file is uploaded.
-			 * @property {int}		size The size of the file, in bytes.
-			 * @property {String}	type The MIME type of the file (warning: unreliable).
-			 * 
-			 * For uploaded files that are found in the value before the input is created, the object can contain any 
-			 * additional properties which are guaranteed to be preserved.
-			 */
+			publish: { // Published attributes:
+				
+				/**
+				 * It's a file input!
+				 */
+				isFileInput: true,
+				
+				/**
+				 * Input's name (also the model value path).
+				 * @type {String}
+				 * @default ''
+				 */
+				name: '',
+				
+				/**
+				 * Stores the selected files (both previous/uploaded and currently-selected) as an object or array of 
+				 * objects (if multiple is true).
+				 * 
+				 * @type {FileModel | FileModel[]}
+				 * @default {} | []
+				 */
+				value: null,
+				
+				/**
+				 * Whether multiple file uploads are permitted.
+				 * 
+				 * @attribute multiple
+				 * @type {Boolean}
+				 */
+				multiple: false,
+				
+				/**
+				 * Input label text to show next to the input.
+				 * 
+				 * @attribute label
+				 * @type {String}
+				 */
+				label: '', 
+				
+				/**
+				 * Whether the input is in a preview state.
+				 * 
+				 * @attribute previewstate
+				 * @type {Boolean}
+				 */
+				previewstate: ''
+				
+			}, 
+			
 			
 			/**
-			 * It's a file input!
+			 * Element's dynamically-configurable attributes.
 			 */
-			isFileInput: true,
-			
-			/**
-			 * Input's name (also the model value path).
-			 */
-			name: '',
-			
-			/**
-			 * Stores the selected files (both previous/uploaded and currently-selected) as an object or array of 
-			 * objects (if multiple is true).
-			 * 
-			 * @type {FileModel | FileModel[]}
-			 * @default {} | []
-			 */
-			value: {},
+			inputAttributes: [ 'name', 'multiple', 'label', 'preview' ], 
 			
 			/**
 			 * Stores the already-uploaded file(s) (found inside the model before the file input was initialized).
@@ -63,31 +104,10 @@
 			 * If multiple is false, the value will be overridden when a new file will be selected.
 			 * If multiple is true, the values will be preserved.
 			 * 
+			 * @private
 			 * @type {FileModel | FileModel[]}
 			 */
 			uploadedFiles: {}, 
-			
-			/**
-			 * Whether multiple file uploads are permitted.
-			 * 
-			 * @attribute multiple
-			 * @type {Boolean}
-			 */
-			multiple: false,
-			
-			/**
-			 * Input label text to show next to the input.
-			 * 
-			 * @attribute label
-			 * @type {String}
-			 */
-			label: '', 
-			
-			
-			/**
-			 * Element's dynamically-configurable attributes.
-			 */
-			inputAttributes: [ 'type', 'name', 'label', 'preview', 'multiple' ], 
 			
 			
 			/**

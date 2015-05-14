@@ -40,11 +40,22 @@
 	}
 </style>
 
-<polymer-element name="cbn-basic-input" extends="input" is-form-input
-				 attributes="preview previewstate">
+<polymer-element name="cbn-basic-input" extends="input" is-form-input>
 	
 	<script>
 		Polymer('cbn-basic-input', Polymer.mixin({}, CbnAbstractInputMixin, {
+			
+			publish: { // Published attributes:
+				
+				/**
+				 * Whether the input is in a preview state.
+				 * 
+				 * @attribute previewstate
+				 * @type {Boolean}
+				 */
+				previewstate: ''
+				
+			}, 
 			
 			/**
 			 * Element's dynamically-configurable attributes.

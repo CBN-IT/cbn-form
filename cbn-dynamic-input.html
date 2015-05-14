@@ -18,7 +18,7 @@ Several special config attributes are supported:
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="cbn-form-abstract.html">
 
-<polymer-element name="cbn-dynamic-input" attributes="config preview">
+<polymer-element name="cbn-dynamic-input">
 	
 	<template>
 		<!-- No local DOM necessary; the element appends the generated content as sibling -->
@@ -27,31 +27,37 @@ Several special config attributes are supported:
 	<script>
 		Polymer('cbn-dynamic-input', {
 			
-			/**
-			 * The form input configuration object. Should contain at least the 'type' (or 'element') and 'name' 
-			 * properties.
-			 * 
-			 * @attribute config
-			 * @type FormFieldConfig
-			 * @default {}
-			 */
-			config: null,
+			publish: { // Published attributes: 
+				
+				/**
+				 * The form input configuration object. Should contain at least the 'type' (or 'element') and 'name' 
+				 * properties.
+				 * 
+				 * @attribute config
+				 * @type FormFieldConfig
+				 * @default {}
+				 */
+				config: null
+				
+			}, 
 			
 			/**
-			 * The HTML element of the created input.
+			 * Reference to the HTML element of the created input.
 			 * 
+			 * @property
 			 * @type {HTMLElement}
-			 * @default null
+			 * @default ''
 			 */
 			element: null,
 			
 			/**
-			 * The HTML element of the created decorator.
+			 * Reference to the HTML element of the created decorator.
 			 * 
+			 * @property
 			 * @type {HTMLElement}
 			 * @default null
 			 */
-			decorator: null,
+			decorator: null, 
 			
 			/**
 			 * Fires when the element is created. Used to initialize its attributes.

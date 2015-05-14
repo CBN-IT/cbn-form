@@ -19,7 +19,7 @@ Example:
 <link rel="import" href="cbn-form-abstract.html">
 <link rel="import" href="cbn-form-group.html">
 
-<polymer-element name="cbn-form" attributes="model url method params xhr-options serialization-options">
+<polymer-element name="cbn-form">
 	<template>
 		<style>
 			:host { display: block; }
@@ -32,6 +32,75 @@ Example:
 	
 	<script>
 		Polymer('cbn-form', Polymer.mixin({
+			
+			publish: { // Published attributes:
+				
+				/**
+				 * Form's data model object.
+				 * 
+				 * @attribute model
+				 * @type {Object}
+				 * @default {}
+				 */
+				model: null,
+				
+				/**
+				 * The URL to submit the form to.
+				 * 
+				 * @attribute url
+				 * @type {String}
+				 * @default ""
+				 */
+				url: "",
+				
+				/**
+				 * The method to use for the submission.
+				 * 
+				 * @attribute method
+				 * @type {String}
+				 * @default "POST"
+				 */
+				method: "POST",
+				
+				/**
+				 * Additional URL parameters to use.
+				 * 
+				 * @attribute params
+				 * @type {Object}
+				 * @default {}
+				 */
+				params: null,
+				
+				/**
+				 * Additional options to pass to the XHR (see core-xhr documentation).
+				 * 
+				 * @attribute xhr-options
+				 * @type {Object}
+				 * @default {}
+				 */
+				xhrOptions: null,
+				
+				/**
+				 * Form serialization method to use for submitting the form values via XHR.
+				 * 
+				 * Serialization types:
+				 * - plain: passes the form data as a standard parameters map (each field has a separate parameter);
+				 * - json: pass the entire model JSON as a form parameter (specified by the `param` property).
+				 * 
+				 * If asFormData is true, a FormData object will be returned (instead of a plain map).
+				 * 
+				 * If useBrackets is true, for multiple-valued inputs, array append brackets ('[]') will be automatically 
+				 * added after the input's name.
+				 * 
+				 * @attribute serialization-options
+				 * @type {{ type: String, param?: String, asFormData: Boolean, useBrackets: Boolean }}
+				 * @default { type: 'plain', param: 'data', useBrackets: false }
+				 */
+				serializationOptions: null
+				
+			},
+			
+			// Events:
 			
 			/**
 			 * Fired when submit command was issued.
@@ -59,71 +128,6 @@ Example:
 			 * 
 			 * @event cbn-form-ajaxComplete
 			 */
-			
-			// Element attributes
-			
-			/**
-			 * Form's data model object.
-			 * 
-			 * @attribute model
-			 * @type {Object}
-			 * @default {}
-			 */
-			model: null,
-			
-			/**
-			 * The URL to submit the form to.
-			 * 
-			 * @attribute url
-			 * @type {String}
-			 * @default ""
-			 */
-			url: "",
-			
-			/**
-			 * The method to use for the submission.
-			 * 
-			 * @attribute method
-			 * @type {String}
-			 * @default "POST"
-			 */
-			method: "POST",
-			
-			/**
-			 * Additional URL parameters to use.
-			 * 
-			 * @attribute params
-			 * @type {Object}
-			 * @default {}
-			 */
-			params: null,
-			
-			/**
-			 * Additional options to pass to the XHR (see core-xhr documentation).
-			 * 
-			 * @attribute xhr-options
-			 * @type {Object}
-			 * @default {}
-			 */
-			xhrOptions: null,
-			
-			/**
-			 * Form serialization method to use for submitting the form values via XHR.
-			 * 
-			 * Serialization types:
-			 * - plain: passes the form data as a standard parameters map (each field has a separate parameter);
-			 * - json: pass the entire model JSON as a form parameter (specified by the `param` property).
-			 * 
-			 * If asFormData is true, a FormData object will be returned (instead of a plain map).
-			 * 
-			 * If useBrackets is true, for multiple-valued inputs, array append brackets ('[]') will be automatically 
-			 * added after the input's name.
-			 * 
-			 * @attribute serialization-options
-			 * @type {{ type: String, param?: String, asFormData: Boolean, useBrackets: Boolean }}
-			 * @default { type: 'plain', param: 'data', useBrackets: false }
-			 */
-			serializationOptions: null,
 			
 			
 			// Internal fields

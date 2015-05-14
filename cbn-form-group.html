@@ -11,7 +11,7 @@ visual features (preview / edit stances etc.).
 <link rel="import" href="../paper-shadow/paper-shadow.html">
 <link rel="import" href="cbn-dynamic-input.html">
 
-<polymer-element name="cbn-form-group" attributes="caption toggleable preview-state">
+<polymer-element name="cbn-form-group">
 	<template>
 		<link rel="stylesheet" href="cbn-form-group.css">
 		
@@ -39,32 +39,35 @@ visual features (preview / edit stances etc.).
 			
 			Polymer('cbn-form-group', {
 				
-				/**
-				 * Form group's caption.
-				 * 
-				 * @attribute caption
-				 * @type {String}
-				 * @default ''
-				 */
-				caption: '',
-				
-				/**
-				 * Whether the group is toggleable (with preview / edit states) or not (edit-only).
-				 * 
-				 * @attribute toggleable
-				 * @type {Boolean}
-				 * @default true
-				 */
-				toggleable: true,
-				
-				/**
-				 * Whether the form group is currently preview-only or in editable state.
-				 * 
-				 * @attribute preview-state
-				 * @type {Boolean}
-				 * @default true
-				 */
-				previewState: true,
+				publish: { // Published attributes: 
+					
+					/**
+					 * Form group's caption.
+					 * 
+					 * @attribute caption
+					 * @type {String}
+					 * @default ''
+					 */
+					caption: '',
+					
+					/**
+					 * Whether the group is toggleable (with preview / edit states) or not (edit-only).
+					 * 
+					 * @attribute toggleable
+					 * @type {Boolean}
+					 * @default true
+					 */
+					toggleable: true,
+					
+					/**
+					 * Whether the form group is currently preview-only or in editable state.
+					 * 
+					 * @attribute preview-state
+					 * @type {Boolean}
+					 * @default true
+					 */
+					previewState: true
+				}, 
 				
 				
 				/**

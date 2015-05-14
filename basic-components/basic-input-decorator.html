@@ -9,7 +9,7 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../cbn-form-abstract.html">
 
-<polymer-element name="cbn-basic-input-decorator" attributes="label preview previewstate">
+<polymer-element name="cbn-basic-input-decorator">
 	
 	<template>
 		<link rel="stylesheet" href="basic-input-decorator.css" />
@@ -31,13 +31,23 @@
 			
 			Polymer('cbn-basic-input-decorator', Polymer.mixin({}, CbnAbstractInputDecoratorMixin, {
 				
-				/**
-				 * Input label text to show next to the input.
-				 * 
-				 * @attribute label
-				 * @type {String}
-				 */
-				label: '', 
+				publish: {
+					/**
+					 * Input label text to show next to the input.
+					 *
+					 * @attribute label
+					 * @type {String}
+					 */
+					label: '',
+					
+					/**
+					 * Whether the input is in a preview state.
+					 * 
+					 * @attribute previewstate
+					 * @type {Boolean}
+					 */
+					previewstate: false
+				},
 				
 				/**
 				 * Element's dynamically-configurable attributes.
