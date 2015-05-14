@@ -102,7 +102,7 @@ visual features (preview / edit stances etc.).
 						if (target._attachedFormGroup != currentGroup) {
 							target._attachedFormGroup = currentGroup;
 							
-							target.bind('previewstate', new PathObserver(currentGroup, 'previewState'));
+							target.bind('previewState', new PathObserver(currentGroup, 'previewState'));
 						}
 					});
 					
@@ -110,7 +110,7 @@ visual features (preview / edit stances etc.).
 						var target = event.path[0];
 						if (target._attachedFormGroup == currentGroup) {
 							target._attachedFormGroup = null;
-							target.unbind('previewstate');
+							target.unbind('previewState');
 						}
 					});
 				},

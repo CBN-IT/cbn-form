@@ -131,7 +131,7 @@ Several special config attributes are supported:
 					if (!this.config.hasOwnProperty(c)) 
 						continue;
 					
-					if (c == 'style' || c == 'className') {
+					if (c == 'style' || c == 'className' || c == 'preview') {
 						// always apply to the root element
 						this.applyConfig(root, c, this.config[c]);
 						

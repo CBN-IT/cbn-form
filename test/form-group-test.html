@@ -64,11 +64,19 @@
 	
 	test('group open', function (done) {
 		var group1 = form.querySelector('#group1');
+		var input1_1 = form.querySelector('#input1_1');
+		var input1_2 = form.querySelector('#input1_2');
+		
+		assert(input1_1.previewState, 'preview state true');
+		assert(input1_2.previewState, 'preview state true');
+		
 		group1.open();
 		
 		flush(function(){
-			assert(form.querySelector('#input1_1').isVisible(), '#input1_1 is visible');
-			assert(form.querySelector('#input1_2').isVisible(), '#input1_2 is visible');
+			assert(input1_1.isVisible(), '#input1_1 is visible');
+			assert(input1_2.isVisible(), '#input1_2 is visible');
+			assert(!input1_1.previewState, 'preview state false');
+			assert(!input1_2.previewState, 'preview state false');
 			
 			done();
 		});
