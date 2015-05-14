@@ -14,7 +14,7 @@
 	<template>
 		<link rel="stylesheet" href="basic-input-decorator.css" />
 		
-		<label>
+		<label id="label" on-tap="{{tapHandler}}">
 			<span>{{label}}</span>
 			
 			<content></content>
@@ -22,29 +22,72 @@
 	</template>
 	
 	<script>
-		Polymer('cbn-basic-input-decorator', Polymer.mixin({}, CbnAbstractInputDecoratorMixin, {
+		(function(){
 			
-			/**
-			 * Input label text to show next to the input.
-			 * 
-			 * @attribute label
-			 * @type {String}
-			 */
-			label: '', 
-			
-			/**
-			 * Element's dynamically-configurable attributes.
-			 */
-			inputAttributes: [ 'label', 'preview' ], 
-			
-			/**
-			 * Fires when the element is created. Used to initialize its attributes.
-			 */
-			created: function () {
-				CbnAbstractInputDecoratorMixin.created.apply(this);
+			var labelId = 0;
+			function generateLabelId() {
+				return 'basic-decorator-label-' + (labelId++);
 			}
 			
-		}));
+			Polymer('cbn-basic-input-decorator', Polymer.mixin({}, CbnAbstractInputDecoratorMixin, {
+				
+				/**
+				 * Input label text to show next to the input.
+				 * 
+				 * @attribute label
+				 * @type {String}
+				 */
+				label: '', 
+				
+				/**
+				 * Element's dynamically-configurable attributes.
+				 */
+				inputAttributes: [ 'label', 'preview' ], 
+				
+				/**
+				 * Stores reference to the [first] decorated input element.
+				 * 
+				 * @private
+				 * @type {HTMLElement}
+				 */
+				_inputElement: null,
+				
+				
+				/**
+				 * Fires when the element is created. Used to initialize its attributes.
+				 */
+				created: function () {
+					CbnAbstractInputDecoratorMixin.created.apply(this);
+				},
+				
+				/**
+				 * Called when polymer element has been fully prepared and its DOM children are initialized.
+				 * 
+				 * Analyzes the local DOM and retrieves the decorated input element.
+				 */
+				domReady: function() {
+					this._inputElement = this.querySelector("input, textarea, select, [is-form-input]");
+					
+					var label = this.$.label;
+					label.id = generateLabelId();
+					
+					if (this._inputElement) {
+						this._inputElement.setAttribute('aria-labelledby', label.id);
+					}
+				}, 
+				
+				
+				/**
+				 * Label tap handler to focus the input element.
+				 */
+				tapHandler: function() {
+					if (this._inputElement) {
+						this._inputElement.focus();
+					}
+				}
+				
+			}));
+		})();
 		
 	</script>
 	
