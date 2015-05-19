@@ -51,8 +51,6 @@ Example config JSON definition:
 
 <polymer-element name="cbn-dynamic-form">
 	<template>
-		<link rel="stylesheet" href="../flexboxgrid/dist/flexboxgrid.min.css">
-		
 		<template if="{{ config.flatFields }}">
 			<!-- Print flat fields -->
 			<div class="{{ { 'flat-fields': true, 'row': config.flatFlexGrid } | tokenList }}">

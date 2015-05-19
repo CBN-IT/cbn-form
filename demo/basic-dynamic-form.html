@@ -7,6 +7,8 @@
 	<script src="../../webcomponentsjs/webcomponents.js"></script>
 	
 	<link rel="import" href="../../core-ajax/core-ajax.html">
+	<link rel="import" href="../../cbn-flexgrid/flexgrid.html">
+	
 	<link rel="import" href="../cbn-form.html">
 	<link rel="import" href="../cbn-dynamic-form.html">
 	<link rel="import" href="../basic-components/basic-input.html">
@@ -29,7 +31,7 @@
 	
 	<core-ajax auto url="basic-dynamic-form.json" handleAs="json" on-core-complete="{{onCoreComplete}}" response="{{formConfig}}"></core-ajax>
 	
-	<cbn-form model="{{formModel}}" style="width: 500px;">
+	<cbn-form model="{{formModel}}" style="width: 500px;" class="force-xs">
 		<cbn-dynamic-form config="{{formConfig}}"></cbn-dynamic-form>
 	</cbn-form>
 	

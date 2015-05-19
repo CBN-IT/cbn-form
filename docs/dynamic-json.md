@@ -73,8 +73,8 @@ config = {
 - `preview` (*Boolean*): for use with toggleable groups, specified whether the input is visible initially;
 - `className` (*String|String[]*): the HTML classes to add to the group element;
 - `style` (*String|Object*): the CSS to add to the group element.
-- `flexGrid` (*Boolean*): Set to true to activate the flexboxgrid row class for the contained inputs, 
-   see http://flexboxgrid.com for documentation;
+- `flexGrid` (*Boolean*): Set to true to activate the flexgrid row class for the contained inputs, 
+   see https://github.com/matthewsimo/scss-flex-grid for documentation;
 
 <br>
 **There are several other recommended attributes:**

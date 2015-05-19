@@ -16,7 +16,7 @@
     "core-ajax": "Polymer/core-ajax#^0.5",
     "core-input": "Polymer/core-input#^0.5",
     "paper-shadow": "Polymer/paper-shadow#^0.5",
-    "flexboxgrid": "~6.1.1"
+    "cbn-flexgrid": "git@bitbucket.org:bogdan_nourescu/cbn-grid.git#master"
   },
   "devDependencies": {
     "cbn-input": "git@bitbucket.org:bogdan_nourescu/cbn-input.git#^0.1",
