@@ -29,7 +29,7 @@
 				return 'basic-decorator-label-' + (labelId++);
 			}
 			
-			Polymer('cbn-basic-input-decorator', Polymer.mixin({}, CbnAbstractInputDecoratorMixin, {
+			Polymer('cbn-basic-input-decorator', CbnForm.implement({
 				
 				publish: {
 					/**
@@ -52,7 +52,9 @@
 				/**
 				 * Element's dynamically-configurable attributes.
 				 */
-				inputAttributes: [ 'label' ], 
+				dynamicAttributes: {
+					"label" : { type: 'attribute' }
+				}, 
 				
 				/**
 				 * Stores reference to the [first] decorated input element.
@@ -67,7 +69,6 @@
 				 * Fires when the element is created. Used to initialize its attributes.
 				 */
 				created: function () {
-					CbnAbstractInputDecoratorMixin.created.apply(this);
 				},
 				
 				/**
@@ -96,8 +97,10 @@
 					}
 				}
 				
-			}));
+			}, CbnForm.AbstractInputDecorator, CbnForm.DynamicControl));
 		})();
+		
+		
 		
 	</script>
 	

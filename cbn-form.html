@@ -31,7 +31,7 @@ Example:
 	</template>
 	
 	<script>
-		Polymer('cbn-form', Polymer.mixin({
+		Polymer('cbn-form', CbnForm.implement({
 			
 			publish: { // Published attributes:
 				
@@ -100,6 +100,11 @@ Example:
 				
 			},
 			
+			/**
+			 * The `cbn-form` should be the only master container.
+			 */
+			isMasterContainer: true,
+			
 			// Events:
 			
 			/**
@@ -130,21 +135,6 @@ Example:
 			 */
 			
 			
-			// Internal fields
-			
-			/**
-			 * Stores the list of input elements inside the form.
-			 * 
-			 * The list is maintained by listening for bubbling `cbn-form-input-attached` / `cbn-form-input-detached` 
-			 * events.
-			 * 
-			 * @private
-			 * @type {[HTMLElement]}
-			 * @default []
-			 */
-			_formFields: null,
-			
-			
 			// Functions and event handlers
 			
 			/**
@@ -159,8 +149,6 @@ Example:
 					this.xhrOptions = {};
 				if (!this.serializationOptions)
 					this.serializationOptions = { type: 'plain', param: 'data', useBrackets: false };
-				
-				this._formFields = [];
 			},
 			
 			/**
@@ -171,34 +159,6 @@ Example:
 			ready: function() {
 				var form = this;
 				
-				this.addEventListener('cbn-form-input-attached', function (event) {
-					var input = event.detail.input;
-					if (input.parentForm != form) {
-						input.parentForm = form;
-						this._formFields.push(input);
-						
-						if (event.detail.bindValue) {
-							this.bindValue(input);
-							event.detail.bindValue = false;
-						}
-					}
-				});
-				
-				this.addEventListener('cbn-form-input-detached', function (event) {
-					var input = event.detail.input;
-					if (input.parentForm == form) {
-						input.parentForm = null;
-						var idx = this._formFields.indexOf(input);
-						if (idx >= 0)
-							this._formFields.splice(idx, 1);
-						
-						if (event.detail.unbindValue) {
-							this.unbindValue(input);
-							event.detail.unbindValue = false;
-						}
-					}
-				});
-				
 				// bind tap handler to the submit buttons
 				var submitButtons = this.querySelectorAll('[submit], input[type="submit"], button[type="button"]');
 				for (var i=0; i<submitButtons.length; i++) {
@@ -208,39 +168,6 @@ Example:
 					});
 				}
 			},
-			
-			/**
-			 * Called when the model is changed.
-			 */
-			modelChanged: function() {
-				var i;
-				
-				for (i=0; i<this._formFields.length; i++) {
-					var input = this._formFields[i];
-					if (input._valueBoundParent == this) {
-						this.bindValue(input);
-					}
-				}
-			}, 
-			
-			/**
-			 * Requests form validation from all inputs and returns the boolean result.
-			 * 
-			 * @return {Boolean} The validation result (true if passed).
-			 */
-			validate: function() {
-				var i;
-				var passed = true;
-				
-				for (i=0; i<this._formFields.length; i++) {
-					if (!this._formFields[i].validate()) {
-						passed = false;
-						break;
-					}
-				}
-				
-				return passed;
-			}, 
 			
 			/**
 			 * Submits the form to the specified URL and, if successful, executes the callback (optional).
@@ -261,11 +188,11 @@ Example:
 				var i, j;
 				var hasFiles = false;
 				
-				for (i=0; i<this._formFields.length; i++) {
+				for (i=0; i<this.childInputs.length; i++) {
 					// special case: file inputs
-					if (this._formFields[i].isFileInput) {
+					if (this.childInputs[i].isFileInput) {
 						// check if any files were posted
-						var files = this._formFields[i].getFiles();
+						var files = this.childInputs[i].getFiles();
 						for (j=0; j<files.length; j++) {
 							hasFiles = true;
 						}
@@ -364,8 +291,8 @@ Example:
 				}
 				
 				// determine the file inputs
-				for (i=0; i<this._formFields.length; i++) {
-					f = this._formFields[i];
+				for (i=0; i<this.childInputs.length; i++) {
+					f = this.childInputs[i];
 					if (f.isFileInput) {
 						fileInputs[f.name] = f;
 					}
@@ -389,6 +316,7 @@ Example:
 							}
 						}
 					}
+					
 				} else {
 					data = [];
 					for (i=0; i<fields.length; i++) {
@@ -507,7 +435,7 @@ Example:
 				return Object.getOwnPropertyNames(obj).length == 0;
 			}
 			
-		}, CbnFormModelBindingMixin));
+		}, CbnForm.AbstractContainer));
 	</script>
 	
 </polymer-element>

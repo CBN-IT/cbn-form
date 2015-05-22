@@ -41,35 +41,28 @@
 </template>
 
 <script>
-	var tpl = document.querySelector('#template-wrapper');
-	
-	document.addEventListener("HTMLImportsLoaded", function(event) {
-		var observer = new CompoundObserver();
+	document.addEventListener("HTMLImportsLoaded", function() {
+		var tpl = document.querySelector('#template-wrapper');
 		
 		tpl.formModel = {
 			personal: {}
 		};
-		
-		tpl.onCoreComplete = function(){
-			var groupsConfig = tpl.formConfig.groups;
+		tpl.addEventListener('template-bound', function() {
+			var form = document.querySelector('cbn-form');
 			
-			for (var g in groupsConfig) {
-				if (!groupsConfig.hasOwnProperty(g)) continue;
-				for (var f in groupsConfig[g].fields) {
-					if (!groupsConfig[g].fields.hasOwnProperty(f)) continue;
-					var field = groupsConfig[g].fields[f];
+			form.addEventListener('cbn-dynamic-form-rendered', function() {
+				var observer = new CompoundObserver();
+				
+				for (var i=0; i < form.childInputs.length; i++) {
+					var field = form.childInputs[i];
 					observer.addPath(tpl.formModel, field.name);
 				}
-			}
-			
-			observer.open(function() {
-				document.querySelector('#stringifiedJson').innerHTML = JSON.stringify(tpl.formModel, null, 4);
+				
+				observer.open(function() {
+					document.querySelector('#stringifiedJson').innerHTML = JSON.stringify(tpl.formModel, null, 4);
+				});
 			});
-		};
-	});
-	
-	tpl.addEventListener('template-bound', function() {
-		// nothing yet
+		});
 	});
 </script>
 

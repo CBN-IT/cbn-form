@@ -1,16 +1,30 @@
 {
-	"fieldDefaults": {
-		"decorator": "cbn-input-decorator",
-		"preview": false
+	"types": {
+		"text": "cbn-basic-input", 
+		"select": "cbn-select"
+	}, 
+	"defaults": {
+		"group-flex": {
+			"type": "group",
+			"wrapChildren": {
+				"element": "div", 
+				"className": "row group-inner"
+			}
+		},
+		"input": {
+			"decorator": "cbn-input-decorator",
+			"preview": false
+		}
 	},
-	"groups": [
+	"elements": [
 		{
+			"inherit": "group-flex", 
 			"caption": "Personal Data",
 			"toggleable" : true, 
-			"flexGrid": true,
 			
-			"fields": [
+			"children": [
 				{
+					"inherit": "input", 
 					"name": "personal.firstname",
 					"type": "text",
 					"floatingLabel": true,
@@ -19,6 +33,7 @@
 					"className": "col-xs-6"
 				},
 				{
+					"inherit": "input",
 					"name": "personal.lastname",
 					"type": "text",
 					"floatingLabel": true,
@@ -27,6 +42,7 @@
 					"className": "col-xs-6"
 				},
 				{
+					"inherit": "input",
 					"name": "personal.address",
 					"type": "text",
 					"floatingLabel": true,
@@ -37,10 +53,12 @@
 			]
 		},
 		{
-			"caption": "Test Fieldset 2",
+			"type": "group", 
+			"caption": "Objects",
 			
-			"fields": [
+			"children": [
 				{
+					"inherit": "input",
 					"name": "test",
 					"type": "text",
 					"floatingLabel": true,
@@ -48,6 +66,7 @@
 					"preview": true
 				}, 
 				{
+					"inherit": "input",
 					"name": "test2", 
 					"type": "text", 
 					"floatingLabel": true,

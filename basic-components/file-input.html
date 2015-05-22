@@ -15,7 +15,7 @@
 	<template>
 		<label>
 			<span>{{label}}</span>
-			<input id="input" name="{{name}}" onchange="{{fileSelected}}"
+			<input id="input" name="{{name}}" on-change="{{fileSelected}}"
 				   type="file" multiple?="{{multiple}}"
 				   class="{{ { preview: previewstate } | tokenList }}" 
 				   title="{{config.label}}" />
@@ -30,10 +30,10 @@
 		 * The file model object that describes a selected / already uploaded file.
 		 * 
 		 * @typedef  {Object}	FileModel
-		 * @property {String} 	name The name of the selected/uploaded file.
-		 * @property {Boolean}	uploaded Whether the file is uploaded.
-		 * @property {int}		size The size of the file, in bytes.
-		 * @property {String}	type The MIME type of the file (warning: unreliable).
+		 * @property {String} 	[name] The name of the selected/uploaded file.
+		 * @property {Boolean}	[uploaded] Whether the file is uploaded.
+		 * @property {int}		[size] The size of the file, in bytes.
+		 * @property {String}	[type] The MIME type of the file (warning: unreliable).
 		 * 
 		 * For uploaded files that are found in the value before the input is created, the object can contain any 
 		 * additional properties which are guaranteed to be preserved.
@@ -41,7 +41,7 @@
 		
 		// Element definition
 		
-		Polymer('cbn-basic-file', Polymer.mixin({}, CbnAbstractInputMixin, {
+		Polymer('cbn-basic-file', CbnForm.implement({
 			
 			publish: { // Published attributes:
 				
@@ -106,16 +106,15 @@
 			 * 
 			 * @private
 			 * @type {FileModel | FileModel[]}
+			 * @default {} | []
 			 */
-			uploadedFiles: {}, 
+			uploadedFiles: null, 
 			
 			
 			/**
 			 * Fires when the element is created. Used to initialize its attributes.
 			 */
 			created: function () {
-				CbnAbstractInputMixin.created.apply(this);
-				
 				if (this.multiple) {
 					this.value = [];
 					this.uploadedFiles = [];
@@ -165,9 +164,10 @@
 				}
 			}
 			
-		}));
+		}, CbnForm.AbstractFileInput));
 		
-		CbnFormInputs.registerElement('cbn-basic-file', {
+		//noinspection JSCheckFunctionSignatures
+		CbnForm.registerElement('cbn-basic-file', {
 				types: ['file']
 			});
 		

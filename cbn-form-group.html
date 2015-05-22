@@ -9,7 +9,7 @@ visual features (preview / edit stances etc.).
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-shadow/paper-shadow.html">
-<link rel="import" href="cbn-dynamic-input.html">
+<link rel="import" href="cbn-form-abstract.html">
 
 <polymer-element name="cbn-form-group">
 	<template>
@@ -32,12 +32,10 @@ visual features (preview / edit stances etc.).
 			
 			/**
 			 * Global variable that stores the currently open form group.
-			 * 
-			 * @type {HTMLElement}
 			 */
 			var currentlyOpenGroup = null;
 			
-			Polymer('cbn-form-group', {
+			Polymer('cbn-form-group', CbnForm.implement({
 				
 				publish: { // Published attributes: 
 					
@@ -57,7 +55,7 @@ visual features (preview / edit stances etc.).
 					 * @type {Boolean}
 					 * @default true
 					 */
-					toggleable: true,
+					toggleable: false,
 					
 					/**
 					 * Whether the form group is currently preview-only or in editable state.
@@ -69,12 +67,22 @@ visual features (preview / edit stances etc.).
 					previewState: true
 				}, 
 				
+				/** @namespace this.$.container */
+				
+				/**
+				 * Element's dynamically-configurable attributes.
+				 */
+				dynamicAttributes: {
+					"caption" : { type: 'attribute' }, 
+					"toggleable" : { type: 'attribute' }, 
+					"previewState" : { type: 'attribute' }
+				}, 
 				
 				/**
 				 * Fires when the element is created. Used to initialize its attributes.
 				 */
 				created: function () {
-					
+					// nothing here
 				},
 				
 				/**
@@ -96,21 +104,20 @@ visual features (preview / edit stances etc.).
 						this.previewState = false;
 					}
 					
-					// Bind the magic 'previewstate' attribute to the form inputs
-					this.addEventListener('cbn-form-input-attached', function (event) {
-						var target = event.path[0];
-						if (target._attachedFormGroup != currentGroup) {
-							target._attachedFormGroup = currentGroup;
+					// Bind the magic 'previewState' attribute to the form inputs
+					this.addEventListener('cbn-form-control-attached', function (event) {
+						var target = event.detail.element;
+						if (target._parentFormGroup != currentGroup) {
+							target._parentFormGroup = currentGroup;
 							
 							target.bind('previewState', new PathObserver(currentGroup, 'previewState'));
 						}
 					});
 					
-					this.addEventListener('cbn-form-input-detached', function (event) {
-						var target = event.path[0];
-						if (target._attachedFormGroup == currentGroup) {
-							target._attachedFormGroup = null;
-							target.unbind('previewState');
+					this.addEventListener('cbn-form-control-detached', function (event) {
+						var target = event.detail.element;
+						if (target._parentFormGroup == currentGroup) {
+							target._parentFormGroup = null;
 						}
 					});
 				},
@@ -144,7 +151,7 @@ visual features (preview / edit stances etc.).
 						currentlyOpenGroup = null;
 				}
 				
-			});
+			}, CbnForm.AbstractContainer, CbnForm.DynamicControl ));
 			
 			/*
 			 * Capture all document click events and close the currently open group.
@@ -167,6 +174,11 @@ visual features (preview / edit stances etc.).
 						currentlyOpenGroup.close();
 				}
 			}, false);
+			
+			//noinspection JSCheckFunctionSignatures
+			CbnForm.registerElement('cbn-form-group', { 
+					types: ['group', '']
+				});
 			
 		})();
 		

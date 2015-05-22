@@ -40,10 +40,10 @@
 	}
 </style>
 
-<polymer-element name="cbn-basic-input" extends="input" is-form-input>
+<polymer-element name="cbn-basic-input" extends="input">
 	
 	<script>
-		Polymer('cbn-basic-input', Polymer.mixin({}, CbnAbstractInputMixin, {
+		Polymer('cbn-basic-input', CbnForm.implement({
 			
 			publish: { // Published attributes:
 				
@@ -60,20 +60,17 @@
 			/**
 			 * Element's dynamically-configurable attributes.
 			 */
-			inputAttributes: [ 'type', 'name', 'title', 'placeholder' ], 
-			
-			/**
-			 * Fires when the element is created. Used to initialize its attributes.
-			 */
-			created: function () {
-				CbnAbstractInputMixin.created.apply(this);
+			dynamicAttributes: {
+				"title" : { type: 'attribute' }, 
+				"placeholder" : { type: 'attribute' }
 			}
 			
-		}));
+		}, CbnForm.AbstractInput, CbnForm.DynamicControl));
 		
-		CbnFormInputs.registerElement('cbn-basic-input', {
-				types: ['text', 'password', 'email', 'number'], 
-				extends: 'input'
+		//noinspection JSCheckFunctionSignatures
+		CbnForm.registerElement('cbn-basic-input', {
+				extends: 'input', 
+				types: ['text', 'password', 'email', 'number']
 			});
 		
 	</script>

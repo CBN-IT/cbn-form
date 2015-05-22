@@ -1,35 +1,47 @@
 {
-	"fieldDefaults": {
-		"decorator": "cbn-basic-input-decorator",
-		"preview": false
+	"types": {
+		"text": "cbn-basic-input"
+	}, 
+	"defaults": {
+		"group-flex": {
+			"type": "group",
+			"wrapChildren": {
+				"element": "div", 
+				"className": "row group-inner"
+			}
+		},
+		"input": {
+			"decorator": "cbn-basic-input-decorator",
+			"preview": false
+		}
 	},
-	"groups": [
+	"elements": [
 		{
+			"inherit": "group-flex", 
 			"caption": "Personal Data",
-			"toggleable" : true, 
-			"flexGrid": true,
+			"toggleable" : true,
 			
-			"fields": [
+			"children": [
 				{
+					"inherit": "input",
 					"name": "personal.firstname",
 					"type": "text",
-					"element": "cbn-basic-input",
 					"preview": true,
 					"label": "First Name",
-					"className": "col-xs-12 col-md-6"
+					"className": "col-xs-6 col-md-6"
 				},
 				{
+					"inherit": "input",
 					"name": "personal.lastname",
 					"type": "text",
-					"element": "cbn-basic-input",
 					"preview": true,
 					"label": "Last Name", 
-					"className": "col-xs-12 col-md-6"
+					"className": "col-xs-6 col-md-6"
 				},
 				{
+					"inherit": "input",
 					"name": "personal.address",
 					"type": "text",
-					"element": "cbn-basic-input",
 					"preview": false,
 					"label": "Address", 
 					"className": "col-xs-12"
@@ -37,15 +49,18 @@
 			]
 		},
 		{
+			"type": "group",
 			"caption": "Test Fieldset 2",
 			
-			"fields": [
+			"children": [
 				{
+					"inherit": "input",
 					"name": "test",
 					"type": "text",
 					"label": "Tot nume"
 				}, 
 				{
+					"inherit": "input",
 					"name": "test2", 
 					"type": "text", 
 					"label": "Test 2"

@@ -15,14 +15,24 @@ Where `config` is a custom object that describes the form's layout and the input
 Example config JSON definition: 
 ```
 	{
-		"fieldDefaults": {
-			"preview": true, 
-			"decorator": "cbn-basic-decorator"
+		"types": {
+			"group": "cbn-form-group", 
+			"text": "cbn-basic-input", 
 		},
-		"groups": [{
+		"defaults": {
+			"*": { "inherit": "input" }, 
+			"input": {
+				"decorator": "cbn-input-decorator",
+				"preview": true
+			}
+		},
+		"elements": [{
+			"type": "group", 
 			"caption": "Main Form", 
-			"fields": [
+			
+			"children": [
 				{
+					"inherit": "input", 
 					"name": "name",
 					"label": "Name: ", 
 					"type": "text", 
@@ -30,6 +40,7 @@ Example config JSON definition:
 					"preview": true
 				}, 
 				{
+					"inherit": "input", 
 					"name": "type",
 					"label": "Type: ", 
 					"type": "select",
@@ -46,47 +57,18 @@ Example config JSON definition:
 
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="cbn-form-abstract.html">
 <link rel="import" href="cbn-form-group.html">
-<link rel="import" href="cbn-dynamic-input.html">
 
 <polymer-element name="cbn-dynamic-form">
 	<template>
-		<template if="{{ config.flatFields }}">
-			<!-- Print flat fields -->
-			<div class="{{ { 'flat-fields': true, 'row': config.flatFlexGrid } | tokenList }}">
-				<template repeat="{{field in config.fields}}">
-					<cbn-dynamic-input config="[[field]]"></cbn-dynamic-input>
-				</template>
-			</div>
-		</template>
-		
-		<template if="{{ config.groups }}">
-			<!-- Print groups / their fields -->
-			<div id="groups">
-				<template repeat="{{group in config.groups}}">
-					
-					<cbn-form-group caption="[[group.caption]]" toggleable="[[group.toggleable]]"
-									class="[[group.className | toClassList]]"
-									style="[[group.style | styleObject]]">
-						<div class="{{ { 'group-inner': true, 'row': group.flexGrid } | tokenList }}">
-							<template repeat="{{field in group.fields}}">
-								<cbn-dynamic-input config="[[field]]"></cbn-dynamic-input>
-							</template>
-						</div>
-					</cbn-form-group>
-					
-				</template>
-			</div>
-		</template>
-		
+		<!-- An empty shadow root to add the generated elements -->
 	</template>
 	
 	<script>
 		(function() {
-			// used as default value for the model attribute but with 'null' meaning
-			var nullObject = {};
-			
-			Polymer('cbn-dynamic-form', {
+			//noinspection JSUnusedGlobalSymbols
+			Polymer('cbn-dynamic-form', CbnForm.implement({
 				
 				publish: { // Publish attributes:
 					
@@ -97,18 +79,23 @@ Example config JSON definition:
 					 * @type {FormConfig}
 					 * @default {}
 					 */
-					config: null,
-					
-					/**
-					 * Dynamic form's data model to use for its inputs. If not set, the parent form will manage the fields.
-					 * 
-					 * @attribute model
-					 * @type {Object}
-					 * @default null
-					 */
-					model: nullObject
+					config: null
 					
 				},
+				
+				// Fired events:
+				
+				/**
+				 * Fired when the dynamic form has finished rendering its inputs.
+				 * @event cbn-dynamic-form-rendered
+				 */
+				
+				/**
+				 * Whether the element is ready.
+				 * @private
+				 * @type {Boolean}
+				 */
+				_elementReady: false,
 				
 				/**
 				 * Fires when the element is created. Used to initialize its attributes.
@@ -124,26 +111,8 @@ Example config JSON definition:
 				 * Listens for input attached / detached events and initializes them.
 				 */
 				ready: function () {
-					var form = this;
+					this._elementReady = true;
 					this.configChanged();
-					
-					if (this.model && this.model != nullObject) {
-						this.addEventListener('cbn-form-input-attached', function (event) {
-							var input = event.detail.input;
-							if (event.detail.bindValue) {
-								this.bindValue(input);
-								event.detail.bindValue = false; // first-come, first-served
-							}
-						});
-						
-						this.addEventListener('cbn-form-input-detached', function (event) {
-							var input = event.detail.input;
-							if (event.detail.unbindValue) {
-								this.unbindValue(input);
-								event.detail.unbindValue = false;
-							}
-						});
-					}
 				},
 				
 				/**
@@ -152,80 +121,216 @@ Example config JSON definition:
 				 */
 				configChanged: function () {
 					var config = this.config;
-					if (!config)
-						return;
+					if (!config || !this._elementReady) return;
 					
-					if (config.fieldDefaults) {
-						// lightweight object extend function (right to left processing order)
-						// first argument is the destination object
-						function extendObject() {
-							for (var i = arguments.length - 1; i >= 1; i--) {
-								for (var key in arguments[i])
-									if (arguments[i].hasOwnProperty(key))
-										arguments[0][key] = arguments[i][key];
-							}
-							return arguments[0];
-						}
-						
-						// utility function to extend a list of objects with some defaults 
-						function extendObjectsList(list, defaults) {
-							for (var k = 0; k < list.length; k++) {
-								if (!list.hasOwnProperty(k)) continue;
-								list[k] = extendObject({}, list[k], defaults);
-							}
-						}
-						
-						if (config.groups)
-							for (var i = 0; i < config.groups.length; i++) {
-								extendObjectsList(config.groups[i].fields, config.fieldDefaults);
-							}
-						if (config.flatFields) {
-							extendObjectsList(config.flatFields, config.fieldDefaults);
-						}
-					}
+					this._renderForm(this._extendConfig(config.elements), this.shadowRoot);
+					
+					this.async(function(){
+						this.fire('cbn-dynamic-form-rendered', {
+							element: this, 
+							config: config
+						}, null, true, false);
+					});
 				},
 				
 				/**
-				 * Converts an array of strings to HTML space-separated classes list.
+				 * The main routine that renders the dynamic form elements based on the value of the config JSON object.
 				 * 
 				 * @private
-				 * @param {String|String[]} classes The input.
-				 * @return {String} The resulting HTML classes list.
+				 * @param {FormElementConfig[]}  elementsConfig The dynamic template to use for rendering the form.
+				 * @param {HTMLElement}          root The root element to append the rendered elements to.
 				 */
-				toClassList: function (classes) {
-					if (!classes || typeof classes == 'string')
-						return classes;
-					return classes.join(' ');
-				},
+				_renderForm: function(elementsConfig, root) {
+					var i;
+					if (!elementsConfig) return;
+					
+					for (i=0; i<elementsConfig.length; i++) {
+						var elements = this._createFormElement(elementsConfig[i]);
+						if (!elements || !elements.element) continue;
+						
+						if (elements.decorator) {
+							root.appendChild(elements.decorator);
+						} else {
+							root.appendChild(elements.element);
+						}
+						if (elementsConfig[i].children) {
+							var containerElement = elements.element;
+							if (elementsConfig[i].wrapChildren) {
+								var wrapper = this._createChildrenWrapper(elementsConfig[i].wrapChildren);
+								if (wrapper) {
+									containerElement = wrapper;
+									elements.element.appendChild(wrapper);
+								}
+							}
+							
+							this._renderForm(elementsConfig[i].children, containerElement);
+						}
+					}
+				}, 
 				
 				/**
-				 * Converts a style object to its string representation. Ignores CSS as string (returns it).
+				 * Creates a form elements using the specified configuration (template) object.
 				 * 
 				 * @private
-				 * @param {Object|String} value The object to convert.
-				 * @returns {String} The resulting CSS text.
+				 * @param {FormElementConfig|Object} elConfig The template object to generate the element from.
+				 * @return {Boolean | {element: HTMLElement, decorator: HTMLElement}} The generated element + decorator (if any).
 				 */
-				styleObject: function (value) {
-					if (!value)
-						return '';
-					if (typeof value == 'string')
-						return value;
+				_createFormElement: function(elConfig) {
+					var elements = { element: null, decorator: null };
 					
-					function convertStylePropertyName(name) {
-						return String(name).replace(/[A-Z]/g, function (c) {
-							return '-' + c.toLowerCase();
-						});
+					var elementName;
+					if (elConfig.element) {
+						elementName = elConfig.element;
+					} else {
+						elementName = CbnForm.getElementForType(elConfig.type, this.config.types);
+						if (!elementName) {
+							console.error("<cbn-dynamic-form>: no element registered for type '" + elConfig.type + "'");
+							return false;
+						}
 					}
 					
-					var parts = [];
-					for (var key in value) {
-						if (value.hasOwnProperty(key))
-							parts.push(convertStylePropertyName(key) + ': ' + value[key]);
+					var elementDef = CbnForm.getRegisteredElement(elementName);
+					if (elementDef) {
+						if (elementDef.extends) {
+							elements.element = document.createElement(elementDef.extends, elementName);
+						} else {
+							elements.element = document.createElement(elementName);
+						}
 					}
-					return parts.join('; ');
+					
+					if (!elementDef || !elements.element || !CbnForm.implements(elements.element, CbnForm.DynamicControl)) {
+						console.error("<cbn-dynamic-form>: invalid form element ('" + elementName + "')");
+						return false;
+					}
+					
+					// create the decorator element
+					var root = elements.element;
+					elements.decorator = null;
+					if (elConfig.decorator) {
+						elements.decorator = document.createElement(elConfig.decorator);
+						if (!elements.decorator || !CbnForm.implements(elements.decorator, CbnForm.AbstractInputDecorator) || 
+								!CbnForm.implements(elements.decorator, CbnForm.DynamicControl)) {
+							console.error("<cbn-dynamic-form>: invalid decorator element ('" + elConfig.decorator + "')");
+							return false;
+						}
+						root = elements.decorator;
+						
+						// set the element's display to 'block'
+						elements.element.style.display = 'block';
+						
+						// set decorator default config attributes (from the element's 'decoratorConfig' property)
+						if (elements.element.decoratorConfig) {
+							for (var dc in elements.element.decoratorConfig) {
+								if (!elements.element.decoratorConfig.hasOwnProperty(dc)) 
+									continue;
+								
+								elements.decorator.setDynamicAttribute(dc, elements.element.decoratorConfig[dc]);
+							}
+						}
+					}
+					
+					// set element attributes
+					for (var c in elConfig) {
+						if (!elConfig.hasOwnProperty(c)) 
+							continue;
+						
+						if (c == 'style' || c == 'className' || c == 'preview') {
+							// always apply to the root element
+							root.setDynamicAttribute(c, elConfig[c]);
+							
+						} else {
+							if (elements.decorator && elements.decorator.getDynamicAttributeDescriptor(c)) {
+								elements.decorator.setDynamicAttribute(c, elConfig[c]);
+							}
+							if (elements.element.getDynamicAttributeDescriptor(c)) {
+								elements.element.setDynamicAttribute(c, elConfig[c]);
+							}
+						}
+					}
+					
+					elements.element.sourceTemplate = elConfig;
+					
+					if (elements.decorator) {
+						elements.decorator.sourceTemplate = elConfig;
+						elements.decorator.appendChild(elements.element);
+					}
+					return elements;
+				}, 
+				
+				/**
+				 * Creates a basic HTML wrapper element using the specified configuration (template) object.
+				 * 
+				 * @private
+				 * @param {Object}  elConfig The template object (a basic key-value map representing the element attributes).
+				 * @return {Boolean | HTMLElement} The generated DOM element.
+				 */
+				_createChildrenWrapper: function(elConfig) {
+					var wrapper = document.createElement(elConfig.element);
+					if (!wrapper) return false;
+					
+					CbnForm.implement(wrapper, CbnForm.DynamicControl);
+					for (var c in elConfig) {
+						if (!elConfig.hasOwnProperty(c)) 
+							continue;
+						
+						if (c == 'element') {
+							// ignore
+						} else {
+							wrapper.setDynamicAttribute(c, elConfig[c]);
+						}
+					}
+					
+					return wrapper;
+				}, 
+				
+				
+				// Private functions: 
+				
+				/**
+				 * Pre-processes and extends the specified configuration/template object based on its inherit property 
+				 * and the {@link FormConfig#defaults} object.
+				 * 
+				 * @param {FormElementConfig[]} elements The template objects to extend.
+				 * @return {FormElementConfig[]} The resulting config objects list, extended with the defaults.
+				 */
+				_extendConfig: function(elements) {
+					if (!elements)
+						return elements;
+					
+					var extendedConfig = [];
+					for (var i=0; i<elements.length; i++) {
+						var exConfig = elements[i];
+						if (this.config.defaults && this.config.defaults['*']) {
+							exConfig = this._extendObject({}, exConfig, this.config.defaults['*']);
+						}
+						if (exConfig.inherit && this.config.defaults.hasOwnProperty(exConfig.inherit)) {
+							exConfig = this._extendObject({}, exConfig, this.config.defaults[exConfig.inherit]);
+							delete exConfig.inherit;
+						}
+						if (exConfig.children && exConfig.children.length) {
+							exConfig.children = this._extendConfig(exConfig.children);
+						}
+						extendedConfig.push(exConfig);
+					}
+					return extendedConfig;
+				}, 
+				
+				/**
+				 * Lightweight object extend function (jQuery-like, right to left processing order).
+				 * First argument is the destination object.
+				 * @private
+				 * @returns {Object} The extended object.
+				 */
+				_extendObject: function() {
+					for (var i = arguments.length - 1; i >= 1; i--) {
+						for (var key in arguments[i])
+							if (arguments[i].hasOwnProperty(key))
+								arguments[0][key] = arguments[i][key];
+					}
+					return arguments[0];
 				}
 				
-			});
+			}, CbnForm.AbstractContainer));
 		})();
 	</script>
 	

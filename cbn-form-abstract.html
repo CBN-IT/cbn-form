@@ -1,8 +1,17 @@
 <!--
 This file defines the common utilities and interfaces necessary by some components.
 
-Each input element must implement CbnAbstractInputMixin's abstract methods, have a declared `is-form-input` HTML 
-attribute and register its input type[s] via the {@link CbnFormInputs#registerElement} (used for dynamic form input 
+Each input element must implement abstract interfaces, have a declared `is-form-input` HTML 
+attribute and .
+
+This file defines the interfaces for several form controls: 
+- `AbstractControl`: the common interface that all form controls must implement;
+- `AbstractInput`: the interface that form input fields must implement;
+- `AbstractFileInput`: a special interface to use for file inputs;
+- `AbstractContainer`: a special form control that can contain other controls/fields;
+
+A custom form element must implement one of these interfaces, depending on its desired form behavior.
+Also, the element must register its type[s] via the {@link CbnFormInputs#registerElement} (used for dynamic form input 
 type discovery).
 -->
 
@@ -11,44 +20,51 @@ type discovery).
 	// JSDoc types
 	
 	/**
-	 * The form configuration object.
-	 * @typedef  {Object} 	FormGroupConfig
-	 * @property {String} 	caption Group's caption / title (optional).
-	 * @property {Boolean}	toggleable Whether the group is toggleable.
-	 * @property {[Object]}	fields Form's fields to be rendered.
-	 */
-	
-	/**
-	 * The form configuration object.
-	 * @typedef {Object} 				FormConfig
-	 * @property {Object}				fieldDefaults Default configuration object, applied to all fields.
-	 * @property {[FormGroupConfig]} 	groups The grouped form fields.
-	 * @property {[Object]} 			flatFields Flat form fields to render.
-	 */
-	
-	/**
-	 * The input field's configuration object.
+	 * The dynamic form template object.
 	 * 
-	 * @typedef  {Object}	FormFieldConfig
-	 * @property {String} 	type 	The element's type (used to instantiate the element based on type).
-	 * @property {String} 	element	The name of the element to instantiate (forced, overrides the type). Optional.
-	 * @property {String}	name	The input name / model value's path (that describes where in the model the 
-	 * 								data should be read / written).
-	 * @property {String}	preview	Whether the element is visible in a preview-state form group.
+	 * @typedef  {Object} 				FormConfig
+	 * @property {Object}				[types] Used to override the default type-to-element mapping.
+	 * @property {Object}				[defaults] Default configuration object, applied to all objects that have an 
+	 *                                  inherit property. There also is a special wildcard ('*') key that applies the 
+	 *                                  defaults to every `FormElementConfig` template.
+	 * @property {FormElementConfig[]} 	controls The form controls to render.
+	 */
+	
+	/**
+	 * The dynamic template object for a single form control.
 	 * 
-	 * All other properties are directly passed as attributes to the instantiated element only if they were 
-	 * specified inside the {@link CbnAbstractInputMixin#inputAttributes} array.
+	 * @typedef  {Object}	FormElementConfig
+	 * 
+	 * @property {String} 	[inherit] The default config key to inherit (see {@link FormConfig#defaults}). Optional.
+	 * @property {String} 	[type]    The element's type (used to instantiate an element based on type).
+	 * @property {String} 	[element] The name of the element to instantiate (optional, overrides the type).
+	 * 
+	 * // input-specific properties
+	 * @property {String} 	[decorator] The name of the decorator element that wraps the element (optional).
+	 * @property {String}	[name]	  The input name / model value path (that describes where in the model the 
+	 * 								  data should be read from / written to).
+	 * @property {String}	[preview] Whether the element is visible in a preview-state form group.
+	 * 
+	 * // container-specific properties: 
+	 * @property {FormElementConfig[]}  [children] The list of container children to render (recursively).
+	 * @property {Object|{ element: String }} [wrapChildren] A plain object that contains the template to use for 
+	 *                                rendering a standard HTML element that wraps the children. Optional.
+	 * 
+	 * All other properties are directly passed as attributes to the instantiated element only if they were specified 
+	 * inside the {@link CbnForm.AbstractControl#inputAttributes} array.
 	 */
 	
 	
 	/**
-	 * Class used by the inputs to register their capabilities with the `cbn-form` library.
+	 * Class that exposes a public API used for implementing form controls.
 	 */
-	var CbnFormInputs = {
+	var CbnForm;
+	
+	CbnForm = {
 		
 		/**
 		 * Stores the registered inputs by type.
-		 * The key is the input type and the value is the element's name.
+		 * The key is the input/control type and the value is the element's name.
 		 * 
 		 * @private
 		 * @type { Object.<String, String> }
@@ -59,20 +75,22 @@ type discovery).
 		 * Stores the registered elements as a Boolean map.
 		 * 
 		 * @private
-		 * @type { Object.<String, Boolean> }
+		 * @type { Object.<String, Object> }
 		 */
 		_registeredElements: {},
 		
 		
+		// Element registration methods:
+		
 		/**
-		 * @typedef {Object}    RegisterElementOptions
-		 * @property {String[]} types The input types handled by the element.
-		 * @property {String}   extended If the element extends another one, set this to the extended element 
-		 *                          (e.g.: 'input')
+		 * @typedef  {Object}   RegisterElementOptions
+		 * @property {String[]} [types] The input types handled by the element.
+		 * @property {String}   [extends] If the element extends another one, set this to the extended element 
+		 *                      (e.g.: 'input')
 		 */
 		
 		/**
-		 * Registers a new input element to be usable within `cbn-form`.
+		 * Registers a new form control element to be usable within `cbn-form` and `cbn-dynamic-form`.
 		 * 
 		 * @param {String} name The name of the custom input element.
 		 * @param {RegisterElementOptions} options Element's definition object.
@@ -97,61 +115,345 @@ type discovery).
 		/**
 		 * Returns a registered element's definition object.
 		 * 
-		 * @name {String} name The element's name.
+		 * @param  {String} name The element's name.
 		 * @return {RegisterElementOptions} Element's registration options.
 		 */
-		getElement: function(name) {
+		getRegisteredElement: function(name) {
 			return this._registeredElements[name];
 		}, 
 		
 		/**
 		 * Returns the name of an element that was last registered for the requested type.
 		 * 
-		 * @name {String} type The input type.
+		 * @param  {String} type The input type.
+		 * @param  {Object} [overrideTypes=null] Optional, types override map.
 		 * @return {String} The element's name.
 		 */
-		getElementForType: function(type) {
+		getElementForType: function(type, overrideTypes) {
+			if (overrideTypes && overrideTypes.hasOwnProperty(type))
+				return overrideTypes[type];
 			return this._registeredTypes[type];
+		},
+		
+		/**
+		 * Method used for implementing control abstract interfaces (like AbstractInput, AbstractContainer etc.) for a 
+		 * polymer object.
+		 * 
+		 * A Polymer.mixin implementation that extends published properties, event handlers etc.
+		 * Inspired from https://github.com/Polymer/polymer/issues/846.
+		 * 
+		 * @param {Object} obj The target object to extend.
+		 */
+		implement: function (obj/*, mixin1 ...*/) {
+			var i, p, n, match; // iterators / auxiliary variables
+			
+			// copies a property from a source object to a target object
+			function copyProperty(name, source, target) {
+				if (target.hasOwnProperty(name)) return; // skip if the property already exists
+				var pd = getPropertyDescriptor(source, name);
+				Object.defineProperty(target, name, pd);
+			}
+			// returns the property descriptor of an object; searches the object's prototype chain
+			function getPropertyDescriptor(obj, name) {
+				if (obj) {
+					var pd = Object.getOwnPropertyDescriptor(obj, name);
+					return pd || getPropertyDescriptor(Object.getPrototypeOf(obj), name);
+				}
+			}
+			
+			var lifecycleMethods = ["created", "ready", "attached", "domReady", "detached", "attributeChanged"];
+			var doNotCopyProps = ["_extendProperties", "_implementedMixins"];
+			var alwaysExtendProps = ["publish"];
+			
+			var methodsMap = {};
+			lifecycleMethods.forEach(function (key) {
+				methodsMap[key + '_'] = key;
+				methodsMap['_' + key] = key;
+			});
+			for (i = 1; i < arguments.length; i++) {
+				p = arguments[i];
+				for (n in p) {
+					if (!p.hasOwnProperty(n)) continue;
+					if ( (match = /^([a-zA-Z0-9_]+Changed)_$/.exec(n)) || (match = /^_([a-zA-Z0-9_]+Changed)$/.exec(n)) ) {
+						methodsMap[n] = match[1];
+					}
+				}
+			}
+			
+			obj = obj || {};
+			if (!obj._implementedMixins) obj._implementedMixins = [];
+			
+			for (i = 1; i < arguments.length; i++) {
+				p = arguments[i];
+				
+				for (n in p) {
+					if (!p.hasOwnProperty(n)) continue;
+					
+					if (methodsMap.hasOwnProperty(n)) {
+						// special case: lifecycle/observer methods
+						var method = methodsMap[n];
+						obj[method] = (function (mixin, old, key) {
+							return function () {
+								if (mixin.hasOwnProperty("_" + key)) mixin["_" + key].apply(this, arguments);
+								if (old && old.apply(this, arguments) === false) return;
+								if (mixin.hasOwnProperty(key + "_")) mixin[key + "_"].apply(this, arguments);
+							}
+						})(p, obj[method], method);
+						
+					} else if (doNotCopyProps.indexOf(n) != -1) {
+						// special mixin property, do not copy
+						
+					} else {
+						// custom property
+						if ( (alwaysExtendProps.indexOf(n) != -1) ||
+								(p.hasOwnProperty('_extendProperties') && p['_extendProperties'].indexOf(n) != -1)) {
+							
+							// extend the property (if it is an array or an object)
+							if (p[n] instanceof Array) {
+								if (!obj[n]) obj[n] = [];
+								obj[n] = p[n].concat(obj[n]);
+							} else if (typeof p[n] == 'object') {
+								if (!obj[n]) obj[n] = {};
+								for (var nk in p[n]) {
+									if (!p[n].hasOwnProperty(nk)) continue;
+									copyProperty(nk, p[n], obj[n]);
+								}
+							}
+							
+						} else {
+							// just copy it (if it doesn't override)
+							try {
+								copyProperty(n, p, obj);
+							} catch (e) {
+								console.error("CbnForm.define: unable to copy object property '" + n + "'!",
+									obj, e);
+							}
+						}
+					}
+					
+					// nice to have: also extend eventDelegates handlers, property observers etc.
+				}
+				
+				if (obj._implementedMixins.indexOf(p) == -1)
+					obj._implementedMixins.push(p);
+				if (p._implementedMixins) {
+					for (var j=0; j < p._implementedMixins.length; j++) {
+						if (obj._implementedMixins.indexOf(p._implementedMixins[j]) == -1)
+							obj._implementedMixins.push(p._implementedMixins[j]);
+					}
+				}
+			}
+			return obj;
+		}, 
+		
+		/**
+		 * Checks whether an object implements the specified mixin.
+		 * Only usable with {@link #implement}.
+		 * 
+		 * @param  {Object}  obj The object to check.
+		 * @param  {Object}  mixin The mixin to check if it is implemented by the object.
+		 * @return {Boolean} True if the object implements the mixin. 
+		 */
+		implements: function (obj, mixin) {
+			if (!obj._implementedMixins || !obj._implementedMixins.length) 
+				return false;
+			return (obj._implementedMixins.indexOf(mixin) != -1);
 		}
 		
 	};
 	
+	/**
+	 * An empty object with "null" meaning.
+	 * 
+	 * Used as hack to be able to have null-able object properties and still let Polymer know the type of the expected 
+	 * value. See {@link CbnForm.AbstractContainer#model} for an example.
+	 */
+	CbnForm.NullObject = {};
 	
+	// noinspection JSUnusedGlobalSymbols
+	/**
+	 * Defines the abstract interface to be implemented by the custom form controls.
+	 * 
+	 * Note: you need to use the {@link CbnForm#mixin} method to implement this abstract interface (or any of the 
+	 * derived interfaces below) to a custom element!
+	 * 
+	 * Example:
+	 *     Polymer('your-element', CbnForm.mixin({
+	 *         // element's properties
+	 *     }, CbnForm.AbstractInput));
+	 *     
+	 * @extends HTMLElement
+	 */
+	CbnForm.AbstractControl = {
+		
+		/**
+		 * Publish additional element properties.
+		 */
+		publish: {
+			isFormControl: {
+				value: true, 
+				reflect: true // set as attribute
+			}
+		}, 
+		
+		/**
+		 * Stores reference to the element's parent `cbn-form` element.
+		 * Available just after the element's `attached` event is processed (the element's `attached` callback is fine).
+		 * @type {HTMLElement}
+		 */
+		parentForm: null, 
+		
+		// Fired events:
+		
+		/**
+		 * Fired automatically when a form control attaches. Bubbles up the DOM tree.
+		 * @event cbn-form-control-attached
+		 */
+		
+		/**
+		 * Fired automatically when a form control is detached from DOM. Bubbles up the DOM tree.
+		 * @event cbn-form-control-detached
+		 */
+		
+		/**
+		 * Sends an event to notify the parent containers of the element's attachment.
+		 */
+		_attached: function () {
+			var element = this;
+			this.fire('cbn-form-control-attached', {
+				element: element
+			}, null, true, false);
+		},
+		
+		/**
+		 * Sends an event to notify the parent containers of the element's detachment.
+		 */
+		_detached: function () {
+			var element = this;
+			this.fire('cbn-form-control-detached', {
+				element: element
+			}, null, true, false);
+		}
+		
+	};
+	
+	//noinspection JSUnusedGlobalSymbols
+	/**
+	 * Defines the abstract interface of form controls that support dynamic element creation.
+	 * 
+	 * Each element must specify the list of accepted template properties using the {@link #dynamicAttributes} object.
+	 */
+	CbnForm.DynamicControl = {
+		
+		// Interface settings
+		_extendProperties: [ 'dynamicAttributes' ], 
+		
+		/**
+		 * Defines form element's dynamically-configurable attributes. 
+		 * Should not be changed after the Polymer `create` event is finished!
+		 * 
+		 * @type {Object<String,Object> | Object<String,String> | Object<String,Boolean>}
+		 * @default { style, className }
+		 */
+		dynamicAttributes: {
+			"style"     : { type: "style" }, 
+			"className" : { type: "className" }
+		}, 
+		
+		/**
+		 * Stores the source object used to generate the current instance. 
+		 * Filled by `cbn-dynamic-form` at element creation time.
+		 * @type {FormElementConfig}
+		 */
+		sourceTemplate: null, 
+		
+		/**
+		 * Polymer element created callback.
+		 * 
+		 * Normalizes the {@link #dynamicAttributes} property.
+		 */
+		created_: function() {
+			for (var i in this.dynamicAttributes) {
+				if (!this.dynamicAttributes.hasOwnProperty(i)) continue;
+				
+				if (this.dynamicAttributes[i] === true) 
+					this.dynamicAttributes[i] = {};
+				if (!this.dynamicAttributes[i].name) 
+					this.dynamicAttributes[i].name = i;
+				if (!this.dynamicAttributes[i].type) 
+					this.dynamicAttributes[i].type = 'attribute';
+			}
+		}, 
+		
+		/**
+		 * Returns the attribute descriptor of a dynamic attribute, if any.
+		 * 
+		 * @param {String}  name The name of the attribute.
+		 * @param {Boolean} [inferDefault=false] If no descriptor exists, infer its defaults. 
+		 */
+		getDynamicAttributeDescriptor: function(name, inferDefault) {
+			var attribute = this.dynamicAttributes[name];
+			if (!attribute && inferDefault) 
+				attribute = { type: 'attribute', name: name };
+			
+			return attribute;
+		},
+		
+		/**
+		 * Sets a dynamic attribute to the specified value.
+		 * 
+		 * If the attribute descriptor isn't defined, it is assumed to be `{ type: 'attribute', name: name }`.
+		 * 
+		 * @extends HTMLElement
+		 * @param {String} name The name of the dynamic attribute to set.
+		 * @param {*}      value The attribute value to set.
+		 */
+		setDynamicAttribute: function(name, value) {
+			var attribute = this.getDynamicAttributeDescriptor(name, true);
+			
+			if (attribute.type == 'style') {
+				if (typeof value == 'object') {
+					for (var s in value) {
+						if (value.hasOwnProperty(s))
+							this.style[s] = value[s];
+					}
+					
+				} else {
+					this.style.cssText = value;
+				}
+				
+			} else if (attribute.type == 'className') {
+				if (typeof value == 'object' && value.length) {
+					this.className = value.join(' ');
+				} else {
+					this.className = value.toString();
+				}
+				
+			} else if (attribute.type == "attribute") {
+				if (value === false) 
+					this.removeAttribute(attribute.name);
+				else
+					this.setAttribute(attribute.name, value);
+				
+			} else if (attribute.type == 'property') {
+				this[attribute.name] = value;
+			}
+		}
+		
+	};
+	
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Defines the abstract interface to be implemented by the custom input elements.
 	 * 
-	 * Note: you need to insert this mixin before your actual component definition in order to override the
-	 * settings here!
-	 * 
-	 * Example:
-	 *     Polymer('your-element', Polymer.mixin({}, CbnAbstractInputMixin, {
-	 *         // element's properties
-	 *     }));
+	 * @extends CbnForm.AbstractControl
 	 */
-	var CbnAbstractInputMixin = {
+	CbnForm.AbstractInput = CbnForm.implement({
 		
-		// Attributes and properties (just for documentation purposes):
+		// Interface settings
+		_extendProperties: [ 'dynamicAttributes' ], 
 		
-		/**
-		 * All `cbn-form`-embeddable inputs must have this set as a HTML attribute (which can be used as selector 
-		 * to query for the inputs).
-		 * 
-		 * @attribute is-form-input
-		 * @type {Boolean}
-		 */
-		isFormInput: true,
-		
-		/**
-		 * This should be true for `"type"="file"` fields (which need special handling inside form's submit method).
-		 * 
-		 * All file inputs must also expose a {@link #getFiles} method that returns a FileList-compatible interface 
-		 * to the selected files.
-		 * 
-		 * @attribute is-file-input
-		 * @type {Boolean}
-		 */
-		isFileInput: false,
-		
+		// Required Element Attributes (just for documentation purposes):
 		
 		/**
 		 * Input's name. 
@@ -181,18 +483,22 @@ type discovery).
 		 * @type {Boolean}
 		 */
 		
-		
 		// DOM Properties:
 		
 		/**
-		 * Defines input element's dynamically-configurable attributes.
-		 * 
-		 * Note that 'value' and 'previewstate' are automatically-bound attributes and don't need to be enumerated 
-		 * here.
-		 * 
-		 * @type {[String]}
+		 * Should be false if the element doesn't need to bind to the form's model. 
+		 * @type {Boolean}
 		 */
-		inputAttributes: [ "type", "name" ],
+		hasModelValue: true, 
+		
+		/**
+		 * Standard form input dynamically-configurable attributes.
+		 */
+		dynamicAttributes: {
+			"type" 		: { type: 'attribute' }, 
+			"name" 		: { type: 'attribute' }, 
+			"preview"	: { type: 'attribute' }
+		},
 		
 		/**
 		 * Optional properties to pass to the parent decorator element (if any).
@@ -201,94 +507,47 @@ type discovery).
 		 * 
 		 * @type {Object}
 		 */
-		decoratorConfig: {},
+		decoratorConfig: null,
 		
 		/**
-		 * Stores reference to the element's parent `cbn-form` element.
-		 * Available after the input's `attached` event is processed.
-		 * 
+		 * Stores the parent container element bound to the input's model object.
+		 * Available just after the element's `attached` event is processed (the element's `attached` callback is fine).
 		 * @type {HTMLElement}
 		 */
-		parentForm: null,
+		modelContainer: null,
 		
-		
-		// Element lifecycle handlers:
+		// Callback methods
 		
 		/**
 		 * Element instance created callback.
-		 * 
-		 * Use `CbnAbstractInputMixin.created.apply(this)` if you want to override it.
 		 */
-		created: function () {
-			// nothing yet
+		_created: function () {
+			if (!this.decoratorConfig)
+				this.decoratorConfig = {};
 		}, 
 		
-		/**
-		 * Polymer element ready callback.
-		 * 
-		 * Use `CbnAbstractInputMixin.ready.apply(this)` if you want to override it.
-		 */
-		ready: function () {
-			// nothing yet
-		},
-		
-		/**
-		 * Sends an event to notify the parent containers of this input's existence in their DOM.
-		 * 
-		 * Use `CbnAbstractInputMixin.attached.apply(this)` if you want to override it.
-		 */
-		attached: function () {
-			var input = this;
-			this.async(function(){
-				this.fire('cbn-form-input-attached', {
-					input: input, 
-					bindValue: true
-				}, null, true, false);
-			});
-		},
-		
-		/**
-		 * Sends an event to notify the parent containers of this input's detachment from their DOM.
-		 * 
-		 * Use `CbnAbstractInputMixin.detached.apply(this)` if you want to override it.
-		 */
-		detached: function () {
-			var input = this;
-			this.fire('cbn-form-input-detached', {
-				input: input, 
-				unbindValue: true
-			}, null, true, false);
-		},
-		
-		// Fired events:
-		
-		/**
-		 * Fired automatically when an input attaches. 
-		 * Bubbles up the DOM tree.
-		 * 
-		 * @event cbn-form-input-attached
-		 */
-		
-		/**
-		 * Fired automatically when an input is detached from DOM. 
-		 * Bubbles up the DOM tree.
-		 * 
-		 * @event cbn-form-input-detached
-		 */
-		
-		
-		// Element API methods: 
+		// Element API methods:
 		
 		/**
 		 * Requests validation of the input (called by the form element before submit).
 		 * 
 		 * The input element is responsible for showing / highlighting the error to the user.
 		 * 
-		 * @return True if the input validates, false otherwise.
+		 * @return {Boolean} True if the input validates, false otherwise.
 		 */
 		validate: function () {
 			return true;
-		}, 
+		}
+		
+		
+	}, CbnForm.AbstractControl);
+	
+	/**
+	 * Defines the abstract interface to be implemented by the custom file input elements.
+	 * 
+	 * @extends CbnForm.AbstractInput
+	 */
+	CbnForm.AbstractFileInput = CbnForm.implement({ 
 		
 		/**
 		 * This method should be implemented by file inputs.
@@ -300,23 +559,19 @@ type discovery).
 			throw "Not implemented!";
 		}
 		
-	};
+	}, CbnForm.AbstractInput);
 	
+	
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Defines the abstract interface to be implemented by the custom input decorators.
 	 * 
 	 * An input decorator is an element that wraps the actual input inside (via light DOM) and can show several other UI 
 	 * elements around it (such as labels, validation errors etc.).
 	 * 
-	 * Note: you need to insert this mixin before your actual component definition in order to override the
-	 * settings here!
-	 * 
-	 * Example:
-	 *     Polymer('your-decorator', Polymer.mixin({}, CbnAbstractInputDecoratorMixin, {
-	 *         // element's properties
-	 *     }));
+	 * @extends CbnForm.AbstractControl
 	 */
-	var CbnAbstractInputDecoratorMixin = {
+	CbnForm.AbstractInputDecorator = CbnForm.implement({
 		
 		/**
 		 * Whether the current instance should be shown as preview in form groups.
@@ -337,80 +592,187 @@ type discovery).
 		previewState: false,
 		
 		/**
-		 * Defines decorator's dynamically-configurable attributes.
-		 * 
-		 * Note 'previewstate' is automatically-bound and donesn't need to be enumerated here.
-		 * 
-		 * @type {[String]}
+		 * Standard input decorator dynamically-configurable attributes.
 		 */
-		decoratorAttributes: [ "label", "preview" ], 
+		dynamicAttributes: {
+			"label"  : { type: 'attribute' }, 
+			"preview": { type: 'attribute' }
+		}, 
 		
 		
 		// Element lifecycle methods:
 		
 		/**
 		 * Element instance created callback.
-		 * 
-		 * Use `CbnFormModelBindingMixin.created.apply(this)` if you want to override it.
 		 */
-		created: function () {
+		_created: function () {
 			// nothing yet
 		}, 
 		
 		/**
 		 * Polymer element ready callback.
-		 * 
-		 * Use `CbnFormModelBindingMixin.ready.apply(this)` if you want to override it.
 		 */
-		ready: function () {
+		_ready: function () {
 			// nothing yet
 		}
 		
-	};
+	}, CbnForm.AbstractControl);
 	
 	// noinspection JSUnusedGlobalSymbols
 	/**
-	 * A mixin that implements utility model value binding methods.
+	 * A mixin used by control containers (cbn-form, cbn-dynamic-form etc.) to gain control over an input's model value.
 	 * 
-	 * Used by model containers (cbn-form, cbn-dynamic-form etc.) to bind to the value attributes when an input is 
-	 * attached.
-	 * 
-	 * Example:
-	 *     Polymer('your-element', Polymer.mixin({
-	 *         // element's properties
-	 *     }, CbnFormModelBindingMixin));
+	 * @extends CbnForm.AbstractControl
 	 */
-	var CbnFormModelBindingMixin = {
+	CbnForm.AbstractContainer = CbnForm.implement({
+		
+		publish: {
+			
+			/**
+			 * Dynamic form's data model to use for its inputs. 
+			 * If not set, the parent container will manage the children's model.
+			 * 
+			 * @attribute model
+			 * @type {Object}
+			 * @default null
+			 */
+			model: CbnForm.NullObject
+			
+		}, 
+		
+		/**
+		 * This property should be true only for the `cbn-form` element.
+		 * 
+		 * @type {Boolean}
+		 * @default false
+		 */
+		isMasterContainer: false,
+		
+		/**
+		 * A dynamic list that stores the input children of the container. 
+		 * Accessible after the domReady callback.
+		 * @type {CbnForm.AbstractControl[]}
+		 * @default []
+		 */
+		childControls: null, 
+		
+		/**
+		 * Like {@link #childControls}, but only stores the input elements whose values are bound to the container's 
+		 * model.
+		 * @type {CbnForm.AbstractInput[]}
+		 * @default []
+		 */
+		childInputs: [], 
+		
+		
+		/**
+		 * Element instance created callback.
+		 */
+		_created: function(){
+			this.childControls = [];
+			this.childInputs = [];
+		}, 
+		
+		/**
+		 * Polymer element ready callback.
+		 * 
+		 * Binds to the form control attached / detached events, sets/unsets the parentForm property and the model 
+		 * (value) bindings.
+		 */
+		_ready: function() {
+			var container = this;
+			var containerHasModel = (this.model && this.model != CbnForm.NullObject);
+			
+			this.addEventListener('cbn-form-control-attached', function (event) {
+				var element = event.detail.element;
+				container.childControls.push(element);
+				
+				if (container.isMasterContainer && element.parentForm != container) 
+					element.parentForm = container;
+				
+				// bind to the input's value in a first-come, first-served manner
+				if (containerHasModel && element.hasModelValue && !element.modelContainer) {
+					container.bindValue(element);
+					container.childInputs.push(element);
+				}
+			});
+			
+			this.addEventListener('cbn-form-control-detached', function (event) {
+				var element = event.detail.element;
+				if (container.isMasterContainer && element.parentForm == form) {
+					element.parentForm = null;
+					
+					var idx = container.childControls.indexOf(element);
+					if (idx >= 0) container.childControls.splice(idx, 1);
+					
+					if (element.hasModelValue && element.modelContainer == container) {
+						container.unbindValue(element);
+						
+						idx = container.childInputs.indexOf(element);
+						if (idx >= 0) container.childInputs.splice(idx, 1);
+					}
+				}
+			});
+		}, 
+		
+		/**
+		 * Model property changed. Used to detect changes to the model and re-bind the input values.
+		 */
+		modelChanged_: function() {
+			for (var i=0; i<this.childInputs.length; i++) {
+				var input = this.childInputs[i];
+				this.bindValue(input);
+			}
+		}, 
+		
+		/**
+		 * Requests the validation of all inputs and returns the boolean result.
+		 * 
+		 * @return {Boolean} The validation result (true if all child inputs passed validation).
+		 */
+		validate: function() {
+			var i;
+			var passed = true;
+			
+			for (i=0; i<this.childInputs.length; i++) {
+				if (!this.childInputs[i].validate()) {
+					passed = false;
+					break;
+				}
+			}
+			
+			return passed;
+		},
 		
 		/**
 		 * Binds an observer to the given model to an input's value property.
 		 * 
-		 * @param {HTMLElement} input The target input to bind to.
+		 * @param {CbnForm.AbstractInput} input The target input to bind to.
 		 */
 		bindValue: function(input) {
 			// HACK / workaround for a typo bug in the Node.bind() library 
-			if (input.bindings_ && input.bindings_['value']) {
-				input.bindings_['value'].close();
-				input.bindings_['value'] = undefined;
+			if (input['bindings_'] && input['bindings_']['value']) {
+				input['bindings_']['value'].close();
+				input['bindings_']['value'] = undefined;
 			}
-			input.bind('value', new PathObserver(this.model, input.name));
-			input._valueBoundParent = this;
+			input.bind('value', new PathObserver(this.model, input['name']));
+			input.modelContainer = this;
 		},
 		
 		/**
 		 * Unbinds the observer for an input's value property.
 		 * 
-		 * @param {HTMLElement} input The target input to unbind.
-		 * @param {Boolean} force Set to true to force unbinding (even if the owner is not 'this').
+		 * @param {CbnForm.AbstractInput} input The target input to unbind.
+		 * @param {Boolean}               [force=false] Set to true to force unbinding (even if the owner is not 'this').
 		 */
 		unbindValue: function(input, force) {
-			if (force || input._valueBoundParent == this) {
+			if (force || input.modelContainer == this) {
 				// the element will automatically be unbound by Polymer after being detached
-				// so we only need to update the input's model controller
-				input._valueBoundParent = null;
+				// so we only need to update the input's model container
+				input.modelContainer = null;
 			}
 		}
 		
-	};
+	}, CbnForm.AbstractControl);
 	
 </script>
