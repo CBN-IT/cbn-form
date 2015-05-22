@@ -7,7 +7,7 @@
 	<script src="../../webcomponentsjs/webcomponents.js"></script>
 	
 	<link rel="import" href="../../core-ajax/core-ajax.html">
-	<link rel="import" href="../../cbn-flexgrid/flexgrid.html">
+	<link rel="import" href="../../cbn-grid/flexgrid.html">
 	
 	<link rel="import" href="../cbn-form.html">
 	<link rel="import" href="../cbn-dynamic-form.html">
@@ -27,16 +27,14 @@
 
 <template id="template-wrapper" is="auto-binding">
 	
-	<core-ajax auto url="basic-dynamic-form.json" handleAs="json" response="{{formConfig}}"></core-ajax>
-	
 	<cbn-form model="{{formModel}}" style="width: 400px;">
 		
 		<cbn-form-group caption="Personal Data">
 			<div class="group-inner row">
-				<input is="cbn-basic-input" label="First Name" class="col-xs-6" preview 
+				<input is="cbn-basic-input" title="First Name" class="col-xs-6" preview 
 							name="first_name" value="1" />
 				
-				<input is="cbn-basic-input" label="Last Name" class="col-xs-6"
+				<input is="cbn-basic-input" title="Last Name" class="col-xs-6"
 							name="last_name" />
 			</div>
 		</cbn-form-group>
