@@ -18,7 +18,6 @@ label > span {
 	margin: 0.2em 0 0.4em 0;
 }
 
-::content input, 
-::content *[is-form-input] {
+::content input, ::content textarea {
 	width: 100% !important;
 }

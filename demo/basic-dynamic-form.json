@@ -41,7 +41,8 @@
 				{
 					"inherit": "input",
 					"name": "personal.address",
-					"type": "text",
+					"type": "textarea",
+					"rows": 4,
 					"preview": false,
 					"label": "Address", 
 					"className": "col-xs-12"

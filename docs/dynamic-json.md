@@ -4,77 +4,116 @@ CBN Forms
 Dynamic forms documentation
 ---------------------------
 
-The dynamic form configuration object has the following format: 
+The dynamic form configuration object has the following format (example): 
 
 ```javascript
 config = {
-	"fieldDefaults": {
-		"preview": true, 
-		"decorator": "cbn-basic-decorator"
+	"types": {
+		"group": "cbn-form-group", 
+		"text": "cbn-basic-input", 
 	},
-	"groups": [{
+	"defaults": {
+		"*": { "inherit": "input" }, 
+		"input": {
+			"decorator": "cbn-basic-decorator",
+			"preview": true
+		}
+	},
+	"elements": [{
+		"type": "group",
 		"caption": "Group Caption", 
-		"fields": [
+		"children": [
 			{
-				"name": "example",
+				"inherit": "input",
 				"type": "text",
-				"label": "Example Field",
-				"preview": true, 
-				"format": "capitalize"
+				"name": "example",
+				"label": "Example Field"
 			}, // etc.
 		]
 	}]
 }
 ```
 
-Alternatively, you can specify a `fields` key directly if you want to have a flat structure: 
+The `cbn-dynamic-form` element receives a config template and creates the elements inside its shadow DOM.
+
+The form elements are specified as objects inside the `elements` array.
+
+There are several types of form elements available:
+
+- *input elements*, which provide the user with entering input values;
+- *container elements*, which define a container that manages several other elements (via the `children` config 
+  property);
+
+All usable elements must implement the `CbnForm.DynamicControl` interface, which tells `cbn-dynamic-form` that the 
+element supports dynamic instantiation and provides a map of configurable properties (`dynamicAttributes`).
+
+### Template (config) object
+
+The template object, at the root level, can have 3 basic properties:
+ 
+- `types`: a &lt;String, String&gt; map with elements to use for each types; overrides the declared type of the elements;
+- `defaults`: an object with default templates applied to the objects or that can be inherited by the elements (see below);
+- `elements`: the main template array with the elements to render.
+
+Each element's template object is a map of properties, some with special meaning:
+ 
+- `inherit`: optional, specifies the name of a default template object to inherit;
+- `type`: required, the type of the element (decides what form element should be created);
+- `element`: optional, overrides the HTML element to instantiate;
+- `children`: for container elements only, specify the list of children to render inside the target element;
+- `wrapChildren`: optional, a HTML element to wrap children inside (see below); 
+- `style`: the CSS attributes of the element; can be a Object or a CSS text (String);
+- `className`: the CSS classes of the element; can be a Array or a space-separated String;
+- some properties are defined inside the element interfaces and/or by the elements themselves and have special meaning;
+- all other properties will be set as HTML attributes.
+
+The template rendering process is recursive: for container elements, the list of `children` can contain other container 
+elements that can have their own children and so on (i.e. the template system is hierarchic).
+
+If you want to wrap the children elements of a form container element (e.g. to set a "row" class and have the child 
+inputs aligned in a CSS grid), you can use the `wrapChildren` property to wrap them inside a basic HTML element. 
+It accepts a standard template object, where you specify the element to be created by the `element` property, and 
+accepts any other HTML attributes.
+
+For example:
 ```javascript
-config = {
-	"flatFields": [
-		{
-			"name": "example",
-			"type": "text",
-			"label": "Example Field"
-		}, // etc.
-	]
+{
+	"elements": [ {
+		"type": "group",
+		"caption": "A Group", 
+		"wrapChildren": {
+			"element": "div", 
+			"className": "row group-inner"
+		}, 
+		"children": [ /*...*/ ]
+	} ]
 }
 ```
 
 <br>
-### Available config object properties:
-- `groups` (*FormGroupConfig[]*): form groups to render;
-- `flatFields` (*FormFieldConfig[]*): if you want to directly print form fields (outside any group), use this instead 
-   of specifying the fields inside `groups`;
-- `flatFlexGrid` (*Boolean*): set to true to activate flexbox grid for `flatFields`;
-- `fieldDefaults` (*FormFieldConfig*): use this to specify the default field properties that will be applied for all 
-   `FormFieldConfig` objects (for fields inside `groups` or `flatFields`).
+### Cbn-Form-Group: 
 
-<br>
-### Available `cbn-form-group` properties: 
+Is a container element that groups together several other input elements, with preview/edit toggleable states (edit on 
+focus).
+
+Configurable properties:
 
 - `caption` (*String*): the caption (text) of the form;
 - `toggleable` (*Boolean*): whether the form group is toggleable (has two states: preview / editable) or all inputs are 
    editable by default;
-- `className` (*String|String[]*): the HTML classes to add to the group element;
-- `style` (*String|Object*): the CSS to add to the group element;
-- `fields` (*FormFieldConfig[]*): the list of form field elements contained by the group.
+
 
 <br>
-### Available `FormFieldConfig` properties:
+### Input and decorator elements:
 
-#### Attributes required / implemented by the abstract interface: 
+The form will 
 
-- `name` (*String*): input's unique identifier / name;
-- `type` (*String*): the type of the form field to render;
-- `element` (*String*): override the name of the HTML input element to render; the element must implement   
-   the `CbnAbstractInputMixin` mixin / interface; optional: usually, the element is autodetected from the input type;
+#### Attributes required / implemented by the `AbstractInput` interface: 
+
+- `name` (*String*): input's name (model path);
 - `decorator` (*String*): the name of the decorator (HTML element) to use for decorating the input; the element must 
-   implement the `CbnAbstractInputDecoratorMixin` interface; set to false (default) if no decorator is desired; 
+   implement the `AbstractInputDecorator` interface; set to false (default) if no decorator is desired; 
 - `preview` (*Boolean*): for use with toggleable groups, specified whether the input is visible initially;
-- `className` (*String|String[]*): the HTML classes to add to the group element;
-- `style` (*String|Object*): the CSS to add to the group element.
-- `flexGrid` (*Boolean*): Set to true to activate the flexgrid row class for the contained inputs, 
-   see https://github.com/matthewsimo/scss-flex-grid for documentation;
 
 <br>
 **There are several other recommended attributes:**

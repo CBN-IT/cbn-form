@@ -1,0 +1,80 @@
+<!--
+`cbn-basic-textarea` implements a basic textarea.
+
+@group cbn-form
+@element cbn-basic-textarea
+-->
+
+<!-- Imports -->
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../cbn-form-abstract.html">
+
+<style shim-shadowdom>
+	html /deep/ textarea[is=cbn-basic-textarea] {
+		width: 20em;
+		display: inline-block;
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0.3em;
+		
+		font: inherit;
+		background-color: transparent;
+		box-shadow: none;
+		outline: none;
+		border: solid 1px #dcdcdc;
+		transition: box-shadow 0.3s, border 0.3s;
+	}
+	html /deep/ textarea[is=cbn-basic-textarea]:focus {
+		outline: none !important;
+		border: solid 1px #707070;
+		box-shadow: 0 0 5px 1px #969696;
+	}
+	
+	/*noinspection CssUnusedSymbol*/
+	html /deep/ textarea[is=cbn-basic-textarea].unstyled {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		transition: none;
+		box-shadow: none;
+	}
+</style>
+
+<polymer-element name="cbn-basic-textarea" extends="textarea">
+	
+	<script>
+		Polymer('cbn-basic-textarea', CbnForm.implement({
+			
+			publish: { // Published attributes:
+				
+				/**
+				 * Whether the input is in a preview state.
+				 * 
+				 * @attribute previewstate
+				 * @type {Boolean}
+				 */
+				previewState: false
+				
+			}, 
+			
+			/**
+			 * Element's dynamically-configurable attributes.
+			 */
+			dynamicAttributes: {
+				"title" : { type: 'attribute' }, 
+				"placeholder" : { type: 'attribute' }, 
+				"rows" : true,
+				"cols" : true
+			}
+			
+		}, CbnForm.AbstractInput, CbnForm.DynamicControl));
+		
+		//noinspection JSCheckFunctionSignatures
+		CbnForm.registerElement('cbn-basic-textarea', {
+				extends: 'textarea', 
+				types: ['textarea']
+			});
+		
+	</script>
+	
+</polymer-element>
