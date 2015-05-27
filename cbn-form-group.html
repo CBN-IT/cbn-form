@@ -91,18 +91,13 @@ visual features (preview / edit stances etc.).
 				ready: function() {
 					var currentGroup = this;
 					
-					if (this.toggleable) {
-						this.close();
-						
-						// stop click event propagation (so the group won't get closed)
-						this.addEventListener('click', function(event) {
+					// stop click event propagation (so the group won't get closed)
+					this.addEventListener('click', function(event) {
+						if (currentGroup.toggleable) {
 							event.stopPropagation();
 							currentGroup.open();
-						}, false);
-						
-					} else {
-						this.previewState = false;
-					}
+						}
+					}, false);
 					
 					// Bind the magic 'previewState' attribute to the form inputs
 					this.addEventListener('cbn-form-control-attached', function (event) {
@@ -120,35 +115,43 @@ visual features (preview / edit stances etc.).
 							target._parentFormGroup = null;
 						}
 					});
+					
+					this.toggleableChanged();
 				},
+				
+				toggleableChanged: function() {
+					if (this.toggleable) {
+						this.close();
+						
+					} else {
+						this.open();
+					}
+				}, 
 				
 				/**
 				 * Opens the group element.
 				 */
 				open: function () {
-					if (!this.toggleable) 
-						return;
-					
-					if (currentlyOpenGroup && currentlyOpenGroup != this)
-						currentlyOpenGroup.close();
+					if (this.toggleable) {
+						if (currentlyOpenGroup && currentlyOpenGroup != this)
+							currentlyOpenGroup.close();
+						currentlyOpenGroup = this;
+						this.$.container.setZ(1);
+						
+					} else {
+						this.$.container.setZ(0);
+					}
 					this.previewState = false;
-					this.$.container.setZ(1);
-					
-					currentlyOpenGroup = this;
 				},
 				
 				/**
 				 * Closes the current group, if open.
 				 */
 				close: function () {
-					if (!this.toggleable) 
-						return;
-					
-					this.previewState = true;
-					this.$.container.setZ(0);
-					
 					if (currentlyOpenGroup == this)
 						currentlyOpenGroup = null;
+					this.$.container.setZ(0);
+					this.previewState = true;
 				}
 				
 			}, CbnForm.AbstractContainer, CbnForm.DynamicControl ));

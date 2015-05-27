@@ -106,7 +106,7 @@ Configurable properties:
 <br>
 ### Input and decorator elements:
 
-The form will 
+
 
 #### Attributes required / implemented by the `AbstractInput` interface: 
 
