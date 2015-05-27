@@ -145,7 +145,38 @@ type discovery).
 		 * @param {Object} obj The target object to extend.
 		 */
 		implement: function (obj/*, mixin1 ...*/) {
-			var i, p, n, match; // iterators / auxiliary variables
+			var i, p, n, m, match; // iterators / auxiliary variables
+			
+			var overrideMethod = function(method) {
+				var f = function() {
+					var i;
+					if (!this['_overriddenMethods'] || !this['_overriddenMethods'][method])
+						return;
+					
+					if (this['_overriddenMethods'][method].before) 
+						for (i=0; i<this['_overriddenMethods'][method].before.length; i++ ) {
+							this['_overriddenMethods'][method].before[i].apply(this, arguments);
+						}
+					if (this['_overriddenMethods'][method].orig) {
+						this['_overriddenMethods'][method].orig.apply(this, arguments);
+					}
+					if (this['_overriddenMethods'][method].after) 
+						for (i=0; i<obj['_overriddenMethods'][method].after.length; i++ ) {
+							this['_overriddenMethods'][method].after[i].apply(this, arguments);
+						}
+				};
+				f._overriddenMethodDecorator = true;
+				return f;
+			};
+			
+			var initOverride = function(obj, method) {
+				if (!obj._overriddenMethods[method]) 
+					obj._overriddenMethods[method] = {
+						before: [],
+						orig: null,
+						after: []
+					};
+			};
 			
 			// copies a property from a source object to a target object
 			function copyProperty(name, source, target) {
@@ -161,8 +192,29 @@ type discovery).
 				}
 			}
 			
+			// internally used properties
+			obj = obj || {};
+			
+			/**
+			 * Stores the references of all mixins implemented so far.
+			 * @private
+			 * @property _implementedMixins
+			 * @type {Object[]}
+			 */
+			if (!obj._implementedMixins) obj._implementedMixins = [];
+			
+			/**
+			 * A map with the overridden methods.
+			 * The key is the method name.
+			 * 
+			 * @private
+			 * @property _overriddenMethods
+			 * @type {Object<String,{before:Function[], , after:Function[]}>}
+			 */
+			if (!obj._overriddenMethods) obj._overriddenMethods = {};
+			
 			var lifecycleMethods = ["created", "ready", "attached", "domReady", "detached", "attributeChanged"];
-			var doNotCopyProps = ["_extendProperties", "_implementedMixins"];
+			var doNotCopyProps = ["_extendProperties", "_implementedMixins", "_overriddenMethods"];
 			var alwaysExtendProps = ["publish"];
 			
 			var methodsMap = {};
@@ -180,25 +232,36 @@ type discovery).
 				}
 			}
 			
-			obj = obj || {};
-			if (!obj._implementedMixins) obj._implementedMixins = [];
-			
 			for (i = 1; i < arguments.length; i++) {
 				p = arguments[i];
 				
+				// inherit the overridden methods
+				if (p._overriddenMethods) {
+					for (m in p._overriddenMethods) {
+						if (!p._overriddenMethods.hasOwnProperty(m)) continue;
+						initOverride(obj, m);
+						if (p._overriddenMethods[m].before) 
+							obj._overriddenMethods[m].before = obj._overriddenMethods[m].before.concat(p._overriddenMethods[m].before);
+						if (p._overriddenMethods[m].after)
+							obj._overriddenMethods[m].after = obj._overriddenMethods[m].after.concat(p._overriddenMethods[m].after);
+						if (p._overriddenMethods[m].orig && !obj._overriddenMethods[m].orig)
+							obj._overriddenMethods[m].orig = p._overriddenMethods[m].orig;
+					}
+				}
+				// copy properties from mixin
 				for (n in p) {
 					if (!p.hasOwnProperty(n)) continue;
 					
 					if (methodsMap.hasOwnProperty(n)) {
 						// special case: lifecycle/observer methods
 						var method = methodsMap[n];
-						obj[method] = (function (mixin, old, key) {
-							return function () {
-								if (mixin.hasOwnProperty("_" + key)) mixin["_" + key].apply(this, arguments);
-								if (old && old.apply(this, arguments) === false) return;
-								if (mixin.hasOwnProperty(key + "_")) mixin[key + "_"].apply(this, arguments);
-							}
-						})(p, obj[method], method);
+						initOverride(obj, method);
+						
+						if (n.indexOf('_') == 0) {
+							obj._overriddenMethods[method].before.push(p[n]);
+						} else {
+							obj._overriddenMethods[method].after.push(p[n]);
+						}
 						
 					} else if (doNotCopyProps.indexOf(n) != -1) {
 						// special mixin property, do not copy
@@ -234,12 +297,24 @@ type discovery).
 					// nice to have: also extend eventDelegates handlers, property observers etc.
 				}
 				
+				// insert the current interface to the implemented mixins list
 				if (obj._implementedMixins.indexOf(p) == -1)
 					obj._implementedMixins.push(p);
 				if (p._implementedMixins) {
 					for (var j=0; j < p._implementedMixins.length; j++) {
 						if (obj._implementedMixins.indexOf(p._implementedMixins[j]) == -1)
 							obj._implementedMixins.push(p._implementedMixins[j]);
+					}
+				}
+				
+				for (m in obj._overriddenMethods) {
+					if (!obj._overriddenMethods.hasOwnProperty(m)) continue;
+					if (!obj[m] || !obj[m]._overriddenMethodDecorator) {
+						if (obj[m]) {
+							// save the original method
+							obj._overriddenMethods[m].orig = obj[m];
+						}
+						obj[m] = overrideMethod(m);
 					}
 				}
 			}
@@ -773,6 +848,6 @@ type discovery).
 			}
 		}
 		
-	}, CbnForm.AbstractControl);
+	});
 	
 </script>
