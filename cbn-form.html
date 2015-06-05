@@ -361,6 +361,13 @@ Example:
 				
 				xhr.open(method, url, async);
 				
+				if (!options.headers) {
+					options.headers = {};
+				}
+				if (!options.headers["Content-Type"]) {
+					options.headers["Content-Type"] = "application/x-www-form-urlencoded";
+				}
+				
 				if (options.responseType) 
 					xhr.responseType = options.responseType;
 				if (options.withCredentials) 
