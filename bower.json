@@ -20,7 +20,7 @@
     },
     "devDependencies": {
         "core-component-page": "Polymer/core-component-page#^0.5",
-        "web-component-tester": "Polymer/web-component-tester#^3.1",
+        "web-component-tester": "Polymer/web-component-tester",
         "cbn-grid": "git@bitbucket.org:cbn-it/cbn-grid.git#master",
         "cbn-input": "git@bitbucket.org:cbn-it/cbn-input.git#master",
         "cbn-select": "git@bitbucket.org:cbn-it/cbn-select.git#master"

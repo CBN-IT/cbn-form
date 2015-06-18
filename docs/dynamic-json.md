@@ -115,6 +115,13 @@ Configurable properties:
    implement the `AbstractInputDecorator` interface; set to false (default) if no decorator is desired; 
 - `preview` (*Boolean*): for use with toggleable groups, specified whether the input is visible initially;
 
+#### Attributes for the `ValidatableInput` interface:
+
+- `validation` (*Object*): an object with validation methods to apply to the input;
+- `validationType` (*String*): the type of the validators to apply (usually, 'text');
+- `validationOrder` (*[String]*): optional, an array with the order in which to run the validators;
+- `validationMessage` (*String*): the error to display if the validation failed;
+
 <br>
 **There are several other recommended attributes:**
 
@@ -123,7 +130,6 @@ Configurable properties:
 - `label` (*String*): caption text to show next to the field;
 - `tooltip` (*String*): a tooltip to show to the user (i.e. if the user hovers over a help icon);
 - `format` (*String*): a formatting method to pass the input's value through before returning it;
-- `validate` (*Object*): an object with validation methods to apply to the input;
 - `error` (*String*): standard error message override to show if the validation failed.
 
 #### 2. For multiple-valued (select) / autocompleted inputs: 
@@ -145,7 +151,14 @@ The `options` array should be a string values list or an Object array (format: `
 <br>
 ### Validators: 
 
-- [HTML5 constraint validation attributes](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation);
-- `minlength`, `maxlength` for text/textarea fields;
-- `minfilesize`, `maxfilesize` for file inputs;
+The built-in validators were inspired from the 
+[HTML5 constraint validation attributes](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation);
 
+Available validators for `validationType: 'text'`: 
+
+- `required`: validates that the input was not left empty;
+- `minlength`, `maxlength`: verifies the length of the input string;
+- `pattern`: validates using a RegExp pattern (+ some predefined pattern validators such as `email`);
+- `number`, `min`, `max`: validates numeric values and their bounds;
+
+For more information, please check `cbn-form-validator.html` (source).

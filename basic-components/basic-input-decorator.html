@@ -1,8 +1,8 @@
 <!--
-`cbn-basic-input` implements a basic text input.
+`cbn-basic-input` implements a basic input decorator.
 
 @group cbn-form
-@element input-text
+@element cbn-basic-input-decorator
 -->
 
 <!-- Imports -->
@@ -14,11 +14,12 @@
 	<template>
 		<link rel="stylesheet" href="basic-input-decorator.css" />
 		
-		<label id="label" on-tap="{{tapHandler}}">
+		<label id="label" on-tap="{{_tapHandler}}">
 			<span>{{label}}</span>
-			
 			<content></content>
 		</label>
+		
+		<span class="error {{ { hidden: !invalid } | tokenList }}">{{ _validationError }}</span>
 	</template>
 	
 	<script>
@@ -46,15 +47,39 @@
 					 * @attribute previewstate
 					 * @type {Boolean}
 					 */
-					previewState: false
+					previewState: false,
+					
+					/**
+					 * Set this property to true to validate the input as the user types (at the `input` event).
+					 * 
+					 * @attribute autoValidate
+					 * @type Boolean
+					 * @default false
+					 */
+					autoValidate: false,
+					
+					/**
+					 * Whether the decorated input value is invalid.
+					 */
+					invalid: {
+						value: false,
+						reflect: true
+					}
+					
 				},
 				
 				/**
 				 * Element's dynamically-configurable attributes.
 				 */
 				dynamicAttributes: {
-					"label" : { type: 'attribute' }
-				}, 
+					"label" : { type: 'attribute' },
+					"autoValidate": { type: 'attribute' }
+				},
+				
+				/**
+				 * Specifies the selectors used to search for the inputs.
+				 */
+				_inputSelector: 'input, textarea, select, [is-form-input]',
 				
 				/**
 				 * Stores reference to the [first] decorated input element.
@@ -64,6 +89,13 @@
 				 */
 				_inputElement: null,
 				
+				/**
+				 * Stores the validation error. Empty means no error.
+				 * @private
+				 * @type {String}
+				 */
+				_validationError: '',
+				
 				
 				/**
 				 * Fires when the element is created. Used to initialize its attributes.
@@ -72,12 +104,20 @@
 				},
 				
 				/**
+				 * Fires when the element is ready. Used to initialize event handlers.
+				 */
+				ready: function () {
+					this.addEventListener('input', this._onInput.bind(this));
+					this.addEventListener('change', this._onChange.bind(this));
+				},
+				
+				/**
 				 * Called when polymer element has been fully prepared and its DOM children are initialized.
 				 * 
 				 * Analyzes the light DOM and retrieves the decorated input element.
 				 */
 				domReady: function() {
-					this._inputElement = this.querySelector("input, textarea, select, [is-form-input]");
+					this._inputElement = this.querySelector(this._inputSelector);
 					
 					var label = this.$.label;
 					label.id = generateLabelId();
@@ -85,19 +125,58 @@
 					if (this._inputElement) {
 						this._inputElement.setAttribute('aria-labelledby', label.id);
 					}
-				}, 
+				},
 				
+				/**
+				 * Validates the element.
+				 * 
+				 * @param {Boolean} allowEmpty Whether to allow empty values.
+				 */
+				validate: function(allowEmpty) {
+					this.invalid = false;
+					if (!this._inputElement) return true;
+					
+					this.invalid = !this._inputElement.validate();
+					this._validationError = this._inputElement.validationState.message;
+					if (allowEmpty && !this._inputElement.value) {
+						this.invalid = false;
+						this._validationError = '';
+					}
+					
+					return !this.invalid;
+				},
+				
+				// Private methods:
+				
+				/**
+				 * Input `input` event handler.
+				 */
+				_onInput: function() {
+					if (this.autoValidate) {
+						this.validate(true);
+					}
+				},
+				
+				/**
+				 * Input `input` event handler.
+				 */
+				_onChange: function() {
+					if (this.autoValidate) {
+						this.validate();
+					}
+				},
 				
 				/**
 				 * Label tap handler to focus the input element.
 				 */
-				tapHandler: function() {
+				_tapHandler: function() {
 					if (this._inputElement) {
 						this._inputElement.focus();
 					}
 				}
 				
 			}, CbnForm.AbstractInputDecorator, CbnForm.DynamicControl));
+			
 		})();
 		
 	</script>

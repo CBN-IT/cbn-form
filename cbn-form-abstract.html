@@ -517,6 +517,7 @@ type discovery).
 		
 	};
 	
+	
 	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Defines the abstract interface to be implemented by the custom input elements.
@@ -526,36 +527,59 @@ type discovery).
 	CbnForm.AbstractInput = CbnForm.implement({
 		
 		// Interface settings
-		_extendProperties: [ 'dynamicAttributes' ], 
+		_extendProperties: [ 'dynamicAttributes' ],
 		
-		// Required Element Attributes (just for documentation purposes):
+		publish: { // Published attributes:
+			
+			/**
+			 * Input's name. 
+			 * 
+			 * It is used as model binding path 
+			 * For example, the value 'name.first_name' will bind to the model path `model.name.first_name`.
+			 * 
+			 * @attribute name
+			 * @type {String}
+			 */
+			
+			/**
+			 * Input's value attribute.
+			 * Should be String for most of the cases, Array if the input supports multiple values and Object for
+			 * special input types (e.g. file). And array of objects for special types with multiple values, ofc. ;)
+			 * 
+			 * @attribute value
+			 * @type { Array | Object | [String] | [Object]}
+			 */
+			
+			/**
+			 * Is the input currently in a preview state?
+			 * 
+			 * Automatically bound by the `cbn-form-group` component if the {@link #preview} property is true.
+			 * 
+			 * @attribute previewState
+			 * @type {Boolean}
+			 */
+			previewState: false
+			
+		},
+		
+		// Events
 		
 		/**
-		 * Input's name. 
+		 * Custom inputs should fire `input` and `changed` events whenever the value is changed / committed.
 		 * 
-		 * It is used as model binding path 
-		 * For example, the value 'name.first_name' will bind to the model path `model.name.first_name`.
+		 * The `input` event is fired every time the input's value changes (e.g. for every character typed).
 		 * 
-		 * @attribute name
-		 * @type {String}
+		 * The event bubbles. 
+		 * If your input contains other inputs, it should stop their bubbling events (i.e. hide them).
+		 * 
+		 * @event input
 		 */
 		
 		/**
-		 * Input's value attribute.
-		 * Should be String for most of the cases, Array if the input supports multiple values and Object for
-		 * special input types (e.g. file). And array of objects for special types with multiple values, ofc. ;)
+		 * The `change` event should be fired when the input value is committed (e.g. the element loses focus).
+		 * The event bubbles.
 		 * 
-		 * @attribute value
-		 * @type { Array | Object | [String] | [Object]}
-		 */
-		
-		/**
-		 * Is the input currently in a preview state?
-		 * 
-		 * Automatically bound by the `cbn-form-group` component if the {@link #preview} property is true.
-		 * 
-		 * @attribute previewState
-		 * @type {Boolean}
+		 * @event change
 		 */
 		
 		// DOM Properties:
@@ -599,21 +623,7 @@ type discovery).
 		_created: function () {
 			if (!this.decoratorConfig)
 				this.decoratorConfig = {};
-		}, 
-		
-		// Element API methods:
-		
-		/**
-		 * Requests validation of the input (called by the form element before submit).
-		 * 
-		 * The input element is responsible for showing / highlighting the error to the user.
-		 * 
-		 * @return {Boolean} True if the input validates, false otherwise.
-		 */
-		validate: function () {
-			return true;
 		}
-		
 		
 	}, CbnForm.AbstractControl);
 	
@@ -648,23 +658,26 @@ type discovery).
 	 */
 	CbnForm.AbstractInputDecorator = CbnForm.implement({
 		
-		/**
-		 * Whether the current instance should be shown as preview in form groups.
-		 * 
-		 * @attribute preview
-		 * @type {Boolean}
-		 */
-		preview: false,
-		
-		/**
-		 * Is the input container currently in a preview state?
-		 * 
-		 * Automatically bound by the `cbn-form-group` component if the {@link #preview} property is true.
-		 * 
-		 * @attribute previewstate
-		 * @type {Boolean}
-		 */
-		previewState: false,
+		publish: { // Published attributes:
+
+			/**
+			 * Whether the current instance should be shown as preview in form groups.
+			 *
+			 * @attribute preview
+			 * @type {Boolean}
+			 */
+			preview: false,
+
+			/**
+			 * Is the input container currently in a preview state?
+			 *
+			 * Automatically bound by the `cbn-form-group` component if the {@link #preview} property is true.
+			 *
+			 * @attribute previewstate
+			 * @type {Boolean}
+			 */
+			previewState: false
+		},
 		
 		/**
 		 * Standard input decorator dynamically-configurable attributes.
@@ -701,7 +714,7 @@ type discovery).
 	 */
 	CbnForm.AbstractContainer = CbnForm.implement({
 		
-		publish: {
+		publish: { // Published attributes:
 			
 			/**
 			 * Dynamic form's data model to use for its inputs. 

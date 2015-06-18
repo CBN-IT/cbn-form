@@ -88,7 +88,12 @@
 				 * @attribute previewstate
 				 * @type {Boolean}
 				 */
-				previewState: false
+				previewState: false,
+				
+				/**
+				 * The default validator type is 'file'.
+				 */
+				validationType: 'file'
 				
 			}, 
 			
@@ -96,7 +101,7 @@
 			/**
 			 * Element's dynamically-configurable attributes.
 			 */
-			inputAttributes: [ 'name', 'multiple', 'label' ], 
+			dynamicAttributes: [ 'name', 'multiple', 'label' ], 
 			
 			/**
 			 * Stores the already-uploaded file(s) (found inside the model before the file input was initialized).
@@ -164,7 +169,7 @@
 				}
 			}
 			
-		}, CbnForm.AbstractFileInput));
+		}, CbnForm.AbstractFileInput, CbnForm.ValidatableInput));
 		
 		//noinspection JSCheckFunctionSignatures
 		CbnForm.registerElement('cbn-basic-file', {

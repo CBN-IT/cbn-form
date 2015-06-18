@@ -21,3 +21,21 @@ label > span {
 ::content input, ::content textarea {
 	width: 100% !important;
 }
+
+
+/* Invalid input styles */
+
+:host([invalid]) ::content input, 
+:host([invalid]) ::content textarea,
+:host([invalid]) ::content [is-form-input] {
+	border-color: #D77;
+}
+
+span.error {
+	display: block;
+	color: #900;
+	padding-bottom: 5px;
+}
+span.error.hidden {
+	display: none;
+}
