@@ -123,7 +123,11 @@ Example config JSON definition:
 					var config = this.config;
 					if (!config || !this._elementReady) return;
 					
-					this._renderForm(this._extendConfig(config.elements), this.shadowRoot);
+					var target = this.shadowRoot;
+					while (target.firstChild) {
+						target.removeChild(target.firstChild);
+					}
+					this._renderForm(this._extendConfig(config.elements), target);
 					
 					this.async(function(){
 						this.fire('cbn-dynamic-form-rendered', {
