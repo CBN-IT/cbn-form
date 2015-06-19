@@ -119,20 +119,20 @@ Example:
 			/**
 			 * Fired if / when the form was successfully submitted.
 			 * 
-			 * @event cbn-form-ajaxSuccess
+			 * @event cbn-form-success
 			 */
 			
 			/**
 			 * Fired if the submission AJAX request failed.
 			 * 
-			 * @event cbn-form-ajaxError
+			 * @event cbn-form-error
 			 */
 			
 			/**
 			 * Fired if the submission AJAX request finished (with either error or success status; see core-xhr 
 			 * documentation).
 			 * 
-			 * @event cbn-form-ajaxComplete
+			 * @event cbn-form-complete
 			 */
 			
 			
@@ -232,16 +232,16 @@ Example:
 						// fire some events!
 						if (xhr.status == 200) {
 							// success!
-							form.fire('cbn-form-ajaxSuccess', {
+							form.fire('cbn-form-success', {
 								xhr: xhr
 							}, null, false, false);
 						} else {
 							// error!
-							form.fire('cbn-form-ajaxError', {
+							form.fire('cbn-form-error', {
 								xhr: xhr
 							}, null, false, false);
 						}
-						form.fire('cbn-form-ajaxComplete', {
+						form.fire('cbn-form-complete', {
 							xhr: xhr
 						}, null, false, false);
 					}
