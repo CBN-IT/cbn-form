@@ -211,9 +211,9 @@
 		form1.serializationOptions = { type: 'plain' };
 		
 		this.addEventListener(form1, 'cbn-form-submit', formSubmitHandler);
-		this.addEventListener(form1, 'cbn-form-ajaxSuccess', ajaxSuccessHandler);
-		this.addEventListener(form1, 'cbn-form-ajaxError', ajaxErrorHandler);
-		this.addEventListener(form1, 'cbn-form-ajaxComplete', ajaxCompleteHandler);
+		this.addEventListener(form1, 'cbn-form-success', ajaxSuccessHandler);
+		this.addEventListener(form1, 'cbn-form-error', ajaxErrorHandler);
+		this.addEventListener(form1, 'cbn-form-complete', ajaxCompleteHandler);
 		
 		flush(function() {
 			form1.submit();
@@ -222,9 +222,9 @@
 			
 			requests[0].respond(200, { "Content-Type": "application/json" }, 'true');
 			
-			assert(ajaxSuccessHandler.called, 'cbn-form-ajaxSuccess called');
-			assert(!ajaxErrorHandler.called, 'cbn-form-ajaxError not called');
-			assert(ajaxCompleteHandler.called, 'cbn-form-ajaxComplete called');
+			assert(ajaxSuccessHandler.called, 'cbn-form-success called');
+			assert(!ajaxErrorHandler.called, 'cbn-form-error not called');
+			assert(ajaxCompleteHandler.called, 'cbn-form-complete called');
 			
 			done();
 		});
@@ -242,9 +242,9 @@
 		form1.serializationOptions = { type: 'plain' };
 		
 		this.addEventListener(form1, 'cbn-form-submit', formSubmitHandler);
-		this.addEventListener(form1, 'cbn-form-ajaxSuccess', ajaxSuccessHandler);
-		this.addEventListener(form1, 'cbn-form-ajaxError', ajaxErrorHandler);
-		this.addEventListener(form1, 'cbn-form-ajaxComplete', ajaxCompleteHandler);
+		this.addEventListener(form1, 'cbn-form-success', ajaxSuccessHandler);
+		this.addEventListener(form1, 'cbn-form-error', ajaxErrorHandler);
+		this.addEventListener(form1, 'cbn-form-complete', ajaxCompleteHandler);
 		
 		flush(function() {
 			form1.submit();
@@ -254,9 +254,9 @@
 			requests[0].respond(503, { "Content-Type": "application/json" }, 
 				'{ "error": "unknown" }');
 			
-			assert(!ajaxSuccessHandler.called, 'cbn-form-ajaxSuccess not called');
-			assert(ajaxErrorHandler.called, 'cbn-form-ajaxError called');
-			assert(ajaxCompleteHandler.called, 'cbn-form-ajaxComplete called');
+			assert(!ajaxSuccessHandler.called, 'cbn-form-success not called');
+			assert(ajaxErrorHandler.called, 'cbn-form-error called');
+			assert(ajaxCompleteHandler.called, 'cbn-form-complete called');
 			
 			done();
 		});

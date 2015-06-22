@@ -13,6 +13,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 	 * @property {String}   name The name of the validator / the validation attribute used to invoke this validator.
 	 * @property {String[]} types The validator types handled (see {@link CbnForm.AbstractInput#validatorType}). 
 	 *                            There is a special type available: ['*'], which binds to all validator types.
+	 * @property {String}   [message] The default validation message to display when the input is invalid.
 	 * @property {Function} validate The validation function (that receives 4 parameters: the value to validate, 
 	 *                               validator settings and, optionally, a reference to the input element and a stop 
 	 *                               method to use to force stopping the validation process).
@@ -39,6 +40,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 	 * detailed error message to the user etc.
 	 */
 	
+	//noinspection JSUnusedGlobalSymbols
 	/**
 	 * An extensible form input validator.
 	 * 
@@ -54,6 +56,19 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		 */
 		_validators: {},
 		
+		/**
+		 * Internationalized validation messages.
+		 * First key is the language ID, next one is the validator name.
+		 * 
+		 * @type {Object<String,Object<String,String>>}
+		 */
+		_messages: {},
+		
+		/**
+		 * Specifies the default language for the validation messages.
+		 * @type {String}
+		 */
+		language: '',
 		
 		/**
 		 * Registers a new validator routine.
@@ -73,6 +88,18 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		},
 		
 		/**
+		 * Registers the validation messages.
+		 * FIXME: use a proper i18n library?
+		 * 
+		 * @param {String} lng The language to register.
+		 * @param {Object<String,String>} messages the translated validation messages.
+		 */
+		registerMessages: function (lng, messages) {
+			this._messages[lng] = messages;
+			if (!this.language) this.language = lng;
+		},
+		
+		/**
 		 * Validates an input element.
 		 * 
 		 * Check both native browser validation and custom validators and sets the appropriate validity state objects.
@@ -82,12 +109,12 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		 */
 		validateInput: function(input) {
 			if (!input.validation) return true;
-			var i, v, vk, settings; // iterators / auxiliary variables
+			var i, v, settings; // iterators / auxiliary variables
 			
 			var valid = true;
-			var message = '';
+			var failedValidator = '';
 			var needToStop = false;
-			var stop = function() { run = false; };
+			var stop = function() { needToStop = true; };
 			
 			// reset validation state
 			input.validationState = {};
@@ -97,10 +124,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 			if (input.checkValidity && input.validity) {
 				valid = input.checkValidity();
 				if (!valid) {
-					message = input.validationMessage;
-					if (!message) 
-						message = "Invalid value!";
-					this._setInputValidity(input, message, true);
+					this._setInputValidity(input, this._getValidationMessage(input), true);
 					return false;
 				}
 			}
@@ -126,45 +150,90 @@ A library that implements a extensible validator for `cbn-form` input elements.
 			for (i=0; i<validatorsList.length; i++) {
 				if (!input.validation.hasOwnProperty(validatorsList[i])) continue;
 				
-				vk = validatorsList[i] + ">" + input.validationType;
-				if (!this._validators[vk]) {
-					// try again with the wildcard type
-					vk = validatorsList[i] + ">" + "*";
-					if (!this._validators[vk]) {
-						console.error('CbnFrom.Validator#validateInput: validator \'' + validatorsList[i] + '\' is not registered!');
-						valid = false; break;
-					}
+				var validatorObj = this._getValidatorObject(input.validationType, validatorsList[i]);
+				if (!validatorObj) {
+					console.error('CbnFrom.Validator#validateInput: validator \'' + validatorsList[i] + '\' is not registered!');
+					valid = false; break;
 				}
 				
 				settings = input.validation[validatorsList[i]];
-				if (!this._validators[vk].validate(input.value, input.validation[validatorsList[i]], input, stop)) {
+				if (!validatorObj.validate(input.value, input.validation[validatorsList[i]], input, stop)) {
 					valid = false;
-					
-					if (typeof settings == 'object' && settings.message) {
-						message = settings.message;
-					}
+					failedValidator = validatorsList[i];
 					break;
 				}
 				if (needToStop) break;
 			}
 			
-			if (!valid && !message) {
-				message = input.validationMessage;
-				if (!message) {
-					message = 'Invalid value!';
-				}
+			if (!valid) {
+				this._setInputValidity(input, this._getValidationMessage(input, failedValidator));
+			} else {
+				this._setInputValidity(input, '');
 			}
-			this._setInputValidity(input, message);
 			
 			return valid;
+		},
+		
+		// private methods
+		
+		/**
+		 * Returns the requested InputValidator object.
+		 * 
+		 * @param {String} type The validator type.
+		 * @param {String} validator Validator's name.
+		 * @return {InputValidator} Validator's object / null if not registered.
+		 */
+		_getValidatorObject: function(type, validator) {
+			var vk = null;
+			if (validator) {
+				vk = validator + ">" + type;
+				if (!this._validators[vk]) {
+					vk = validator + ">" + "*";
+				}
+			}
+			if (!vk) return null;
+			return (this._validators[vk] ? this._validators[vk] : null );
+		},
+		
+		/**
+		 * Returns the validation message to display when input validation fails.
+		 * 
+		 * @param {HTMLElement} input The target input element.
+		 * @param {String} validator The failed validator (false for built-in validation).
+		 * @param {Object} [settings] The validator settings used (optional, auto-set).
+		 * @return {String} The validation message to set.
+		 */
+		_getValidationMessage: function(input, validator, settings) {
+			if (validator && !settings) {
+				settings = input.validation[validator];
+			}
+			if (validator && (typeof settings == 'object') && settings.message) 
+				return settings.message;
+			if (input.validationMessage) 
+				return input.validationMessage;
+			
+			var validatorObj = null;
+			if (validator) 
+				validatorObj = this._getValidatorObject(input.validationType, validator);
+			
+			// i18n default message
+			if (this._messages[this.language] && this._messages[this.language][validator]) 
+				return this._messages[this.language][validator];
+			if (this._messages[this.language] && this._messages[this.language]['_default'])
+				return this._messages[this.language]['_default'];
+			
+			// fallback messages
+			if (validatorObj && validatorObj.message) 
+				return validatorObj.message;
+			return 'Invalid value!';
 		},
 		
 		/**
 		 * Sets the input's validity state.
 		 * 
-		 * @param {HTMLElement} input The input to set the validation state to.
+		 * @param {CbnForm.ValidatableInput} input The input to set the validation state to.
 		 * @param {String}      message The validation message (empty if the input validated successfully).
-		 * @param {Boolean}     native True if the input was validated using native validation (and failed).
+		 * @param {Boolean}     [native] True if the input was validated using native validation (and failed).
 		 */
 		_setInputValidity: function(input, message, native) {
 			input._validationState.valid = (message == '');
@@ -182,6 +251,8 @@ A library that implements a extensible validator for `cbn-form` input elements.
 	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Adds validation capabilities to a custom input element.
+	 * 
+	 * @extends HTMLElement
 	 */
 	CbnForm.ValidatableInput = {
 		
@@ -234,6 +305,9 @@ A library that implements a extensible validator for `cbn-form` input elements.
 			/**
 			 * This attribute will be automatically set when the validation fails.
 			 * Can be used as CSS selector (reflection is enabled).
+			 * 
+			 * @attribute invalid
+			 * @type {Boolean}
 			 */
 			invalid: {
 				value: false,
@@ -326,6 +400,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'required',
 			types: ['*'],
+			message: 'This field is mandatory!',
 			validate: function(value, settings, input, stop) {
 				settings = normalizeSettings(settings);
 				var required = settings.validate;
@@ -345,7 +420,6 @@ A library that implements a extensible validator for `cbn-form` input elements.
 			_patterns: {
 				email: { validate: '^[^@]+@[^@]+\.[^@]+$' }
 			},
-			
 			validate: function(value, settings/*, input, stop */) {
 				// 'this' is the registered validator
 				settings = normalizeSettings(settings);
@@ -382,6 +456,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'pattern',
 			types: ['text'],
+			message: 'Invalid value!',
 			validate: PatternValidator.validate
 		});
 		
@@ -391,6 +466,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'email',
 			types: ['text'],
+			message: 'Invalid email!',
 			validate: PatternValidator.validateWithPattern
 		});
 		
@@ -400,6 +476,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'minlength',
 			types: ['text'],
+			message: 'The value is too short!',
 			validate: function(value, settings/*, input, stop */) {
 				settings = normalizeSettings(settings);
 				value = value+'';
@@ -416,6 +493,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'maxlength',
 			types: ['text'],
+			message: 'The text is too large!',
 			validate: function(value, settings/*, input, stop */) {
 				settings = normalizeSettings(settings);
 				value = value+'';
@@ -469,6 +547,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'number',
 			types: ['text'],
+			message: 'The value needs to be a number!',
 			validate: function(value, settings/*, input, stop */) {
 				settings = normalizeSettings(settings);
 				if (!settings.validate)
@@ -489,6 +568,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'min',
 			types: ['text'],
+			message: 'The number is too small!',
 			validate: NumberValidator.validateNumber
 		});
 		
@@ -498,6 +578,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'max',
 			types: ['text'],
+			message: 'The number is too large!',
 			validate: NumberValidator.validateNumber
 		});
 		
@@ -512,6 +593,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'required',
 			types: ['multiple'],
+			message: 'This field is mandatory!',
 			validate: function(value, settings, input, stop) {
 				settings = normalizeSettings(settings);
 				var required = settings.validate;
@@ -532,6 +614,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'minlength',
 			types: ['multiple'],
+			message: 'Too few items selected!',
 			validate: function(value, settings/*, input, stop */) {
 				settings = normalizeSettings(settings);
 				if (!settings.validate)
@@ -549,6 +632,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		Validator.register({
 			name: 'maxlength',
 			types: ['multiple'],
+			message: 'Too many items selected!',
 			validate: function(value, settings/*, input, stop */) {
 				settings = normalizeSettings(settings);
 				if (!settings.validate)
