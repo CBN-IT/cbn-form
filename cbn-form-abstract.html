@@ -787,18 +787,17 @@ type discovery).
 			
 			this.addEventListener('cbn-form-control-detached', function (event) {
 				var element = event.detail.element;
-				if (container.isMasterContainer && element.parentForm == form) {
+				if (container.isMasterContainer && element.parentForm == form) 
 					element.parentForm = null;
+				
+				var idx = container.childControls.indexOf(element);
+				if (idx >= 0) container.childControls.splice(idx, 1);
+				
+				if (element.hasModelValue && element.modelContainer == container) {
+					container.unbindValue(element);
 					
-					var idx = container.childControls.indexOf(element);
-					if (idx >= 0) container.childControls.splice(idx, 1);
-					
-					if (element.hasModelValue && element.modelContainer == container) {
-						container.unbindValue(element);
-						
-						idx = container.childInputs.indexOf(element);
-						if (idx >= 0) container.childInputs.splice(idx, 1);
-					}
+					idx = container.childInputs.indexOf(element);
+					if (idx >= 0) container.childInputs.splice(idx, 1);
 				}
 			});
 		}, 

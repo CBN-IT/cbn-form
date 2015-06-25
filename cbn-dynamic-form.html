@@ -79,7 +79,34 @@ Example config JSON definition:
 					 * @type {FormConfig}
 					 * @default {}
 					 */
-					config: null
+					config: null,
+					
+					/**
+					 * The target element to draw the dynamic form elements to.
+					 * 
+					 * Can be any valid DOM query selector (relative to the parent `cbn-form`) or one of the following 
+					 * special values:
+					 * - shadow: draws the elements inside this element's shadow root;
+					 * - light: draws the form inside the element's light DOM.
+					 * 
+					 * The elements are inserted using appendChild. If there were any children before rendering, they 
+					 * will be preserved (even after cleanup).
+					 * 
+					 * @attribute target
+					 * @type {String}
+					 * @default 'shadow'
+					 */
+					target: 'shadow',
+					
+					/**
+					 * Set to true to disable auto-rendering when this element is initialized or the target / config
+					 * attributes are changed.
+					 * 
+					 * @attribute manual
+					 * @type {Boolean}
+					 * @default false
+					 */
+					manual: false
 					
 				},
 				
@@ -91,11 +118,86 @@ Example config JSON definition:
 				 */
 				
 				/**
+				 * Stores the parent form element.
+				 * @type {HTMLElement}
+				 */
+				parentForm: null,
+				
+				/**
 				 * Whether the element is ready.
 				 * @private
 				 * @type {Boolean}
 				 */
 				_elementReady: false,
+				
+				/**
+				 * Stores the last rendered config object.
+				 * @private
+				 * @type {Object}
+				 */
+				_renderedConfig: null,
+				
+				/**
+				 * Stores the last rendered target element.
+				 * @private
+				 * @type {HTMLElement}
+				 */
+				_renderedTarget: null,
+				
+				
+				// Public API
+				
+				/**
+				 * Requests the dynamic-form element to render its children to the specified target node (optional).
+				 * 
+				 * @param {String|HTMLElement} [target] The target to render to. If not specified, {@link #target} is used.
+				 * @param {Object}             [config] The dynamic template / config of the form. Defaults to {@link #config}.
+				 * @param {Boolean}            [force]  Force rendering (even if the same config/target is already rendered).
+				 * @return {Boolean} True if the elements were rendered, false if rendering failed (invalid target).
+				 */
+				render: function(target, config, force) {
+					target = this._getTarget(target ? target : this.target);
+					if (!target) return false;
+					
+					if (!config) config = this.config;
+					if (!config) return false;
+					
+					// prevent duplicate rendering (for performance)
+					if (!force && this._renderedConfig === config && this._renderedTarget === target)
+						return true;
+					
+					this._renderedConfig = config;
+					this._renderedTarget = target;
+					
+					this.cleanUp(target);
+					
+					if (!this._renderForm(this._extendConfig(config.elements, config), target, config))
+						return false;
+					
+					this.async(function(){
+						this.fire('cbn-dynamic-form-rendered', {
+							element: this, 
+							config: config
+						}, null, true, false);
+					});
+					
+					return true;
+				},
+				
+				/**
+				 * Cleans up the specified target of all dynamically rendered elements.
+				 * 
+				 * @param {String|HTMLElement} [target] The target to clean up. If not specified, {@link #target} is used.
+				 */
+				cleanUp: function(target) {
+					target = this._getTarget(target ? target : this.target);
+					if (!target) return false;
+					
+					this._cleanUpTarget(target);
+				},
+				
+				
+				// Internal methods
 				
 				/**
 				 * Fires when the element is created. Used to initialize its attributes.
@@ -112,7 +214,17 @@ Example config JSON definition:
 				 */
 				ready: function () {
 					this._elementReady = true;
-					this.configChanged();
+					
+					if (!this.manual) this.render();
+				},
+				
+				/**
+				 * Called when the element is attached and its parent is accessible.
+				 */
+				domReady: function() {
+					this.parentForm = this._findParentForm();
+					
+					if (!this.manual) this.render();
 				},
 				
 				/**
@@ -120,21 +232,67 @@ Example config JSON definition:
 				 * Used to infer defaults to the form fields' configuration objects.
 				 */
 				configChanged: function () {
-					var config = this.config;
-					if (!config || !this._elementReady) return;
+					if (!this.config || !this._elementReady) return;
 					
-					var target = this.shadowRoot;
-					while (target.firstChild) {
-						target.removeChild(target.firstChild);
+					if (!this.manual) this.render();
+				},
+				
+				/**
+				 * Called when the target property is changed.
+				 * 
+				 * @param {String} oldVal The old target selector value.
+				 */
+				targetChanged: function(oldVal) {
+					// need to cleanup the old target
+					var oldTarget = this._getTarget(oldVal);
+					if (oldTarget)
+						this._cleanUpTarget(oldTarget);
+					
+					if (!this.target || !this._elementReady) return;
+					
+					// render to the new target
+					if (!this.manual) this.render();
+				},
+				
+				/**
+				 * Removes the old rendered elements from the specified target container.
+				 * 
+				 * @param {HTMLElement} target The target element to clean up.
+				 */
+				_cleanUpTarget: function(target) {
+					var node = target.firstChild;
+					var next;
+					while (node) {
+						next = node.nextSibling; // save the next sibling reference
+						if (node['_dynamicElement']) { // if the node belongs to cbn-dynamic-form
+							target.removeChild(node);
+						}
+						node = next;
 					}
-					this._renderForm(this._extendConfig(config.elements), target);
+				},
+				
+				/**
+				 * Returns the target element associated with the specified target selector (see {@link #target}).
+				 * 
+				 * @param {String|Object|HTMLElement} targetSelector The target selector (`target` attribute value).
+				 * @return {HTMLElement} The target element, null if the selector is invalid.
+				 */
+				_getTarget: function(targetSelector) {
+					if (targetSelector instanceof HTMLElement) 
+						return targetSelector;
 					
-					this.async(function(){
-						this.fire('cbn-dynamic-form-rendered', {
-							element: this, 
-							config: config
-						}, null, true, false);
-					});
+					var target;
+					if (targetSelector == 'shadow') {
+						target = this.shadowRoot;
+					} else if (targetSelector == 'light') {
+						target = this;
+					} else {
+						if (!this.parentForm)
+							return null;
+						target = this.parentForm.querySelector(targetSelector);
+					}
+					
+					return target;
 				},
 				
 				/**
@@ -143,18 +301,24 @@ Example config JSON definition:
 				 * @private
 				 * @param {FormElementConfig[]}  elementsConfig The dynamic template to use for rendering the form.
 				 * @param {HTMLElement}          root The root element to append the rendered elements to.
+				 * @param {FormConfig|Object}    config The root of the configuration object.
+				 * @return {Boolean} Returns true if the rendering was totally successful, false if something failed to 
+				 *                   render.
 				 */
-				_renderForm: function(elementsConfig, root) {
+				_renderForm: function(elementsConfig, root, config) {
 					var i;
-					if (!elementsConfig) return;
+					if (!elementsConfig) return false;
 					
 					for (i=0; i<elementsConfig.length; i++) {
-						var elements = this._createFormElement(elementsConfig[i]);
+						var elements = this._createFormElement(elementsConfig[i], config);
 						if (!elements || !elements.element) continue;
 						
 						if (elements.decorator) {
+							elements.decorator['_dynamicElement'] = true;
 							root.appendChild(elements.decorator);
+							
 						} else {
+							elements.element['_dynamicElement'] = true;
 							root.appendChild(elements.element);
 						}
 						if (elementsConfig[i].children) {
@@ -167,9 +331,11 @@ Example config JSON definition:
 								}
 							}
 							
-							this._renderForm(elementsConfig[i].children, containerElement);
+							this._renderForm(elementsConfig[i].children, containerElement, config);
 						}
 					}
+					
+					return true;
 				}, 
 				
 				/**
@@ -177,16 +343,17 @@ Example config JSON definition:
 				 * 
 				 * @private
 				 * @param {FormElementConfig|Object} elConfig The template object to generate the element from.
+				 * @param {FormConfig|Object}        config   The root of the configuration object.
 				 * @return {Boolean | {element: HTMLElement, decorator: HTMLElement}} The generated element + decorator (if any).
 				 */
-				_createFormElement: function(elConfig) {
+				_createFormElement: function(elConfig, config) {
 					var elements = { element: null, decorator: null };
 					
 					var elementName;
 					if (elConfig.element) {
 						elementName = elConfig.element;
 					} else {
-						elementName = CbnForm.getElementForType(elConfig.type, this.config.types);
+						elementName = CbnForm.getElementForType(elConfig.type, config.types);
 						if (!elementName) {
 							console.error("<cbn-dynamic-form>: no element registered for type '" + elConfig.type + "'");
 							return false;
@@ -287,32 +454,50 @@ Example config JSON definition:
 					return wrapper;
 				}, 
 				
-				
-				// Private functions: 
+				/**
+				 * Finds the parent `cbn-form` element.
+				 * 
+				 * @private
+				 * @returns {HTMLElement} The parent form element, if found.
+				 */
+				_findParentForm: function() {
+					var node = this.parentNode;
+					while (node) {
+						if (node.tagName && node.tagName.toLowerCase() == 'cbn-form') 
+							return node;
+						if (window.ShadowRoot && node instanceof ShadowRoot) {
+							node = node.host;
+						} else {
+							node = node.parentNode;
+						}
+					}
+					return null;
+				},
 				
 				/**
 				 * Pre-processes and extends the specified configuration/template object based on its inherit property 
 				 * and the {@link FormConfig#defaults} object.
 				 * 
 				 * @param {FormElementConfig[]} elements The template objects to extend.
+				 * @param {FormConfig|Object}   config   The root of the configuration object.
 				 * @return {FormElementConfig[]} The resulting config objects list, extended with the defaults.
 				 */
-				_extendConfig: function(elements) {
+				_extendConfig: function(elements, config) {
 					if (!elements)
 						return elements;
 					
 					var extendedConfig = [];
 					for (var i=0; i<elements.length; i++) {
 						var exConfig = elements[i];
-						if (this.config.defaults && this.config.defaults['*']) {
-							exConfig = this._extendObject({}, exConfig, this.config.defaults['*']);
+						if (config.defaults && config.defaults['*']) {
+							exConfig = this._extendObject({}, exConfig, config.defaults['*']);
 						}
-						if (exConfig.inherit && this.config.defaults.hasOwnProperty(exConfig.inherit)) {
-							exConfig = this._extendObject({}, exConfig, this.config.defaults[exConfig.inherit]);
+						if (exConfig.inherit && config.defaults.hasOwnProperty(exConfig.inherit)) {
+							exConfig = this._extendObject({}, exConfig, config.defaults[exConfig.inherit]);
 							delete exConfig.inherit;
 						}
 						if (exConfig.children && exConfig.children.length) {
-							exConfig.children = this._extendConfig(exConfig.children);
+							exConfig.children = this._extendConfig(exConfig.children, config);
 						}
 						extendedConfig.push(exConfig);
 					}
