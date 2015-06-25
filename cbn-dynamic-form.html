@@ -91,16 +91,26 @@ Example config JSON definition:
 					 * If a selector is specified, it first searches inside the element't light DOM. if not found, it 
 					 * queries the parent `cbn-form` element.
 					 * 
-					 * The elements are inserted using appendChild. If there were any children before rendering, they 
-					 * will be preserved (even after cleanup).
-					 * 
-					 * If the target is 
+					 * The elements are inserted using appendChild / insertBefore (if {@link #beforeTarget} is specified). 
+					 * If there were any children before rendering, they will be preserved (even after cleanup).
 					 * 
 					 * @attribute target
 					 * @type {String}
 					 * @default 'shadow'
 					 */
 					target: 'shadow',
+					
+					/**
+					 * Specifies a DOM query selector of the element that determines where to insert the generated form.
+					 * The selector is relative to the `target` element (i.e. a selector for its contents).
+					 * 
+					 * If empty, it appends to the end of target's contents.
+					 * 
+					 * @attribute insertBefore
+					 * @type {String}
+					 * @default ''
+					 */
+					beforeTarget: '',
 					
 					/**
 					 * Set to true to disable auto-rendering when this element is initialized or the target / config
@@ -309,12 +319,23 @@ Example config JSON definition:
 				 * @param {FormElementConfig[]}  elementsConfig The dynamic template to use for rendering the form.
 				 * @param {HTMLElement}          root The root element to append the rendered elements to.
 				 * @param {FormConfig|Object}    config The root of the configuration object.
+				 * @param {Boolean}              [isRecursion] Will be true when the function is called recursively. 
 				 * @return {Boolean} Returns true if the rendering was totally successful, false if something failed to 
 				 *                   render.
 				 */
-				_renderForm: function(elementsConfig, root, config) {
+				_renderForm: function(elementsConfig, root, config, isRecursion) {
 					var i;
 					if (!elementsConfig) return false;
+					
+					var beforeEl = ( this.beforeTarget && !isRecursion ? 
+						(root.querySelector(this.beforeTarget)) : null );
+					function insertChild(root, child) {
+						if (beforeEl) {
+							root.insertBefore(child, beforeEl);
+						} else {
+							root.appendChild(child);
+						}
+					}
 					
 					for (i=0; i<elementsConfig.length; i++) {
 						var elements = this._createFormElement(elementsConfig[i], config);
@@ -322,12 +343,12 @@ Example config JSON definition:
 						
 						if (elements.decorator) {
 							elements.decorator['_dynamicElement'] = true;
-							root.appendChild(elements.decorator);
-							
+							insertChild(root, elements.decorator);
 						} else {
 							elements.element['_dynamicElement'] = true;
-							root.appendChild(elements.element);
+							insertChild(root, elements.element);
 						}
+						
 						if (elementsConfig[i].children) {
 							var containerElement = elements.element;
 							if (elementsConfig[i].wrapChildren) {

@@ -28,9 +28,11 @@
 		
 		<cbn-dynamic-form id="dynExtConfig" target="light" config="{{extendedConfig}}"></cbn-dynamic-form>
 		
-		<cbn-dynamic-form id="dynTarget" config="{{basicConfig}}" target="#testTarget"></cbn-dynamic-form>
+		<cbn-dynamic-form id="dynTarget" config="{{basicConfig}}" target="#testTarget" beforeTarget=".before"></cbn-dynamic-form>
 		<div id="testTarget">
 			<h1 class="existing">Existing Element</h1>
+			
+			<div class="before">Before Target</div>
 		</div>
 		
 		<cbn-dynamic-form id="dynAPI" manual target="light" config="{{basicConfig}}"></cbn-dynamic-form>
@@ -122,6 +124,19 @@
 		form = document.querySelector('#firstForm');
 		form.model = {};
 		
+		Object.defineProperty(Element.prototype, 'nextElementSibling', {
+			get : function () {
+				var el = this.nextSibling;
+				while(el) {
+					if(el.nodeType===1){
+						return el;
+					}
+					el = el.nextSibling;
+				};
+				return null;
+			}
+		});
+		
 		flush(done);
 	});
 	
@@ -199,6 +214,10 @@
 		
 		assert.equal(allInputs.length, 2, 'total inputs count');
 		assert.equal(allGroups.length, 0, 'no group should exist');
+		
+		// check children's order
+		assert.strictEqual(input1.nextElementSibling, input2);
+		assert.strictEqual(input2.nextElementSibling, target.querySelector('.before'));
 		
 		// cleanup test
 		dynTarget.cleanUp();
