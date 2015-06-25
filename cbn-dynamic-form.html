@@ -84,13 +84,17 @@ Example config JSON definition:
 					/**
 					 * The target element to draw the dynamic form elements to.
 					 * 
-					 * Can be any valid DOM query selector (relative to the parent `cbn-form`) or one of the following 
-					 * special values:
-					 * - shadow: draws the elements inside this element's shadow root;
-					 * - light: draws the form inside the element's light DOM.
+					 * Can be any valid DOM query selector or one of the following special values:
+					 * - shadow: draws the elements inside this element's shadow root (immediately after `<content>`);
+					 * - light: draws the form inside the element's light DOM (aka as `<content>`).
+					 * 
+					 * If a selector is specified, it first searches inside the element't light DOM. if not found, it 
+					 * queries the parent `cbn-form` element.
 					 * 
 					 * The elements are inserted using appendChild. If there were any children before rendering, they 
 					 * will be preserved (even after cleanup).
+					 * 
+					 * If the target is 
 					 * 
 					 * @attribute target
 					 * @type {String}
@@ -274,11 +278,11 @@ Example config JSON definition:
 				/**
 				 * Returns the target element associated with the specified target selector (see {@link #target}).
 				 * 
-				 * @param {String|Object|HTMLElement} targetSelector The target selector (`target` attribute value).
-				 * @return {HTMLElement} The target element, null if the selector is invalid.
+				 * @param {String|Object|Node} targetSelector The target selector (`target` attribute value).
+				 * @return {Node} The target element, null if the selector is invalid.
 				 */
 				_getTarget: function(targetSelector) {
-					if (targetSelector instanceof HTMLElement) 
+					if (targetSelector instanceof Node) 
 						return targetSelector;
 					
 					var target;
@@ -287,6 +291,9 @@ Example config JSON definition:
 					} else if (targetSelector == 'light') {
 						target = this;
 					} else {
+						target = this.querySelector(targetSelector);
+						if (target) 
+							return target;
 						if (!this.parentForm)
 							return null;
 						target = this.parentForm.querySelector(targetSelector);
