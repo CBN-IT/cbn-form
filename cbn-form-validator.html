@@ -152,8 +152,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 				
 				var validatorObj = this._getValidatorObject(input.validationType, validatorsList[i]);
 				if (!validatorObj) {
-					console.error('CbnFrom.Validator#validateInput: validator \'' + validatorsList[i] + '\' is not registered!');
-					valid = false; break;
+					continue;
 				}
 				
 				settings = input.validation[validatorsList[i]];
