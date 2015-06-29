@@ -52,6 +52,20 @@
 				},
 				{
 					"inherit": "input",
+					"name": "personal.email",
+					"type": "text",
+					"preview": false,
+					"label": "Email",
+					"className": "col-xs-12 col-md-6",
+					"validation": {
+						"required": true,
+						"email": true
+					},
+					"autoValidate": true,
+					"validationMessage": "Invalid email!"
+				},
+				{
+					"inherit": "input",
 					"name": "personal.address",
 					"type": "textarea",
 					"rows": 4,

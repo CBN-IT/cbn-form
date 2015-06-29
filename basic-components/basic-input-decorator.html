@@ -109,6 +109,7 @@
 				ready: function () {
 					this.addEventListener('input', this._onInput.bind(this));
 					this.addEventListener('change', this._onChange.bind(this));
+					this.addEventListener('cbn-form-validate', this._onValidate.bind(this));
 				},
 				
 				/**
@@ -129,31 +130,34 @@
 				
 				/**
 				 * Validates the element.
-				 * 
-				 * @param {Boolean} allowEmpty Whether to allow empty values.
 				 */
-				validate: function(allowEmpty) {
+				validate: function() {
 					this.invalid = false;
 					if (!this._inputElement) return true;
 					
-					this.invalid = !this._inputElement.validate();
-					this._validationError = this._inputElement.validationState.message;
-					if (allowEmpty && !this._inputElement.value) {
-						this.invalid = false;
-						this._validationError = '';
-					}
-					
+					this._inputElement.validate();
+					// the cbn-form-validate event is synchronous
 					return !this.invalid;
 				},
 				
 				// Private methods:
 				
 				/**
+				 * Updates the decorator to reflect the current validation status of the input.
+				 */
+				_updateValidation: function() {
+					this.invalid = !this._inputElement.validationState.valid;
+					this._validationError = this._inputElement.validationState.message;
+					
+					return !this.invalid;
+				},
+				
+				/**
 				 * Input `input` event handler.
 				 */
 				_onInput: function() {
 					if (this.autoValidate) {
-						this.validate(true);
+						this.validate();
 					}
 				},
 				
@@ -164,6 +168,13 @@
 					if (this.autoValidate) {
 						this.validate();
 					}
+				},
+				
+				/**
+				 * Called after the decorated input validates.
+				 */
+				_onValidate: function() {
+					this._updateValidation();
 				},
 				
 				/**

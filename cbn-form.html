@@ -161,7 +161,7 @@ Example:
 				var form = this;
 				
 				// bind tap handler to the submit buttons
-				var submitButtons = this.querySelectorAll('[submit], input[type="submit"], button[type="button"]');
+				var submitButtons = this.querySelectorAll('[submit], input[type="submit"], button[type="submit"]');
 				for (var i=0; i<submitButtons.length; i++) {
 					PolymerGestures.addEventListener(submitButtons[i], 'tap', function(event) {
 						if (!event.defaultPrevented) 

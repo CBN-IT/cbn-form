@@ -315,6 +315,14 @@ A library that implements a extensible validator for `cbn-form` input elements.
 			
 		},
 		
+		// Events
+		
+		/**
+		 * Fired after the input is validated.
+		 * 
+		 * @event cbn-form-validate
+		 */
+		
 		// DOM Properties: 
 		
 		/**
@@ -367,7 +375,9 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		 * @return {Boolean} True if the input validates, false otherwise.
 		 */
 		validate: function () {
-			return CbnForm.Validator.validateInput(this);
+			var result = CbnForm.Validator.validateInput(this);
+			this.fire('cbn-form-validate', { result: result });
+			return result;
 		}
 		
 	};
