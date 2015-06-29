@@ -118,6 +118,25 @@
 		});
 	});
 	
+	test('pattern validation', function (done) {
+		var input1_1 = form.querySelector('#input1_1');
+		var input1_2 = form.querySelector('#input1_2');
+		
+		input1_1.validation = input1_2.validation = {
+			email: true
+		};
+		
+		input1_1.value = 'test@example.com';
+		input1_2.value = 'you shall not pass';
+		
+		flush(function(){
+			assert.ok(input1_1.validate(), 'email positive validation');
+			assert.notOk(input1_2.validate(), 'email negative validation');
+			
+			done();
+		});
+	});
+	
 </script>
 
 </body>

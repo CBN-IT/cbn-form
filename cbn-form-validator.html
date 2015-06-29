@@ -417,7 +417,16 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		 */
 		var PatternValidator = {
 			_patterns: {
-				email: { validate: '^[^@]+@[^@]+\.[^@]+$' }
+				email: { validate: '^((([a-z]|\\d|[!#\\$%&\'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])+' +
+					'(\\.([a-z]|\\d|[!#\\$%&\'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])+)*)|' +
+					'((\\x22)((((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(([\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]|\\x21|[\\x23-\\x5b]|' +
+					'[\\x5d-\\x7e]|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])|(\\\\([\\x01-\\x09\\x0b\\x0c\\x0d-\\x7f]|' +
+					'[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF]))))*(((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(\\x22)))@' +
+					'((([a-z]|\\d|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])|(([a-z]|\\d|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])' +
+					'([a-z]|\\d|-|\\.|_|~|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])*([a-z]|\\d|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])))\\.)+' +
+					'(([a-z]|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])|(([a-z]|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])' +
+					'([a-z]|\\d|-|\\.|_|~|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])*([a-z]|[\\u00A0-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF])))\\.?$', 
+					modifiers: 'i' }
 			},
 			validate: function(value, settings/*, input, stop */) {
 				// 'this' is the registered validator
@@ -428,7 +437,9 @@ A library that implements a extensible validator for `cbn-form` input elements.
 				
 				try {
 					pattern = new RegExp(pattern, modifiers);
-					if (!pattern) return false;
+					if (!pattern) { //noinspection ExceptionCaughtLocallyJS
+						throw settings.validate+'';
+					}
 					
 					return pattern.test(value+'');
 					
@@ -443,9 +454,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 				settings = normalizeSettings(settings);
 				if (!settings.validate) 
 					return true;
-				return PatternValidator.validate.call(this, value, {
-					validate: PatternValidator._patterns[this.type]
-				});
+				return PatternValidator.validate.call(this, value, PatternValidator._patterns[this.name]);
 			}
 		};
 		
