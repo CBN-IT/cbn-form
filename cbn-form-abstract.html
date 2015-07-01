@@ -820,11 +820,19 @@ type discovery).
 		validate: function() {
 			var i;
 			var passed = true;
+			var firstInput = null; // first invalid input
 			
 			for (i=0; i<this.childInputs.length; i++) {
 				if (!this.childInputs[i].validate()) {
+					if (!firstInput) {
+						firstInput = this.childInputs[i];
+					}
 					passed = false;
 				}
+			}
+			// focus the first invalid input
+			if (firstInput) {
+				firstInput.focus();
 			}
 			
 			return passed;
