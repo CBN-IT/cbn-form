@@ -277,10 +277,11 @@ Example:
 					// flatten the model object
 					for (n in this.model) {
 						if (this.model.hasOwnProperty(n)) {
-							if (serializationOptions.useBrackets && 
-									(Object.prototype.toString.call( this.model[n] ) === '[object Array]')) {
-								fields.push({ key: n+"[]", value: this.model[n].toString() });
-							} else {
+							if (serializationOptions.useBrackets && this.model[n] instanceof Array) {
+								fields.push({ key: n, value: this.model[n].toString() });
+							} else if(this.model[n] == undefined){
+								fields.push({ key: n, value: "" });
+							} else{
 								fields.push({ key: n, value: this.model[n].toString() });
 							}
 						}
