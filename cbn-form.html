@@ -86,7 +86,13 @@ Example:
 				 * 
 				 * Serialization types:
 				 * - plain: passes the form data as a standard parameters map (each field has a separate parameter);
-				 * - json: pass the entire model JSON as a form parameter (specified by the `param` property).
+				 * - json: pass the entire model JSON as a form parameter (specified by the `param` property);
+				 * - deep: recursively serializes the whole JSON as flat parameters map, using the following algorithm: 
+				 *   > if the value is an array, it appends each item with its index inside square brackets (e.g. 
+				 *     'item[0]=value'); 
+				 *   > if the item is an object, it separately appends each member using parent dot property (e.g. 
+				 *     'obj.property=value'); 
+				 *   > it goes recursively (applies the same serialization to children objects).
 				 * 
 				 * If asFormData is true, a FormData object will be returned (instead of a plain map).
 				 * 
@@ -298,6 +304,28 @@ Example:
 				var fields = []; // array of { key:String, value:String } pairs
 				var fileInputs = {}; // the File input objects
 				
+				function deepSerializeObject(prefix, value) {
+					var i, n;
+					if (!prefix) prefix = '';
+					
+					if (Array.isArray(value)) {
+						for (i=0; i<value.length; i++) {
+							deepSerializeObject(prefix + '[' + i + ']', value[i]);
+						}
+						
+					} else if (typeof value == 'object') {
+						for (n in value) {
+							if (!value.hasOwnProperty(n)) continue;
+							deepSerializeObject((prefix ? prefix + '.' : '') + n, value[n]);
+						}
+						
+					} else if (!value) {
+						fields.push({ key: prefix, value: "" });
+					} else {
+						fields.push({ key: prefix, value: value.toString() });
+					}
+				}
+				
 				var data = null;
 				if (serializationOptions.type == 'plain') {
 					// flatten the model object
@@ -318,6 +346,9 @@ Example:
 				} else if (serializationOptions.type == 'json') {
 					// send the JSON object as string
 					fields.push({ key: serializationOptions.param, value: JSON.stringify(this.model) });
+					
+				} else if (serializationOptions.type == 'deep') {
+					deepSerializeObject(null, this.model);
 				}
 				
 				// determine the file inputs

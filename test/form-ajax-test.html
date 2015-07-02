@@ -74,7 +74,8 @@
 			}, 
 			advanced2: {
 				text3: 'advanced3tree'
-			}
+			},
+			list: [ { of: "objects" }, { another: "yes" } ]
 		};
 	
 	
@@ -194,6 +195,24 @@
 			
 			assert.deepEqual(requests[0].requestBody, "data=" + encodeURIComponent(
 				JSON.stringify(testModel2)), 'JSON request body');
+			
+			done();
+		});
+	});
+	
+	test('deep serialization', function(done) {
+		var requests = this.requests;
+		
+		form2.model = testModel2;
+		form2.serializationOptions = { type: 'deep' };
+		
+		flush(function(){
+			form2.submit();
+			
+			console.log(requests[0].requestBody);
+			assert.deepEqual(requests[0].requestBody, 'first=1st&second=2nd&advanced.text=advanced%20text&' +
+				'advanced.text2=advanced2text&advanced2.text3=advanced3tree&' +
+				'list%5B0%5D.of=objects&list%5B1%5D.another=yes', 'Deep serialized request body');
 			
 			done();
 		});
