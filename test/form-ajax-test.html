@@ -220,11 +220,14 @@
 			
 			assert(formSubmitHandler.called ,'cbn-form-submit called');
 			
-			requests[0].respond(200, { "Content-Type": "application/json" }, 'true');
+			requests[0].respond(200, { "Content-Type": "application/json" }, '{ "allright": "now" }');
 			
 			assert(ajaxSuccessHandler.called, 'cbn-form-success called');
 			assert(!ajaxErrorHandler.called, 'cbn-form-error not called');
 			assert(ajaxCompleteHandler.called, 'cbn-form-complete called');
+			
+			assert.deepEqual(ajaxSuccessHandler.args[0][0].detail.response, { "allright": "now" }, 
+				'success response JSON');
 			
 			done();
 		});
@@ -257,6 +260,8 @@
 			assert(!ajaxSuccessHandler.called, 'cbn-form-success not called');
 			assert(ajaxErrorHandler.called, 'cbn-form-error called');
 			assert(ajaxCompleteHandler.called, 'cbn-form-complete called');
+			
+			assert.deepEqual(ajaxErrorHandler.args[0][0].detail.response, { "error": "unknown" }, 'error response JSON');
 			
 			done();
 		});

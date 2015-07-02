@@ -97,7 +97,24 @@ Example:
 				 * @type {{ type: String, param?: String, asFormData: Boolean, useBrackets: Boolean }}
 				 * @default { type: 'plain', param: 'data', useBrackets: false }
 				 */
-				serializationOptions: null
+				serializationOptions: null,
+				
+				/**
+				 * The response type to parse/return (available inside the cbn-form-complete family events).
+				 * 
+				 * Available response types:
+				 * - `text`: uses `XHR.responseText`.
+				 * - `xml`: uses `XHR.responseXML`.
+				 * - `json`: uses `XHR.responseText` parsed as JSON.
+				 * - `arraybuffer`: uses `XHR.response`.
+				 * - `blob`: uses `XHR.response`.
+				 * - `document`: uses `XHR.response`.
+				 * 
+				 * @attribute handleAs
+				 * @type string
+				 * @default 'json'
+				 */
+				handleAs: 'json'
 				
 			},
 			
@@ -118,12 +135,14 @@ Example:
 			
 			/**
 			 * Fired if / when the form was successfully submitted.
+			 * Event detail object has 2 properties: the 'xhr' object and the parsed 'response'.
 			 * 
 			 * @event cbn-form-success
 			 */
 			
 			/**
 			 * Fired if the submission AJAX request failed.
+			 * Event detail object has 2 properties: the 'xhr' object and the parsed 'response' (if available).
 			 * 
 			 * @event cbn-form-error
 			 */
@@ -131,6 +150,7 @@ Example:
 			/**
 			 * Fired if the submission AJAX request finished (with either error or success status; see core-xhr 
 			 * documentation).
+			 * Event detail object has 2 properties: the 'xhr' object and the parsed 'response' (if available).
 			 * 
 			 * @event cbn-form-complete
 			 */
@@ -222,27 +242,33 @@ Example:
 				var xhr = this._buildXHR(
 					Polymer.mixin({
 						url: url,
-						method: this.method
+						method: this.method,
+						responseType: this.handleAs
 						
 					}, this.xhrOptions) );
 				
 				// bind XHR events
 				xhr.onreadystatechange = function() {
 					if (xhr.readyState==4) {
+						var response = form._handleXHRResponse(xhr);
+						
 						// fire some events!
 						if (xhr.status == 200) {
 							// success!
 							form.fire('cbn-form-success', {
-								xhr: xhr
+								xhr: xhr,
+								response: response
 							}, null, false, false);
 						} else {
 							// error!
 							form.fire('cbn-form-error', {
-								xhr: xhr
+								xhr: xhr,
+								response: response
 							}, null, false, false);
 						}
 						form.fire('cbn-form-complete', {
-							xhr: xhr
+							xhr: xhr,
+							response: response
 						}, null, false, false);
 					}
 				};
@@ -277,11 +303,13 @@ Example:
 					// flatten the model object
 					for (n in this.model) {
 						if (this.model.hasOwnProperty(n)) {
-							if (serializationOptions.useBrackets && this.model[n] instanceof Array) {
-								fields.push({ key: n, value: this.model[n].toString() });
-							} else if(this.model[n] == undefined){
+							if (serializationOptions.useBrackets && Array.isArray(this.model[n])) {
+								fields.push({ key: n+"[]", value: this.model[n].toString() });
+								
+							} else if (this.model[n] == undefined) {
 								fields.push({ key: n, value: "" });
-							} else{
+								
+							} else {
 								fields.push({ key: n, value: this.model[n].toString() });
 							}
 						}
@@ -371,7 +399,7 @@ Example:
 				}
 				
 				if (options.responseType) 
-					xhr.responseType = options.responseType;
+					xhr.responseType = xhr._responseType = options.responseType;
 				if (options.withCredentials) 
 					xhr.withCredentials = true;
 				
@@ -385,6 +413,55 @@ Example:
 				
 				return xhr;
 			},
+			
+			/**
+			 * Returns the parsed response.
+			 * Code 'borrowed' from iron-ajax ;) 
+			 * 
+			 * @param {XMLHttpRequest} xhr The XHR object of the request.
+			 * @return {Object} The parsed response (based on the {@link #handleAs} property).
+			 */
+			_handleXHRResponse: function (xhr) {
+				var responseType = xhr.responseType || xhr._responseType;
+				// If we don't have a natural `xhr.responseType`, we prefer parsing
+				// `xhr.responseText` over returning `xhr.response`..
+				var preferResponseText = !xhr.responseType;
+				try {
+					switch (responseType) {
+						case 'json':
+							// If xhr.response is undefined, responseType `json` may not be supported.
+							if (preferResponseText || xhr.response === undefined) {
+								// If accessing `xhr.responseText` throws, responseType `json`
+								// is supported and the result is rightly `undefined`.
+								try {
+									//noinspection BadExpressionStatementJS
+									xhr.responseText;
+								} catch (e) {
+									return xhr.response;
+								}
+								// Otherwise, attempt to parse `xhr.responseText` as JSON.
+								if (xhr.responseText) {
+									return JSON.parse(xhr.responseText);
+								}
+							}
+							return xhr.response;
+						case 'xml':
+							return xhr.responseXML;
+						case 'blob':
+						case 'document':
+						case 'arraybuffer':
+							return xhr.response;
+						case 'text':
+						default:
+							return xhr.responseText;
+					}
+					
+				} catch (e) {
+					console.log('Could not parse XHR response!', e);
+					return null;
+				}
+			},
+			
 			
 			/**
 			 * Returns the url with the specified query string parameters appended to it.
@@ -432,7 +509,7 @@ Example:
 				}
 				return r.join('&');
 			},
-
+			
 			/**
 			 * Checks whether the specified object is empty / false.
 			 * 
