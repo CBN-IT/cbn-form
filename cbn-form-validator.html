@@ -530,11 +530,11 @@ A library that implements a extensible validator for `cbn-form` input elements.
 		 */
 		var NumberValidator = {
 			isInteger: function(value) {
-				return !!/^[+-]?[0-9]+$/.match(value+'');
+				return !!/^[+-]?[0-9]+$/.test(value+'');
 			},
 			
 			isFloat: function(value) {
-				return !!/^[+-]?[0-9]+(\.[0-9]*)?$/.match(value+'');
+				return !!/^[+-]?[0-9]+(\.[0-9]*)?$/.test(value+'');
 			},
 			
 			validateNumber: function(value, settings) {

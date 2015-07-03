@@ -18,13 +18,16 @@
 <cbn-form id="firstForm">
 	
 	<input is="cbn-basic-input" type="text" title="One" id="input1_1" preview name="one" />
-	
 	<input is="cbn-basic-input" type="text" title="Two" id="input1_2" name="two" />
 	
 	<input is="cbn-basic-input" type="text" title="Three" id="input1_3" name="three" />
 	<input is="cbn-basic-input" type="text" title="Four" id="input1_4" name="four" />
-	<input is="cbn-basic-input" type="text" title="Five" id="input1_5" name="five" />
 	
+	<input is="cbn-basic-input" type="text" title="Five" id="input1_5" name="five" />
+	<input is="cbn-basic-input" type="text" title="Six" id="input1_6" name="six" />
+	
+	<input is="cbn-basic-input" type="text" title="Seven" id="input1_7" name="seven" />
+	<input is="cbn-basic-input" type="text" title="Eight" id="input1_8" name="eight" />
 </cbn-form>
 
 <script>
@@ -132,6 +135,48 @@
 		flush(function(){
 			assert.ok(input1_1.validate(), 'email positive validation');
 			assert.notOk(input1_2.validate(), 'email negative validation');
+			
+			done();
+		});
+	});
+	
+	test('numeric validation', function (done) {
+		var input1_1 = form.querySelector('#input1_1');
+		var input1_2 = form.querySelector('#input1_2');
+		var input1_3 = form.querySelector('#input1_3');
+		var input1_4 = form.querySelector('#input1_4');
+		var input1_5 = form.querySelector('#input1_5');
+		var input1_6 = form.querySelector('#input1_6');
+		var input1_7 = form.querySelector('#input1_7');
+		var input1_8 = form.querySelector('#input1_8');
+		
+		input1_1.validation = input1_2.validation = { number: true };
+		input1_1.value = '6534873';
+		input1_2.value = '345k234';
+		
+		input1_3.validation = input1_4.validation = { number: { validate: true, type: 'float' } };
+		input1_3.value = '6534.873';
+		input1_4.value = '345la.234';
+		
+		input1_5.validation = input1_6.validation = { min: 19 };
+		input1_7.validation = input1_8.validation = { max: 19 };
+		input1_5.value = '20';
+		input1_6.value = '18';
+		input1_7.value = '18.9';
+		input1_8.value = '19.1';
+		
+		flush(function(){
+			assert.ok(input1_1.validate(), 'integer positive validation');
+			assert.notOk(input1_2.validate(), 'integer negative validation');
+			
+			assert.ok(input1_3.validate(), 'float positive validation');
+			assert.notOk(input1_4.validate(), 'float negative validation');
+			
+			assert.ok(input1_5.validate(), 'min positive validation');
+			assert.notOk(input1_6.validate(), 'min negative validation');
+			
+			assert.ok(input1_7.validate(), 'max positive validation');
+			assert.notOk(input1_8.validate(), 'max negative validation');
 			
 			done();
 		});
