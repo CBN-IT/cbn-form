@@ -623,7 +623,16 @@ type discovery).
 		_created: function () {
 			if (!this.decoratorConfig)
 				this.decoratorConfig = {};
-		}
+		},
+		
+		/**
+		 * Called when the value is programmatically changed in order to emit 'input' and 'change' events.
+		 */
+		notifyValueChanged: function(){
+			this.fire('input');
+			this.fire('change');
+		},
+		
 		
 	}, CbnForm.AbstractControl);
 	
@@ -809,6 +818,7 @@ type discovery).
 			for (var i=0; i<this.childInputs.length; i++) {
 				var input = this.childInputs[i];
 				this.bindValue(input);
+				input.notifyValueChanged();
 			}
 		}, 
 		

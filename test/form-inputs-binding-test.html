@@ -90,6 +90,10 @@
 		var first2 = form.querySelector('#firstInput2');
 		var advanced = form.querySelector('#advancedInput');
 		
+		var inputChangeHandler = sinon.spy();
+		first.addEventListener('change', inputChangeHandler);
+		advanced.addEventListener('change', inputChangeHandler);
+		
 		form.model = {
 			first: '1st~newmodel', 
 			second: '2nd~newmodel', 
@@ -100,6 +104,8 @@
 			assert.equal(first.value, '1st~newmodel', '#firstInput model value');
 			assert.equal(advanced.value, 'advanced~newmodel', '#advancedInput model value');
 			assert.equal(first2.value, '1st~newmodel', '#firstInput2 model value');
+			
+			assert.ok(inputChangeHandler.calledTwice);
 			
 			done();
 		});
