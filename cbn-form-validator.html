@@ -571,7 +571,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 				if (!settings.validate)
 					return true;
 				
-				if (settings.type == 'float') {
+				if (settings.type == 'double') {
 					return NumberValidator.isFloat(value);
 					
 				} else {
