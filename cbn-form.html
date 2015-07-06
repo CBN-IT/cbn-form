@@ -310,7 +310,7 @@ Example:
 					
 					if (Array.isArray(value)) {
 						for (i=0; i<value.length; i++) {
-							deepSerializeObject(prefix + '[' + i + ']', value[i]);
+							deepSerializeObject(prefix + i, value[i]);
 						}
 						
 					} else if (typeof value == 'object') {
