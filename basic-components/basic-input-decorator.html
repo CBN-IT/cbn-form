@@ -154,18 +154,32 @@
 				
 				/**
 				 * Input `input` event handler.
+				 * 
+				 * @param {Event} event The input event object.
 				 */
-				_onInput: function() {
-					if (this.autoValidate) {
+				_onInput: function(event) {
+					if (!this._inputElement) return;
+					var resetValidation = event.detail && event.detail.reset;
+					if (resetValidation) {
+						this._updateValidation();
+						
+					} else if (this.autoValidate) {
 						this.validate();
 					}
 				},
 				
 				/**
-				 * Input `input` event handler.
+				 * Input `change` event handler.
+				 * 
+				 * @param {Event} event The input event object.
 				 */
-				_onChange: function() {
-					if (this.autoValidate) {
+				_onChange: function(event) {
+					if (!this._inputElement) return;
+					var resetValidation = event.detail && event.detail.reset;
+					if (resetValidation) {
+						this._updateValidation();
+						
+					} else {
 						this.validate();
 					}
 				},

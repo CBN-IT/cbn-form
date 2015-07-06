@@ -194,6 +194,15 @@ Example:
 							form.submit();
 					});
 				}
+				
+				// reset buttons
+				var resetButtons = this.querySelectorAll('[reset], input[type="reset"], button[type="reset"]');
+				for (var i=0; i<resetButtons.length; i++) {
+					PolymerGestures.addEventListener(resetButtons[i], 'tap', function(event) {
+						if (!event.defaultPrevented) 
+							form.reset();
+					});
+				}
 			},
 			
 			/**
@@ -310,7 +319,11 @@ Example:
 					
 					if (Array.isArray(value)) {
 						for (i=0; i<value.length; i++) {
-							deepSerializeObject(prefix + i, value[i]);
+							if (serializationOptions.useBrackets) {
+								deepSerializeObject(prefix + "[" + i + "]", value[i]);
+							} else {
+								deepSerializeObject(prefix + i, value[i]);
+							}
 						}
 						
 					} else if (typeof value == 'object') {

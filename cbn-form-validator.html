@@ -363,9 +363,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 			if (!this.validationOrder) {
 				this.validationOrder = [ 'required' ];
 			}
-			this._validationState = {
-				valid: true, message: ''
-			};
+			this.resetValidation();
 		},
 		
 		
@@ -378,6 +376,16 @@ A library that implements a extensible validator for `cbn-form` input elements.
 			var result = CbnForm.Validator.validateInput(this);
 			this.fire('cbn-form-validate', { result: result });
 			return result;
+		},
+		
+		/**
+		 * Resets the input's validation state.
+		 */
+		resetValidation: function() {
+			this._validationState = {
+				valid: true,
+				message: ''
+			};
 		}
 		
 	};
@@ -571,7 +579,7 @@ A library that implements a extensible validator for `cbn-form` input elements.
 				if (!settings.validate)
 					return true;
 				
-				if (settings.type == 'double') {
+				if (settings.type == 'float' || settings.type == 'double') {
 					return NumberValidator.isFloat(value);
 					
 				} else {

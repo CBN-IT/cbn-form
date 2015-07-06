@@ -572,12 +572,18 @@ type discovery).
 		 * The event bubbles. 
 		 * If your input contains other inputs, it should stop their bubbling events (i.e. hide them).
 		 * 
+		 * Event details:
+		 * - reset: will be set to true if the input validation state needs to be reset.
+		 * 
 		 * @event input
 		 */
 		
 		/**
 		 * The `change` event should be fired when the input value is committed (e.g. the element loses focus).
 		 * The event bubbles.
+		 * 
+		 * Event details:
+		 * - reset: will be set to true if the input validation state needs to be reset.
 		 * 
 		 * @event change
 		 */
@@ -627,11 +633,16 @@ type discovery).
 		
 		/**
 		 * Called when the value is programmatically changed in order to emit 'input' and 'change' events.
+		 * 
+		 * @param {Boolean} [reset] Set to true to reset input's validation state.
 		 */
-		notifyValueChanged: function(){
-			this.fire('input');
-			this.fire('change');
-		},
+		notifyValueChanged: function(reset) {
+			if (reset && this.resetValidation) {
+				this.resetValidation();
+			}
+			this.fire('input', { reset: reset });
+			this.fire('change', { reset: reset });
+		}
 		
 		
 	}, CbnForm.AbstractControl);
@@ -813,14 +824,36 @@ type discovery).
 		
 		/**
 		 * Model property changed. Used to detect changes to the model and re-bind the input values.
+		 * Resets input validation states.
 		 */
 		modelChanged_: function() {
 			for (var i=0; i<this.childInputs.length; i++) {
 				var input = this.childInputs[i];
 				this.bindValue(input);
-				input.notifyValueChanged();
+				input.notifyValueChanged(true);
 			}
-		}, 
+		},
+		
+		/**
+		 * Resets the form, reading the input values from the specified model and resetting input validation states.
+		 * 
+		 * @param {Object} model The model with the default values to set. If not specified, all inputs are emptied.
+		 */
+		reset: function(model) {
+			if (!model) model = {};
+			if (this.model == model) {
+				for (var i=0; i<this.childInputs.length; i++) {
+					var input = this.childInputs[i];
+					// reset all inputs
+					Platform.flush();
+					input.notifyValueChanged(true);
+				}
+				
+			} else {
+				this.model = model;
+				Platform.flush();
+			}
+		},
 		
 		/**
 		 * Requests the validation of all inputs and returns the boolean result.

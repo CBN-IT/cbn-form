@@ -204,7 +204,7 @@
 		var requests = this.requests;
 		
 		form2.model = testModel2;
-		form2.serializationOptions = { type: 'deep' };
+		form2.serializationOptions = { type: 'deep', useBrackets: true };
 		
 		flush(function(){
 			form2.submit();
