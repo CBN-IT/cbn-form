@@ -7,40 +7,64 @@
 
 <!-- Imports -->
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../paper-input/paper-autogrow-textarea.html">
 <link rel="import" href="../cbn-form-abstract.html">
 
-<style shim-shadowdom>
-	html /deep/ textarea[is=cbn-basic-textarea] {
-		width: 20em;
-		display: inline-block;
-		box-sizing: border-box;
-		margin: 0;
-		padding: 0.3em;
-		
-		font: inherit;
-		background-color: transparent;
-		box-shadow: none;
-		outline: none;
-		border: solid 1px #dcdcdc;
-		transition: box-shadow 0.3s, border 0.3s;
-	}
-	html /deep/ textarea[is=cbn-basic-textarea]:focus {
-		outline: none !important;
-		border: solid 1px #707070;
-		box-shadow: 0 0 5px 1px #969696;
-	}
+<polymer-element name="cbn-basic-textarea" is-form-input>
 	
-	/*noinspection CssUnusedSymbol*/
-	html /deep/ textarea[is=cbn-basic-textarea].unstyled {
-		margin: 0;
-		padding: 0;
-		border: 0;
-		transition: none;
-		box-shadow: none;
-	}
-</style>
-
-<polymer-element name="cbn-basic-textarea" extends="textarea">
+	<template>
+		<style>
+			:host {
+				display: inline-block;
+				margin: 0; padding: 0;
+			}
+			
+			/*noinspection CssUnusedSymbol*/
+			:host(.unstyled)::shadow #autogrow textarea {
+				margin: 0;
+				padding: 0;
+				border: 0;
+				transition: none;
+				box-shadow: none;
+			}
+			
+			#autogrow {
+				width: auto;
+				display: block;
+			}
+			
+			#autogrow textarea {
+				display: block;
+				box-sizing: border-box;
+				overflow: hidden;
+				margin: 0;
+				padding: 0.3em;
+				
+				font: inherit;
+				background-color: transparent;
+				box-shadow: none;
+				outline: none;
+				border: solid 1px #dcdcdc;
+				transition: box-shadow 0.3s, border 0.3s;
+			}
+			#autogrow textarea:focus {
+				outline: none !important;
+				border: solid 1px #707070;
+				box-shadow: 0 0 5px 1px #969696;
+			}
+			
+		</style>
+		
+		<paper-autogrow-textarea id="autogrow" style="min-height: {{ _calcMinHeight() }}">
+			
+			<textarea value="{{value}}" style="min-height: {{ _calcMinHeight() }}"
+					  cols="{{cols}}" rows="{{rows}}" maxlength="{{maxlength}}" wrap="{{wrap}}"
+					  title="{{title}}" placeholder="{{placeholder}}"
+					  disabled?="{{disabled}}" readonly?="{{readonly}}"></textarea>
+			
+		</paper-autogrow-textarea>
+		
+	</template>
 	
 	<script>
 		Polymer('cbn-basic-textarea', CbnForm.implement({
@@ -48,12 +72,34 @@
 			publish: { // Published attributes:
 				
 				/**
+				 * Input's name. 
+				 * 
+				 * @attribute name
+				 * @type {String}
+				 */
+				name: '',
+				
+				/**
+				 * Input's value attribute.
+				 * 
+				 * @attribute value
+				 * @type {String}
+				 */
+				value: '',
+				
+				/**
 				 * Whether the input is in a preview state.
 				 * 
 				 * @attribute previewstate
 				 * @type {Boolean}
 				 */
-				previewState: false
+				previewState: false,
+				
+				/*
+				 * Textarea HTML attributes.
+				 */
+				cols: '', rows: '', wrap: '', disabled: false, readonly: false,
+				placeholder: '', maxlength: ''
 				
 			}, 
 			
@@ -61,17 +107,32 @@
 			 * Element's dynamically-configurable attributes.
 			 */
 			dynamicAttributes: {
-				"title" : { type: 'attribute' }, 
-				"placeholder" : { type: 'attribute' }, 
-				"rows" : true,
-				"cols" : true
+				"title" : { type: 'attribute' },
+				"placeholder" : { type: 'attribute' },
+				"rows" : { type: 'attribute' },
+				"cols" : { type: 'attribute' },
+				"wrap" : { type: 'attribute' },
+				"disabled" : { type: 'attribute' },
+				"readonly" : { type: 'attribute' },
+				"maxlength" : { type: 'attribute' }
+			},
+			
+			
+			// Private methods
+			
+			/**
+			 * Calculates min-height to set from the given rows value.
+			 * @private
+			 * @return {String} The min-height CSS value to set to the textarea.
+			 */
+			_calcMinHeight: function() {
+				return (this.rows ? (this.rows*1) + 'em' : '3em' );
 			}
 			
 		}, CbnForm.AbstractInput, CbnForm.ValidatableInput, CbnForm.DynamicControl));
 		
 		//noinspection JSCheckFunctionSignatures
 		CbnForm.registerElement('cbn-basic-textarea', {
-				extends: 'textarea', 
 				types: ['textarea']
 			});
 		

@@ -16,6 +16,7 @@
         "polymer": "Polymer/polymer#^0.5",
         "core-ajax": "Polymer/core-ajax#^0.5",
         "core-input": "Polymer/core-input#^0.5",
+        "paper-input": "Polymer/paper-input#^0.5",
         "paper-shadow": "Polymer/paper-shadow#^0.5"
     },
     "devDependencies": {

@@ -66,12 +66,20 @@
 				"autocomplete": { type: 'attribute' },
 				"autofocus": { type: 'attribute' },
 				"disabled"	: { type: 'attribute' },
-				"readonly": { type: 'attribute' },
-				"autocomplete": { type: 'attribute' },
-				"autocomplete": { type: 'attribute' },
-				"autocomplete": { type: 'attribute' },
-				"autocomplete": { type: 'attribute' },
-				"autocomplete": { type: 'attribute' }
+				"readonly": { type: 'attribute' }
+			},
+			
+			/**
+			 * Initializes the input's default validation / behavior.
+			 */
+			created: function() {
+				if (!this.validation)
+					this.validation = {};
+				if (this.type == 'email' || this.type == 'number') {
+					if (this.validation.hasOwnProperty(this.type)) {
+						this.validation[this.type] = true;
+					}
+				}
 			}
 			
 		}, CbnForm.AbstractInput, CbnForm.ValidatableInput, CbnForm.DynamicControl));

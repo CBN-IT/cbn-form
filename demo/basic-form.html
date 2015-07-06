@@ -11,7 +11,7 @@
 	
 	<link rel="import" href="../cbn-form.html">
 	<link rel="import" href="../cbn-dynamic-form.html">
-	<link rel="import" href="../basic-components/basic-input.html">
+	<link rel="import" href="../basic-components/basic-bundle.html">
 	
 	<link href="//fonts.googleapis.com/css?family=RobotoDraft:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en" rel="stylesheet" type="text/css">
 	<style>
@@ -31,11 +31,20 @@
 		
 		<cbn-form-group caption="Personal Data">
 			<div class="group-inner row">
-				<input is="cbn-basic-input" title="First Name" class="col-xs-6" preview 
+				<div class="col-xs-6">
+					<input is="cbn-basic-input" placeholder="First Name" title="First Name" preview style="display: block;"
 							name="first_name" value="1" />
+				</div>
 				
-				<input is="cbn-basic-input" title="Last Name" class="col-xs-6"
-							name="last_name" />
+				<div class="col-xs-6">
+					<input is="cbn-basic-input" placeholder="Last Name" title="Last Name" style="display: block;"
+								name="last_name" />
+				</div>
+				
+				<div class="col-xs-12" style="margin-top: 0.5em">
+					<cbn-basic-textarea name="address" placeholder="Address" title="Address" 
+										rows="5" style="display: block;"></cbn-basic-textarea>
+				</div>
 			</div>
 		</cbn-form-group>
 		
