@@ -316,6 +316,7 @@ Example:
 					} else if (typeof value == 'object') {
 						for (n in value) {
 							if (!value.hasOwnProperty(n)) continue;
+							
 							deepSerializeObject((prefix ? prefix + '.' : '') + n, value[n]);
 						}
 						
