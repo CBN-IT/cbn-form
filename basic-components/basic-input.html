@@ -12,7 +12,6 @@
 
 <style shim-shadowdom>
 	html /deep/ input[is=cbn-basic-input] {
-		width: 20em;
 		display: inline-block;
 		box-sizing: border-box;
 		margin: 0;
@@ -63,7 +62,16 @@
 			 */
 			dynamicAttributes: {
 				"title" : { type: 'attribute' }, 
-				"placeholder" : { type: 'attribute' }
+				"placeholder" : { type: 'attribute' },
+				"autocomplete": { type: 'attribute' },
+				"autofocus": { type: 'attribute' },
+				"disabled"	: { type: 'attribute' },
+				"readonly": { type: 'attribute' },
+				"autocomplete": { type: 'attribute' },
+				"autocomplete": { type: 'attribute' },
+				"autocomplete": { type: 'attribute' },
+				"autocomplete": { type: 'attribute' },
+				"autocomplete": { type: 'attribute' }
 			}
 			
 		}, CbnForm.AbstractInput, CbnForm.ValidatableInput, CbnForm.DynamicControl));
