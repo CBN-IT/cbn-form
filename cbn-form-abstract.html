@@ -655,10 +655,10 @@ type discovery).
 	CbnForm.AbstractFileInput = CbnForm.implement({ 
 		
 		/**
-		 * This method should be implemented by file inputs.
+		 * Returns an array with the files selected using the input.
 		 * Used by the primary form component to send the uploaded files via AJAX.
 		 * 
-		 * @return {FileList} A FileList (preferably) object that contains the selected files.
+		 * @return {[File]} A list of File objects for each selected file.
 		 */
 		getFiles: function () {
 			throw "Not implemented!";
@@ -799,7 +799,7 @@ type discovery).
 					element.parentForm = container;
 				
 				// bind to the input's value in a first-come, first-served manner
-				if (containerHasModel && element.hasModelValue && !element.modelContainer) {
+				if (containerHasModel && (element.hasModelValue || element.isFileInput) && !element.modelContainer) {
 					container.bindValue(element);
 					container.childInputs.push(element);
 				}
@@ -820,7 +820,7 @@ type discovery).
 					if (idx >= 0) container.childInputs.splice(idx, 1);
 				}
 			});
-		}, 
+		},
 		
 		/**
 		 * Model property changed. Used to detect changes to the model and re-bind the input values.

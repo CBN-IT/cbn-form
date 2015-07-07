@@ -12,7 +12,7 @@
 	<!-- Elements to be tested -->
 	<link rel="import" href="../cbn-form.html">
 	<link rel="import" href="../basic-components/basic-input.html">
-	<link rel="import" href="../basic-components/basic-file-input.html">
+	<link rel="import" href="../basic-components/basic-file.html">
 	
 </head>
 <body>
@@ -45,7 +45,7 @@
 		
 		<input is="cbn-basic-input" type="text" title="First" id="input3_1" name="first" />
 		
-		<cbn-basic-file type="file" title="Upload file" id="fileInput" name="file"></cbn-basic-file>
+		<cbn-basic-file title="Upload file" hasModelValue id="fileInput" name="file"></cbn-basic-file>
 		
 	</div>
 </cbn-form>
@@ -308,7 +308,7 @@
 			fileInput.getFiles = function() {
 				return [ uploadFile ];
 			};
-			fileInput.fileSelected();
+			fileInput._fileChanged();
 			
 			form3.submit();
 			

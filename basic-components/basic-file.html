@@ -1,0 +1,350 @@
+<!--
+`cbn-basic-file` implements a basic file input that can be extended to support a wide range of visual styles (e.g. with 
+or without button, with progress bar etc.).
+
+By default, the input displays a text input, a Browse button and whatever content is passed in its light DOM.
+If you want to provide custom input / button, you can specify the 'customContent' attribute to disable the built-in elements.
+You can inherit an element's functionality by specifying the following classes:
+- '.file-name': this input will automatically be populated with the name of the selected file;
+- '.file-browse': a button / link which, when clicked, will make the select file dialog appear.
+
+@group cbn-form
+@element cbn-basic-file
+-->
+
+<!-- Imports -->
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../cbn-form-abstract.html">
+
+<polymer-element name="cbn-basic-file" is-form-input is-file-input>
+	
+	<template>
+		
+		<style>
+			:host {
+				display: inline-block;
+			}
+			
+			#uiContainer {
+				display: flex;
+			}
+			
+			.file-name {
+				display: inline-block;
+				flex: 1 1 auto;
+				margin-right: 0.2em;
+				padding: 0.3em;
+			}
+			.file-button {
+				display: inline-block;
+				flex: 0 1 auto;
+				padding: 0.3em 0.8em;
+			}
+			
+		</style>
+		
+		<div id="ui">
+			<template if="[[ !customContent ]]">
+				<div id="uiContainer">
+					<input class="file-name" type="text" id="selectedFile" value="{{_selectedFileName}}" 
+						   on-click="{{open}}" on-focus="{{open}}" title="{{placeholder}}" placeholder="{{placeholder}}" readonly />
+					<button id="fileButton" class="file-button" on-click="{{open}}">{{buttonText}}</button>
+				</div>
+			</template>
+			
+			<content></content>
+		</div>
+		
+		<div id="fileContainer" style="position: absolute; visibility: hidden; left: -999px;">
+			<input id="file" name="{{name}}" on-change="{{_fileChanged}}"
+				   type="file" multiple?="{{multiple}}" />
+		</div>
+		
+	</template>
+	
+	<script>
+		
+		// JSDoc type defs:
+		
+		/**
+		 * The file model object that describes a file selected using the input.
+		 * 
+		 * @typedef  {Object}	FileModel
+		 * @property {String} 	[name] The name of the selected/uploaded file.
+		 * @property {int}		[size] The size of the file, in bytes.
+		 * @property {String}	[type] The MIME type of the file (warning: unreliable).
+		 */
+		
+		// Element definition
+		
+		Polymer('cbn-basic-file', CbnForm.implement({
+			
+			publish: { // Published attributes:
+				
+				/**
+				 * It's a file input!
+				 */
+				isFileInput: true,
+				
+				/**
+				 * Input's name (also the model value path).
+				 * @type {String}
+				 * @default ''
+				 */
+				name: '',
+				
+				/**
+				 * Stores the selected files (both previous/uploaded and currently-selected) as an object or array of 
+				 * objects (if multiple is true).
+				 * Disabled by default (see {@link #hasModelValue}).
+				 * 
+				 * @type {FileModel | FileModel[]}
+				 * @default {} | []
+				 */
+				value: null,
+				
+				/**
+				 * Whether to set form model value to contain information about the selected files.
+				 */
+				hasModelValue: false,
+				
+				/**
+                 * Whether to allow multiple files to be selected.
+				 * 
+                 * @attribute multiple
+                 * @type {Boolean}
+                 */
+                multiple: false,
+				
+				/**
+				 * Whether the input is in a preview state.
+				 * 
+				 * @attribute previewState
+				 * @type {Boolean}
+				 */
+				previewState: false,
+				
+				/**
+				 * The default validator type is 'file'.
+				 */
+				validationType: 'file',
+				
+				/**
+				 * Specify true to prevent rendering the inner UI elements.
+				 * 
+				 * @attribute customContent
+				 * @type {Boolean}
+				 */
+				customContent: false,
+				
+				/**
+				 * The placeholder to display when there is no file selected.
+				 * 
+				 * @attribute placeholder
+				 * @type {String}
+				 */
+				placeholder: '',
+				
+				/**
+				 * The title to set to the input that displays the selected file names.
+				 * 
+				 * @attribute title
+				 * @type {String}
+				 */
+				title: '',
+				
+				/**
+				 * The text to display for the Browse button.
+				 * 
+				 * @attribute buttonText
+				 * @type {String}
+				 */
+				buttonText: 'Browse',
+				
+				/**
+				 * The title to set to the input that displays the selected file names.
+				 * 
+				 * @attribute title
+				 * @type {Boolean}
+				 */
+				disabled: '',
+				
+				/**
+				 * Whether to autofocus the element on creation.
+				 * 
+				 * @attribute title
+				 * @type {Boolean}
+				 */
+				autofocus: false
+				
+			}, 
+			
+			
+			/**
+			 * Element's dynamically-configurable attributes.
+			 */
+			dynamicAttributes: {
+				"multiple" : { type: 'attribute' },
+				"title" : { type: 'attribute' },
+				"placeholder" : { type: 'attribute' },
+				"buttonText" : { type: 'attribute' },
+				"autofocus": { type: 'attribute' },
+				"disabled" : { type: 'attribute' },
+				"accept": { type: 'attribute' }
+			},
+			
+			/**
+			 * Reference to the UI file-name input.
+			 */
+			get fileNameEl() {
+				if (this.$.fileName) 
+					return this.$.fileName;
+				else return this.querySelector('.file-name');
+			},
+			
+			/**
+			 * Reference to the UI file chooser open button.
+			 */
+			get fileButtonEl() {
+				if (this.$.fileButton) 
+					return this.$.fileButton;
+				else return this.querySelector('.file-button');
+			},
+			
+			// Fired events
+			
+			/**
+			 * Fired when the files selection changed.
+			 * 
+			 * @event change
+			 */
+			
+			// Public API:
+			
+			/**
+			 * Opens the file chooser. 
+			 * Only usable inside browser click event contexts (because of browser restrictions).
+			 */
+			open: function() {
+				this.$.file.click();
+			},
+			
+			/**
+			 * Returns the input's FileList object that contains the selected files.
+			 * 
+			 * @return {FileList} A FileList object that contains the selected files.
+			 */
+			getFiles: function () {
+				return this.$.file.files;
+			},
+			
+			
+			// Internal methods
+			
+			/**
+			 * Fires when the element is created. Used to initialize its attributes.
+			 */
+			created: function () {
+				if (this.hasModelValue) {
+					if (this.multiple) {
+						this.value = [];
+					} else {
+						this.value = {};
+					}
+				} else {
+					this.value = null;
+				}
+			},
+			
+			/**
+			 * Fires when the element is attached to DOM and fully initialized.
+			 */
+			domReady: function() {
+				if (this.fileNameEl) {
+					this.fileNameEl.addEventListener('keypress', this._keyPressHandler.bind(this));
+					this.fileNameEl.setAttribute('title', this.title);
+					this.fileNameEl.setAttribute('placeholder', this.placeholder);
+					this.fileNameEl.value = '';
+					
+					if (this.autofocus) {
+						this.fileNameEl.focus();
+					}
+				}
+				if (this.fileButtonEl) {
+					this.fileButtonEl.addEventListener('click', this.open.bind(this));
+					this.fileButtonEl.addEventListener('keypress', this._keyPressHandler.bind(this));
+				}
+			},
+			
+			/**
+			 * Called when the Enter key is pressed on the file input.
+			 */
+			_keyPressHandler: function(event) {
+				if (event.which == '13') {
+					event.preventDefault();
+					this.open();
+				}
+			},
+			
+			/**
+			 * File input changed event, called when a file is selected.
+			 * @private
+			 * @param {Event} event The change event.
+			 */
+			_fileChanged: function(event) {
+				if (event)
+					event.stopPropagation();
+				
+				var i;
+				var filesModel = [];
+				var files = this.getFiles();
+				if (files && files.length) {
+					for (i=0; i<files.length; i++) {
+						filesModel.push({
+							uploaded: false,
+							name: files[i].name,
+							size: files[i].size,
+							type: files[i].type
+						});
+					}
+				}
+				
+				if (this.hasModelValue) {
+					if (this.multiple) {
+						this.value = filesModel;
+					} else {
+						if (filesModel.length > 0) {
+							this.value = filesModel[0];
+						} else {
+							this.value = {};
+						}
+					}
+				} else {
+					this.value = null;
+				}
+				
+				if (this.fileNameEl) {
+					if (this.multiple) {
+						this.fileNameEl.value = filesModel.name;
+					} else {
+						if (filesModel.length > 0) {
+							this.fileNameEl.value = filesModel[0].name;
+						} else {
+							this.fileNameEl.value = '';
+						}
+					}
+				}
+				
+				this.fire('change');
+			}
+			
+		}, CbnForm.AbstractFileInput, CbnForm.ValidatableInput, CbnForm.DynamicControl ));
+		
+		//noinspection JSCheckFunctionSignatures
+		CbnForm.registerElement('cbn-basic-file', {
+				types: ['file']
+			});
+		
+	</script>
+	
+</polymer-element>
