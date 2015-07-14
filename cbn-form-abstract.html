@@ -1,21 +1,10 @@
-<!--
-This file includes all scripts used by the CbnForm components.
--->
+<!-- This file exists for backwards compatibility reasons only -->
+<link rel="import" href="lib/include.html" />
 
-<script src="lib/cbn-form.js"></script>
-<script src="lib/interfaces.js"></script>
-<script src="lib/validator.js"></script>
-
-<script src="lib/interface/control.js"></script>
-<script src="lib/interface/input.js"></script>
-<script src="lib/interface/file-input.js"></script>
-<script src="lib/interface/dynamic-control.js"></script>
-<script src="lib/interface/validatable-input.js"></script>
-<script src="lib/interface/decorator.js"></script>
-<script src="lib/interface/container.js"></script>
-
-<!-- Include the built-in validators: -->
-<script src="lib/validator/string.js"></script>
-<script src="lib/validator/number.js"></script>
-<script src="lib/validator/date.js"></script>
-<script src="lib/validator/list.js"></script>
+<script>
+	
+	// alias the old behavior-related functions
+	CbnForm.implement = Polymer.implementBehaviors;
+	CbnForm.implements = Polymer.implementsBehavior;
+	
+</script>

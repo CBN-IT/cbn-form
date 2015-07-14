@@ -16,8 +16,7 @@ Example:
 
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="cbn-form-abstract.html">
-<link rel="import" href="cbn-form-validator.html">
+<link rel="import" href="lib/include.html">
 <link rel="import" href="cbn-form-group.html">
 
 <polymer-element name="cbn-form">
@@ -32,7 +31,7 @@ Example:
 	</template>
 	
 	<script>
-		Polymer('cbn-form', CbnForm.implement({
+		Polymer('cbn-form', Polymer.implementBehaviors({
 			
 			publish: { // Published attributes:
 				

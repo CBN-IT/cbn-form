@@ -310,6 +310,8 @@
 			};
 			fileInput._fileChanged();
 			
+			console.log(JSON.stringify(form3.model.file));
+			
 			form3.submit();
 			
 			assert(requests[0].requestBody instanceof FormData, 'body is FormData');

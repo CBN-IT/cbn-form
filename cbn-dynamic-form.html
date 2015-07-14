@@ -68,7 +68,7 @@ Example config JSON definition:
 	<script>
 		(function() {
 			//noinspection JSUnusedGlobalSymbols
-			Polymer('cbn-dynamic-form', CbnForm.implement({
+			Polymer('cbn-dynamic-form', Polymer.implementBehaviors({
 				
 				publish: { // Publish attributes:
 					
@@ -364,7 +364,7 @@ Example config JSON definition:
 					}
 					
 					return true;
-				}, 
+				},
 				
 				/**
 				 * Creates a form elements using the specified configuration (template) object.
@@ -397,7 +397,7 @@ Example config JSON definition:
 						}
 					}
 					
-					if (!elementDef || !elements.element || !CbnForm.implements(elements.element, CbnForm.DynamicControl)) {
+					if (!elementDef || !elements.element || !Polymer.implementsBehavior(elements.element, CbnForm.DynamicControl)) {
 						console.error("<cbn-dynamic-form>: invalid form element ('" + elementName + "')");
 						return false;
 					}
@@ -407,8 +407,8 @@ Example config JSON definition:
 					elements.decorator = null;
 					if (elConfig.decorator) {
 						elements.decorator = document.createElement(elConfig.decorator);
-						if (!elements.decorator || !CbnForm.implements(elements.decorator, CbnForm.AbstractInputDecorator) || 
-								!CbnForm.implements(elements.decorator, CbnForm.DynamicControl)) {
+						if (!elements.decorator || !Polymer.implementsBehavior(elements.decorator, CbnForm.AbstractInputDecorator[1]) || 
+								!Polymer.implementsBehavior(elements.decorator, CbnForm.DynamicControl)) {
 							console.error("<cbn-dynamic-form>: invalid decorator element ('" + elConfig.decorator + "')");
 							return false;
 						}
@@ -454,7 +454,7 @@ Example config JSON definition:
 						elements.decorator.appendChild(elements.element);
 					}
 					return elements;
-				}, 
+				},
 				
 				/**
 				 * Creates a basic HTML wrapper element using the specified configuration (template) object.
@@ -467,7 +467,9 @@ Example config JSON definition:
 					var wrapper = document.createElement(elConfig.element);
 					if (!wrapper) return false;
 					
-					CbnForm.implement(wrapper, CbnForm.DynamicControl);
+					Polymer.mixin(wrapper, CbnForm.DynamicControl);
+					wrapper.created();
+					
 					for (var c in elConfig) {
 						if (!elConfig.hasOwnProperty(c)) 
 							continue;
@@ -480,7 +482,7 @@ Example config JSON definition:
 					}
 					
 					return wrapper;
-				}, 
+				},
 				
 				/**
 				 * Finds the parent `cbn-form` element.
@@ -530,7 +532,7 @@ Example config JSON definition:
 						extendedConfig.push(exConfig);
 					}
 					return extendedConfig;
-				}, 
+				},
 				
 				/**
 				 * Lightweight object extend function (jQuery-like, right to left processing order).

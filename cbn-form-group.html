@@ -9,7 +9,7 @@ visual features (preview / edit stances etc.).
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-shadow/paper-shadow.html">
-<link rel="import" href="cbn-form-abstract.html">
+<link rel="import" href="lib/include.html">
 
 <polymer-element name="cbn-form-group">
 	<template>
@@ -35,7 +35,7 @@ visual features (preview / edit stances etc.).
 			 */
 			var currentlyOpenGroup = null;
 			
-			Polymer('cbn-form-group', CbnForm.implement({
+			Polymer('cbn-form-group', Polymer.implementBehaviors({
 				
 				publish: { // Published attributes: 
 					

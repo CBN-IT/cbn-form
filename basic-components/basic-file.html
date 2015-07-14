@@ -77,7 +77,7 @@ You can inherit an element's functionality by specifying the following classes:
 		
 		// Element definition
 		
-		Polymer('cbn-basic-file', CbnForm.implement({
+		Polymer('cbn-basic-file', Polymer.implementBehaviors({
 			
 			publish: { // Published attributes:
 				
@@ -191,6 +191,7 @@ You can inherit an element's functionality by specifying the following classes:
 				"autofocus": { type: 'attribute' },
 				"disabled" : { type: 'attribute' },
 				"accept": { type: 'attribute' }
+				
 			},
 			
 			/**
