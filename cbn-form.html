@@ -293,26 +293,6 @@ Example:
 			},
 			
 			/**
-			 * Finds the input with the given name.
-			 * If multiple inputs use the same name, the behavior is undefined (either one of them can be returned).
-			 * 
-			 * @param {String} name The name of the input to look for.
-			 * @return {HTMLElement} Reference to the input element, if found.
-			 */
-			getInputByName: function (name) {
-				var element = null;
-				this.childInputs.some(function(input) {
-					if (input.name == name) {
-						element = input;
-						return true;
-					}
-					return false;
-				}, this);
-				
-				return element;
-			},
-			
-			/**
 			 * Serializes the form data.
 			 * 
 			 * @param {Object} serializationOptions If specified, will override the element's serialization options.
