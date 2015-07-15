@@ -211,7 +211,7 @@
 			
 			assert.deepEqual(requests[0].requestBody, 'first=1st&second=2nd&advanced.text=advanced%20text&' +
 				'advanced.text2=advanced2text&advanced2.text3=advanced3tree&' +
-				'list%5B0%5D.of=objects&list%5B1%5D.another=yes', 'Deep serialized request body');
+				'list%5B0%5D.of=objects&list%5B1%5D.another=yes&advanced3.text2=', 'Deep serialized request body');
 			
 			done();
 		});

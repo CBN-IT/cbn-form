@@ -25,6 +25,7 @@
 				{
 					"inherit": "input",
 					"name": "personal.firstname",
+					"defaultValue": "It's",
 					"type": "text",
 					"preview": true,
 					"label": "First Name",
@@ -39,6 +40,7 @@
 				{
 					"inherit": "input",
 					"name": "personal.lastname",
+					"defaultValue": "Me",
 					"type": "text",
 					"preview": true,
 					"label": "Last Name", 
