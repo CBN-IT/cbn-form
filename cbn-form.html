@@ -332,7 +332,7 @@ Example:
 							deepSerializeObject((prefix ? prefix + '.' : '') + n, value[n]);
 						}
 						
-					} else if (!value) {
+					} else if (value === undefined || value === null) {
 						fields.push({ key: prefix, value: "" });
 					} else {
 						fields.push({ key: prefix, value: value.toString() });
