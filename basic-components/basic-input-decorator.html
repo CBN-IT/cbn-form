@@ -109,6 +109,7 @@
 				ready: function () {
 					this.addEventListener('input', this._onInput.bind(this));
 					this.addEventListener('change', this._onChange.bind(this));
+					this.addEventListener('value-change', this._onChange.bind(this));
 					this.addEventListener('cbn-form-validate', this._onValidate.bind(this));
 				},
 				
