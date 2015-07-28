@@ -1,5 +1,5 @@
-CBN Forms
-=========
+Cbn-Form
+========
 
 Dynamic forms documentation
 ---------------------------

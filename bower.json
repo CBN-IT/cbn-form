@@ -1,8 +1,8 @@
 {
     "name": "cbn-form",
-    "version": "0.3.1",
+    "version": "1.0.0",
     "private": true,
-    "description": "An AJAX form component with dynamic elements creation features and more.",
+    "description": "An AJAX form component suite with dynamic elements creation features and more.",
     "main": "cbn-form.html",
     "ignore": [
         "**/.*",
@@ -10,19 +10,16 @@
         "bower_components",
         "../",
         "test",
-        "tests"
+        "demo"
     ],
     "dependencies": {
-        "polymer": "Polymer/polymer#^0.5",
-        "core-ajax": "Polymer/core-ajax#^0.5",
-        "core-input": "Polymer/core-input#^0.5",
-        "paper-input": "Polymer/paper-input#^0.5",
-        "paper-shadow": "Polymer/paper-shadow#^0.5",
-        "cbn-polymer-extensions": "git@bitbucket.org:cbn-it/cbn-polymer-extensions.git#master"
+        "polymer": "Polymer/polymer#^1.0",
+        "polymer-reflection": "niflostancu/polymer-reflection#master",
+        "iron-ajax": "PolymerElements/iron-ajax#^1.0",
+        "iron-input": "PolymerElements/iron-input#^1.0"
     },
     "devDependencies": {
-        "core-component-page": "Polymer/core-component-page#^0.5",
-        "web-component-tester": "Polymer/web-component-tester",
-        "cbn-grid": "git@bitbucket.org:cbn-it/cbn-grid.git#master"
+        "iron-component-page": "PolymerElements/iron-component-page#^1.0",
+        "web-component-tester": "*"
     }
 }
