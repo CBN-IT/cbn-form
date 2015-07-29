@@ -137,10 +137,37 @@
 			assert.equal(f.getElementByName('one').value, 'another one', 'model to value #1');
 			assert.equal(f.getElementByName('two.one').value, 'bites the dust', 'model to value #2');
 			
+			// reset path
+			f.reset('two');
+			assert.equal(f.getElementByName('two.one').value, '', 'empty value after reset path');
+			
 			// reset the model
 			f.reset();
 			assert.equal(f.getElementByName('one').value, '', 'empty value after reset');
 			assert.equal(f.getElementByName('three.four.nein').value, '999', 'default value after reset');
+		});
+		
+		test('dirty flag', function () {
+			f = fixture('formContainer');
+			
+			f.model = {};
+			assert.equal(f.isDirty, false, 'isDirty at initial model');
+			
+			f.set('model.one', 'get');
+			f.set('model.two.one', 'dirty');
+			assert.equal(f.isDirty, true, 'isDirty after model is now dirty');
+			console.log('dirty set!');
+			
+			f.reset('one');
+			f.reset('two');
+			console.log('reset!');
+			assert.equal(f.isDirty, false, 'isDirty after model is reset');
+			
+			f.set('model.three.four.nein', 'dirty again');
+			assert.equal(f.isDirty, true, 'isDirty after model is dirty again');
+			
+			f.set('model.three.four.nein', '999');
+			assert.equal(f.isDirty, false, 'isDirty after default value set');
 		});
 		
 	});
