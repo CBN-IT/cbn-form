@@ -1,0 +1,22 @@
+<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../lib/include.html">
+
+<dom-module id="simple-container">
+	<template>
+		<content></content>
+	</template>
+</dom-module>
+
+<script>
+	Polymer({
+		is: 'simple-container',
+		
+		behaviors: [
+			CbnForm.FormContainer
+		],
+		
+		properties: {
+		}
+		
+	});
+</script>

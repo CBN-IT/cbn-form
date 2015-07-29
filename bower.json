@@ -14,12 +14,14 @@
     ],
     "dependencies": {
         "polymer": "Polymer/polymer#^1.0",
+        "webcomponentsjs": "^0.7",
         "polymer-reflection": "niflostancu/polymer-reflection#master",
         "iron-ajax": "PolymerElements/iron-ajax#^1.0",
         "iron-input": "PolymerElements/iron-input#^1.0"
     },
     "devDependencies": {
         "iron-component-page": "PolymerElements/iron-component-page#^1.0",
+        "test-fixture": "PolymerElements/test-fixture#^1.0",
         "web-component-tester": "*"
     }
 }
