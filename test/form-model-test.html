@@ -13,6 +13,7 @@
 	
 	<link rel="import" href="mock/container-mock.html" />
 	<link rel="import" href="mock/input-mock.html" />
+	<link rel="import" href="mock/native-input-mock.html" />
 	
 </head>
 <body>
@@ -21,6 +22,14 @@
 	<test-fixture id="simpleElement">
 		<template>
 			<simple-input id="standalone1" name="test"></simple-input>
+		</template>
+	</test-fixture>
+</div>
+
+<div id="nativeInputContainer">
+	<test-fixture id="nativeInput">
+		<template>
+			<input is="test-native-input" id="native1" name="test1" title="Native Input"/>
 		</template>
 	</test-fixture>
 </div>
@@ -90,6 +99,38 @@
 		
 	});
 	
+	suite('native input element', function () {
+		var f;
+		
+		test('element attachment', function () {
+			var cont = document.getElementById('nativeInputContainer');
+			var handler = sinon.spy();
+			cont.addEventListener('cbn-form-register', handler);
+			
+			f = fixture('nativeInput');
+			
+			assert.ok(handler.calledOnce, 'register called');
+			assert.ok(handler.args[0][0] && handler.args[0][0].detail.element == f,
+				'element registered successfully');
+		});
+		
+		test('value-change event', function () {
+			f = fixture('nativeInput');
+			
+			var handler = sinon.spy();
+			f.addEventListener('value-changed', handler);
+			
+			f.bindValue = 'changed';
+			assert.equal(f.value, 'changed', 'value changed');
+			assert.ok(handler.calledOnce && !handler.args[0][0].detail.indirect, 'value-changed fired');
+			handler.reset();
+			
+			f._setIndirectValue('indirect');
+			assert.ok(handler.calledOnce && handler.args[0][0].detail.indirect, 'indirect value-changed fired');
+			assert.equal(f.value, 'indirect', 'indirect value set');
+		});
+		
+	});
 	
 	suite('form container', function () {
 		var f;
@@ -156,11 +197,9 @@
 			f.set('model.one', 'get');
 			f.set('model.two.one', 'dirty');
 			assert.equal(f.isDirty, true, 'isDirty after model is now dirty');
-			console.log('dirty set!');
 			
 			f.reset('one');
 			f.reset('two');
-			console.log('reset!');
 			assert.equal(f.isDirty, false, 'isDirty after model is reset');
 			
 			f.set('model.three.four.nein', 'dirty again');

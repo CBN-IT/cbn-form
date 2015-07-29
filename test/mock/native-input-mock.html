@@ -1,0 +1,28 @@
+<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../lib/include.html">
+
+<script>
+	Polymer({
+		is: 'test-native-input',
+		extends: 'input',
+		
+		behaviors: [
+			CbnForm.NativeFormElement
+		],
+		
+		properties: {
+			
+			bindValue: {
+				type: String,
+				value: '', 
+				observer: '_bindValueChanged'
+			}
+			
+		},
+		
+		_bindValueChanged: function(newValue) {
+			this._setValue(newValue);
+		}
+		
+	});
+</script>
