@@ -6,8 +6,13 @@ Warning: uses polymer-reflection library, which is experimental!
 @group cbn-form
 -->
 
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../lib/include.html">
+
 <script>
 	(function(CbnForm) {
+		
+		if (!Polymer.reflect) return;
 		
 		// the namespace for the extension behaviors
 		CbnForm.PolymerElements = {};
@@ -15,10 +20,59 @@ Warning: uses polymer-reflection library, which is experimental!
 		/**
 		 * The behavior to use for extending the `iron-input` element.
 		 */
-		Cbn.PolymerElements.ExtendedInputBehavior = {
+		CbnForm.PolymerElements.ExtendedInputBehavior = {
+			
+			properties: {
+				
+				/**
+				 * Use this property instead of `value` for two-way data binding.
+				 */
+				bindValue: {
+					observer: '_fe_bindValueChanged',
+					type: String
+				},
+				
+				/**
+				 * Do not break non-cbn-form usage.
+				 */
+				_exposeInputEvents: {
+					type: Boolean,
+					value: true,
+					readOnly: true
+				}
+				
+			},
+			
+			ready: function() {
+				
+			},
+			
+			/**
+			 * Observes when the bindValue changes and sets the value.
+			 */
+			_fe_bindValueChanged: function(newValue) {
+				this._setValue(newValue);
+			},
+			
+			/**
+			 * Overridden to also change the {@link #bindValue} property. 
+			 * 
+			 * @param value The value to set.
+			 * @protected
+			 */
+			_setValue: function (value) {
+				if (this._fe_previousValue !== value) {
+					this.value = value;
+					this.bindValue = value;
+					this._fe_previousValue = value;
+					this._fe_valueChanged(value);
+				}
+			}
 			
 		};
 		
+		Polymer.injectBehaviors('iron-input', 
+			[ CbnForm.NativeFormElement, CbnForm.PolymerElements.ExtendedInputBehavior ]);
 		
 	})(CbnForm);
 </script>
