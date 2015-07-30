@@ -1,0 +1,186 @@
+<!doctype html>
+<!--suppress HtmlUnknownTag -->
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	
+	<script src="../../test-fixture/test-fixture-mocha.js"></script>
+	<link rel="import" href="../../test-fixture/test-fixture.html" />
+	
+	<link rel="import" href="mock/container-mock.html" />
+	<link rel="import" href="mock/input-mock.html" />
+	<link rel="import" href="mock/native-input-mock.html" />
+	
+</head>
+<body>
+
+<test-fixture id="formContainer">
+	<template>
+		<simple-container>
+			
+			<simple-input name="one" title="One"></simple-input>
+			<input is="test-native-input" name="two" title="Two" />
+			
+			<simple-input name="three" title="Three"></simple-input>
+			<input is="test-native-input" name="four" title="Four" />
+			
+			<input is="test-native-input" name="five" title="Five" />
+			<simple-input name="six" title="Six"></simple-input>
+			
+			<input is="test-native-input" name="seven" title="Seven" />
+			<simple-input name="right" title="Right"></simple-input>
+			
+		</simple-container>
+	</template>
+</test-fixture>
+
+<script>
+	
+	suite('form element', function () {
+		var f;
+		
+		test('required validation & messages', function () {
+			f = fixture('formContainer');
+			
+			var input1 = f.getElementByName('one');
+			var input2 = f.getElementByName('two');
+			var input3 = f.getElementByName('three');
+			var input4 = f.getElementByName('four');
+			
+			input1.validation = {
+				required: false
+			};
+			input2.defaultValidationMessage = 'This is a test message!';
+			input2.validation = {
+				required: true
+			};
+			input3.validation = {
+				required: { validate: true, message: 'test' }
+			};
+			input4.validation = {
+				required: { validate: true, message: 'this is required, bo$$' }
+			};
+			
+			input1.value = '';
+			input2.value = '';
+			input3.value = 'not empty';
+			input4.value = '';
+			
+			assert.ok(input1.validate(), 'required:false validation');
+			assert.equal(input1.validationState.message, '', 'success empty validation message');
+			
+			assert.notOk(input2.validate(), 'required:true validation');
+			assert.equal(input2.validationState.message, 'This is a test message!', 'default validation message');
+			
+			assert.ok(input3.validate(), 'required:true positive validation');
+			
+			input4.validate();
+			assert.equal(input4.validationState.message, 'this is required, bo$$', 'per-validator validation message');
+			
+			assert.notOk(f.validate(), 'form validation');
+		});
+		
+		test('text validation', function () {
+			f = fixture('formContainer');
+			
+			var input1 = f.getElementByName('one');
+			var input2 = f.getElementByName('two');
+			var input3 = f.getElementByName('three');
+			var input4 = f.getElementByName('four');
+			var input5 = f.getElementByName('five');
+			
+			var testLengthValidation = {
+				minlength: 2,
+				maxlength: 4
+			};
+			
+			input1.validation = testLengthValidation;
+			input2.validation = testLengthValidation;
+			input3.validation = testLengthValidation;
+			input4.validation = input5.validation = {
+				pattern: { validate: '^[a-z0-9]+$', modifiers: 'i', message: 'test2' }
+			};
+			
+			input1.value = '1';
+			input2.value = '111';
+			input3.value = '1111111111';
+			input4.value = 'this, is, not, correct';
+			input5.value = 'ThiSIsCorrect';
+			
+			assert.notOk(input1.validate(), 'minlength/maxlength validation 1');
+			assert.ok(input2.validate(), 'minlength/maxlength validation 2');
+			assert.notOk(input3.validate(), 'minlength/maxlength validation 3');
+			
+			assert.notOk(input4.validate(), 'pattern negative validation');
+			assert.ok(input5.validate(), 'pattern positive validation');
+				
+		});
+		
+		test('pattern validation', function () {
+			f = fixture('formContainer');
+			
+			var input1 = f.getElementByName('one');
+			var input2 = f.getElementByName('two');
+			
+			input1.validation = input2.validation = {
+				email: true
+			};
+			
+			input1.value = 'test@example.com';
+			input2.value = 'you shall not pass';
+			
+			assert.ok(input1.validate(), 'email positive validation');
+			assert.notOk(input2.validate(), 'email negative validation');
+			
+		});
+		
+		test('numeric validation', function () {
+			f = fixture('formContainer');
+			
+			var input1 = f.getElementByName('one');
+			var input2 = f.getElementByName('two');
+			var input3 = f.getElementByName('three');
+			var input4 = f.getElementByName('four');
+			var input5 = f.getElementByName('five');
+			var input6 = f.getElementByName('six');
+			var input7 = f.getElementByName('seven');
+			var input8 = f.getElementByName('right');
+			
+			input1.validation = input2.validation = { number: true };
+			input1.value = '6534873';
+			input2.value = '345k234';
+			
+			input3.validation = input4.validation = { number: { validate: true, type: 'float' } };
+			input3.value = '6534.873';
+			input4.value = '345la.234';
+			
+			input5.validation = input6.validation = { min: 19 };
+			input7.validation = input8.validation = { max: 19 };
+			input5.value = '20';
+			input6.value = '18';
+			input7.value = '18.9';
+			input8.value = '19.1';
+			
+			assert.ok(input1.validate(), 'integer positive validation');
+			assert.notOk(input2.validate(), 'integer negative validation');
+			
+			assert.ok(input3.validate(), 'float positive validation');
+			assert.notOk(input4.validate(), 'float negative validation');
+			
+			assert.ok(input5.validate(), 'min positive validation');
+			assert.notOk(input6.validate(), 'min negative validation');
+			
+			assert.ok(input7.validate(), 'max positive validation');
+			assert.notOk(input8.validate(), 'max negative validation');
+			
+		});
+	});
+	
+</script>
+
+</body>
+</html>
