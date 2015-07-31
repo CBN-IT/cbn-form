@@ -1,0 +1,278 @@
+<!doctype html>
+<!--suppress HtmlUnknownTag -->
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	
+	<script src="../../test-fixture/test-fixture-mocha.js"></script>
+	<link rel="import" href="../../test-fixture/test-fixture.html" />
+	
+	<link rel="import" href="mock/container-mock.html" />
+	<link rel="import" href="mock/input-mock.html" />
+	<link rel="import" href="mock/native-input-mock.html" />
+	
+</head>
+<body>
+
+<test-fixture id="formContainer">
+	<template>
+		<simple-container>
+			
+			<simple-input name="one.one" title="One" value="1"></simple-input>
+			<input is="test-native-input" name="one.two" value="two" title="Two"/>
+			
+			<input is="test-native-input" name="three" value="t1" title="Three1"/>
+			<input is="test-native-input" name="three" value="t2" title="Three2"/>
+			
+			<simple-input name="four" title="Four1" value="one"></simple-input>
+			<simple-input name="four" title="Four2" value="two"></simple-input>
+			
+		</simple-container>
+	</template>
+</test-fixture>
+
+<script>
+	
+	suite('CbnForm.Serialization library', function () {
+		var f;
+		var data;
+		
+		test('serialization mode plain', function () {
+			var complexModel1 = {
+				test: 'string',
+				test2: 2,
+				b: true,
+				nb: false,
+				empt: null,
+				obj: {'should': 'be', 'stringified': true},
+				arr: [1, 2, {'three': true}, [4, 5]]
+			};
+			
+			// Begin with a complex test with the default settings
+			data = CbnForm.Serialization.serialize(complexModel1, { mode: 'plain', as: 'pairs' });
+			assert.deepEqual(data, [
+				{ key: "test", value: "string" },
+				{ key: "test2", value: "2" },
+				{ key: "b", value: "true" },
+				{ key: "nb", value: "false" },
+				{ key: "empt", value: "" },
+				{ key: "obj", value: '{"should":"be","stringified":true}' },
+				{ key: "arr", value: '1' },
+				{ key: "arr", value: '2' },
+				{ key: "arr", value: '{"three":true}' },
+				{ key: "arr", value: '[4,5]' }
+				// { key: "arr", value: '[1,2,{"three":true},[4,5]]' }
+			], 'complex to plain');
+			
+			// Then, for each configurable property:
+			
+			// 1. `useBrackets`
+			data = CbnForm.Serialization.serialize({
+				arr: [ 1, 2, { 'three': true }, [ 4, 5 ] ]
+			}, { mode: 'plain', as: 'pairs', useBrackets: true });
+			assert.deepEqual(data, [
+				{ key: "arr[]", value: '1' },
+				{ key: "arr[]", value: '2' },
+				{ key: "arr[]", value: '{"three":true}' },
+				{ key: "arr[]", value: '[4,5]' }
+			], 'plain with useBrackets');
+			
+			// 2. `booleans`
+			data = CbnForm.Serialization.serialize({
+				test: 'string',
+				test2: 2,
+				b: true,
+				nb: false
+			}, {mode: 'plain', as: 'pairs', booleans: '1'});
+			assert.deepEqual(data, [
+				{ key: "test", value: "string" },
+				{ key: "test2", value: "2" },
+				{ key: "b", value: "1" }
+			], 'plain with booleans');
+			
+			// 3. `jsonArrays`
+			data = CbnForm.Serialization.serialize({
+				arr: [ 1, 2, { 'three': true }, [ 4, 5 ] ]
+			}, {mode: 'plain', as: 'pairs', jsonArrays: true});
+			assert.deepEqual(data, [
+				{ key: "arr", value: '[1,2,{"three":true},[4,5]]' }
+			], 'plain with jsonArrays');
+			
+			// 4. `jsonAll`
+			data = CbnForm.Serialization.serialize(complexModel1, {mode: 'plain', as: 'pairs', jsonAll: true});
+			assert.deepEqual(data, [
+				{ key: "test", value: "\"string\"" },
+				{ key: "test2", value: "2" },
+				{ key: "b", value: "true" },
+				{ key: "nb", value: "false" },
+				{ key: "empt", value: "null" },
+				{ key: "obj", value: '{"should":"be","stringified":true}' },
+				{ key: "arr", value: '[1,2,{"three":true},[4,5]]' }
+			], 'plain with jsonAll');
+			
+		});
+		
+		test('serialization mode deep', function () {
+			var complexModel2 = {
+				here: 'we go',
+				plain: true,
+				oneTwo: [1, 2],
+				obj: {
+					b: 4,
+					arr: [
+						{very: 'deep', 'y': 'y'},
+						{shouldWork: true}
+					],
+					a: 'fter'
+				}
+			};
+			
+			// Begin with a complex test with the default settings
+			data = CbnForm.Serialization.serialize(complexModel2, { mode: 'deep', as: 'pairs' });
+			assert.deepEqual(data, [
+				{ key: "here", value: "we go" },
+				{ key: "plain", value: "true" },
+				{ key: "oneTwo.0", value: "1" },
+				{ key: "oneTwo.1", value: "2" },
+				{ key: "obj.b", value: "4" },
+				{ key: "obj.arr.0.very", value: "deep" },     
+				{ key: "obj.arr.0.y", value: "y" },
+				{ key: "obj.arr.1.shouldWork", value: "true" },
+				{ key: "obj.a", value: "fter" }
+			], 'complex to deep');
+			
+			// `booleans` + `useBrackets`
+			data = CbnForm.Serialization.serialize(complexModel2, { mode: 'deep', as: 'pairs', useBrackets: true, booleans: '1' });
+			assert.deepEqual(data, [
+				{ key: "here", value: "we go" },
+				{ key: "plain", value: "1" },
+				{ key: "oneTwo[0]", value: "1" },
+				{ key: "oneTwo[1]", value: "2" },
+				{ key: "obj.b", value: "4" },
+				{ key: "obj.arr[0].very", value: "deep" },
+				{ key: "obj.arr[0].y", value: "y" },
+				{ key: "obj.arr[1].shouldWork", value: "1" },
+				{ key: "obj.a", value: "fter" }
+			], 'deep + booleans + useBrackets');
+			
+			// prefix + concatArrIdx
+			data = CbnForm.Serialization.serialize(complexModel2, { mode: 'deep', as: 'pairs', 
+				concatArrIndex: true, prefix: 'my.prefix' });
+			assert.deepEqual(data, [
+				{ key: "my.prefix.here", value: "we go" },
+				{ key: "my.prefix.plain", value: "true" },
+				{ key: "my.prefix.oneTwo0", value: "1" },
+				{ key: "my.prefix.oneTwo1", value: "2" },
+				{ key: "my.prefix.obj.b", value: "4" },
+				{ key: "my.prefix.obj.arr0.very", value: "deep" },     
+				{ key: "my.prefix.obj.arr0.y", value: "y" },
+				{ key: "my.prefix.obj.arr1.shouldWork", value: "true" },
+				{ key: "my.prefix.obj.a", value: "fter" }
+			], 'deep + prefix + concatArrIndex');
+		});
+		
+		test('serialization mode json', function() {
+			var complexModel3 = {
+				iAm: 'json',
+				obj: {
+					x: 'y',
+					arr: [ 1, '2' ]
+				}
+			};
+			
+			data = CbnForm.Serialization.serialize(complexModel3, {mode: 'json', as: 'pairs', paramName: 'theJSON' });
+			assert.deepEqual(data, [
+				{ key: "theJSON", value: '{"iAm":"json","obj":{"x":"y","arr":[1,"2"]}}' }
+			], 'complex to deep');
+		});
+		
+		test('as urlencoded', function() {
+			var simpleModel = {
+				one: '1% ()',
+				obj: {},
+				arr: [1, 2],
+				tru: true,
+				fal: false
+			};
+			
+			data = CbnForm.Serialization.serialize(simpleModel, {mode: 'plain', as: 'urlencoded' });
+			assert.equal(data, 'one=1%25%20()&obj=%7B%7D&arr=1&arr=2&tru=true&fal=false', 'urlencoded string');
+		});
+		
+		test('as FormData', function () {
+			var simpleModel = {
+				one: '1',
+				obj: {},
+				arr: [1, 2],
+				tru: true,
+				fal: false
+			};
+			
+			// override FormData
+			var _origFormData = window.FormData;
+			window.FormData = function () {
+				this._formData = [];
+				this.append = function (name, value) {
+					this._formData.push( {key: name, value: value} );
+				};
+			};
+			window.FormData.prototype = Object.create(_origFormData.prototype);
+			
+			data = CbnForm.Serialization.serialize(simpleModel, {mode: 'plain', as: 'FormData'});
+			assert.ok(data instanceof FormData, 'FormData returned');
+			assert.deepEqual(data._formData, [
+				{ key: 'one', value: '1' },
+				{ key: 'obj', value: '{}' },
+				{ key: 'arr', value: '1' },
+				{ key: 'arr', value: '2' },
+				{ key: 'tru', value: 'true' },
+				{ key: 'fal', value: 'false' }
+			], 'serialized form data');
+			
+			// restore FormData
+			window.FormData = _origFormData;
+		});
+		
+		test('as JS map', function () {
+			var simpleModel = {
+				one: '1',
+				obj: {},
+				arr: [1, 2, {}],
+				tru: true,
+				fal: false
+			};
+			
+			data = CbnForm.Serialization.serialize(simpleModel, {mode: 'plain', as: 'jsonMap'});
+			assert.deepEqual(data, {
+				one: '1',
+				obj: '{}',
+				arr: ['1', '2', '{}'],
+				tru: 'true',
+				fal: 'false'
+			}, 'serialized as JS map');
+		});
+		
+		test('form elements serialization', function () {
+			f = fixture('formContainer');
+			
+			var pairs = CbnForm.Serialization.serializeFormElements(f.formElements);
+			assert.deepEqual(pairs, [
+				{ key: 'one.one', value: '1' },
+				{ key: 'one.two', value: 'two' },
+				{ key: 'three', value: 't1' },
+				{ key: 'three', value: 't2' },
+				{ key: 'four', value: 'one' },
+				{ key: 'four', value: 'two' }
+			], 'serialized form elements');
+		});
+		
+	});
+	
+</script>
+
+</body>
+</html>
