@@ -64,7 +64,7 @@
 			assert.equal(f.value, 'indirect', 'indirect value set');
 		});
 		
-		test('inputs in container', function () {
+		test('inputs in container', function (done) {
 			f = fixture('formContainer');
 			
 			assert.equal(f.formElements.length, 2, 'all inputs accounted for');
@@ -72,7 +72,11 @@
 			// remove one element now
 			var c_one = f.getElementByName("one.one");
 			f.removeChild(c_one);
-			assert.equal(f.formElements.length, 1, 'input unregistered from container');
+			
+			setTimeout(function () {
+				assert.equal(f.formElements.length, 1, 'input unregistered from container');
+				done();
+			}, 1);
 		});
 		
 		test('two-way model binding', function () {

@@ -77,7 +77,7 @@
 			setTimeout(function () {
 				assert.ok(handler.calledOnce, 'unregister called');
 				done();
-			}, 200);
+			}, 1);
 		});
 		
 		test('value-change event', function () {
@@ -135,7 +135,7 @@
 	suite('form container', function () {
 		var f;
 		
-		test('formElements populated', function () {
+		test('formElements populated', function (done) {
 			f = fixture('formContainer');
 			
 			assert.equal(f.formElements.length, 4, 'all elements accounted for');
@@ -150,7 +150,11 @@
 			
 			// remove one element now
 			f.removeChild(c_one1);
-			assert.equal(f.formElements.length, 3, 'element unregistered from container');
+			
+			setTimeout(function () {
+				assert.equal(f.formElements.length, 3, 'element unregistered from container');
+				done();
+			}, 1);
 		});
 		
 		test('two-way model binding', function () {
