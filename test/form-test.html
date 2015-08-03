@@ -1,0 +1,191 @@
+<!doctype html>
+<!--suppress HtmlUnknownTag -->
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	
+	<script src="../../test-fixture/test-fixture-mocha.js"></script>
+	<link rel="import" href="../../test-fixture/test-fixture.html" />
+	
+	<link rel="import" href="mock/input-mock.html" />
+	<link rel="import" href="mock/native-input-mock.html" />
+	<link rel="import" href="../cbn-form.html" />
+</head>
+<body>
+
+<test-fixture id="inputForm">
+	<template>
+		<form is="cbn-form" action="/" method="post">
+			
+			<simple-input id="c_one" name="one" title="Test1" value="hello"></simple-input>
+			<simple-input id="c_two" name="two.one" title="Test2" value="tu"></simple-input>
+			
+			<simple-input id="c_three" name="three.four.five" title="Test3"></simple-input>
+			<simple-input id="c_four" name="three.four.nein" default-value="999" title="Test3_2"></simple-input>
+			
+			<span class="expected-urlencoded">one=hello&amp;two.one=tu&amp;three.four.five=&amp;three.four.nein=</span>
+			
+			<button type="submit">Submit</button>
+			
+		</form>
+	</template>
+</test-fixture>
+
+<test-fixture id="modelForm">
+	<template>
+		<form is="cbn-form" action="/" method="post" content-type="application/json">
+			<!-- No inputs, the form model will be directly set -->
+		</form>
+	</template>
+</test-fixture>
+
+<test-fixture id="modelInputForm">
+	<template>
+		<form is="cbn-form" action="/" method="post" model>
+			
+			<simple-input name="one" title="Test1"></simple-input>
+			<simple-input name="two.one" title="Test2"></simple-input>
+			
+			<simple-input name="three.four.five" title="Test3"></simple-input>
+			<simple-input name="three.four.nein" default-value="999" title="Test3_2"></simple-input>
+			
+		</form>
+	</template>
+</test-fixture>
+
+
+<script>
+	
+	suite('cbn-form', function () {
+		var f;
+		
+		setup(function () {
+			// fake XHR
+			this.xhr = sinon.useFakeXMLHttpRequest();
+			var requests = this.requests = [];
+			
+			this.xhr.onCreate = function (xhr) {
+				requests.push(xhr);
+			}.bind(this);
+		});
+		
+		teardown(function () {
+			this.xhr.restore();
+		});
+		
+		test('form submission', function (done) {
+			f = fixture('inputForm');
+			
+			var submitHandler = sinon.spy();
+			var responseHandler = sinon.spy();
+			f.addEventListener('cbn-form-submit', submitHandler);
+			f.addEventListener('cbn-form-response', responseHandler);
+			
+			f.action = 'http://test.local/test.post';
+			f.params = { it: 'works' };
+			
+			f.submit();
+			
+			assert.ok(submitHandler.calledOnce, 'submit event dispatched');
+			
+			assert.equal(this.requests.length, 1, 'request has been made');
+			assert.equal(this.requests[0].url, 'http://test.local/test.post?it=works', 'request URL');
+			assert.equal(this.requests[0].method.toUpperCase(), 'POST', 'request method');
+			assert.deepEqual(this.requests[0].requestBody, f.querySelector('.expected-urlencoded').textContent, 'POST request body');
+			
+			// respond
+			this.requests[0].respond(200, { "Content-Type": "application/json" }, '{ "success": "yesss" }');
+			
+			setTimeout(function(){ // (promises are asynchronous)
+				assert.ok(responseHandler.calledOnce, 'response event called');
+				assert.deepEqual(responseHandler.args[0][0].detail.response, { success: 'yesss' }, 'response object');
+				done();
+			}, 1);
+		});
+		
+		test('form submission using native button', function () {
+			f = fixture('inputForm');
+			
+			var submitHandler = sinon.spy();
+			f.addEventListener('cbn-form-submit', submitHandler);
+			
+			f.querySelector('button[type=submit]').click();
+			
+			assert.ok(submitHandler.calledOnce, 'form submitted');
+		});
+		
+		test('form submission with method=GET', function () {
+			f = fixture('inputForm');
+			
+			f.action = 'http://test.local/test.get';
+			f.method = 'get';
+			
+			f.submit();
+			
+			assert.equal(this.requests.length, 1, 'request has been made');
+			assert.equal(this.requests[0].method.toUpperCase(), 'GET', 'request method');
+			assert.equal(this.requests[0].url, 'http://test.local/test.get?' + 
+				f.querySelector('.expected-urlencoded').textContent, 'request URL');
+		});
+		
+		test('form submission with multipart/form-data', function () {
+			f = fixture('inputForm');
+			
+			f.action = 'http://test.local/test.post';
+			f.contentType = 'multipart/form-data';
+			
+			f.submit();
+			
+			assert.equal(this.requests.length, 1, 'request has been made');
+			assert.equal(this.requests[0].method.toUpperCase(), 'POST', 'request method');
+			assert.ok(this.requests[0].requestBody && 
+				this.requests[0].requestBody instanceof FormData, 'POST body is a FormData object');
+		});
+		
+		test('form submission from model', function () {
+			f = fixture('modelForm');
+			
+			var initialModel = {
+				text: 'this',
+				num: 123,
+				'obj': {'yes': true, elements: [12, '23', 34]}
+			};
+			f.model = JSON.parse(JSON.stringify(initialModel));
+			
+			f.submit();
+			
+			assert.equal(this.requests.length, 1, 'request has been made');
+			assert.equal(this.requests[0].requestBody, JSON.stringify(initialModel), 
+				'POST body equals to the posted model JSON');
+		});
+		
+		test('form serialization with inputs and model', function () {
+			f = fixture('modelInputForm');
+			
+			assert.ok(f.model, 'the form has model');
+			
+			f.model.one = 'oan';
+			f.model.two.one = '2.1';
+			f.model.extra = 'EXTRA EXTRA!';
+			f.getElementByName('three.four.five').value = '678';
+			
+			f.serializationOptions = { as: 'json' };
+			
+			assert.deepEqual(JSON.parse(f.serialize()), {
+				one: 'oan',
+				two: { one: '2.1' },
+				extra: 'EXTRA EXTRA!',
+				three: { four: { five: '678', nein: '999' } }
+			}, 'form serializes to JSON object');
+		});
+		
+	});
+	
+</script>
+
+</body>
+</html>
