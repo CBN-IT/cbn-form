@@ -71,7 +71,7 @@
 			var cont = document.getElementById('simpleElementContainer');
 			var handler = sinon.spy();
 			cont.addEventListener('cbn-form-unregister', handler);
-			f._parentForm = cont;
+			f._setParentForm(cont);
 			
 			f.parentNode.removeChild(f);
 			setTimeout(function () {

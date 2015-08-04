@@ -56,7 +56,7 @@
 		
 	};
 	
-	Polymer.injectBehaviors('iron-input', [ CbnForm.NativeFormElement, 
+	Polymer.injectBehaviors('iron-input', [ CbnForm.FormElement, CbnForm.NativeInputElementImpl, 
 			CbnForm.PolymerElements.IronInputExtension ]);
 	
 })(CbnForm);
