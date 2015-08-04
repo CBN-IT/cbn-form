@@ -56,7 +56,5 @@
 		
 	};
 	
-	Polymer.injectBehaviors('paper-input', [ CbnForm.FormElement, 
-		CbnForm.PolymerElements.PaperInputExtension ]);
 	
 })(CbnForm);
