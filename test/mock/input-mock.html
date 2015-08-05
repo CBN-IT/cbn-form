@@ -13,7 +13,8 @@
 		
 		behaviors: [
 			CbnForm.InputElement,
-			CbnForm.Validatable
+			CbnForm.Validatable,
+			CbnForm.DynamicElement
 		],
 		
 		listeners: {
@@ -34,9 +35,19 @@
 			
 		},
 		
+		dynamicAttributes: {
+			title: true
+		},
+		
 		_onInput: function () {
 			this.value = this.$.input.value;
 		}
 		
 	});
+	
+	CbnForm.registerElement('simple-input', {
+		types: [ 'text' ],
+		priority: 2
+	});
+	
 </script>

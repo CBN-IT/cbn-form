@@ -1,0 +1,241 @@
+<!doctype html>
+<!--suppress HtmlUnknownTag -->
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	
+	<script src="../../test-fixture/test-fixture-mocha.js"></script>
+	<link rel="import" href="../../test-fixture/test-fixture.html" />
+	
+	<script src="utils/dom-visibility.js"></script>
+	
+	<link rel="import" href="mock/input-mock.html" />
+	<link rel="import" href="mock/native-input-mock.html" />
+	<link rel="import" href="mock/container-mock.html" />
+	<link rel="import" href="../cbn-form.html" />
+	<link rel="import" href="../cbn-dynamic-form.html" />
+</head>
+<body>
+
+<test-fixture id="dynBasic">
+	<template is="dom-template">
+		<cbn-dynamic-form config="{{config}}"></cbn-dynamic-form>
+	</template>
+</test-fixture>
+
+<test-fixture id="dynExtConfig">
+	<template is="dom-template">
+		<cbn-dynamic-form target="light" config="{{config}}"></cbn-dynamic-form>
+	</template>
+</test-fixture>
+
+<test-fixture id="dynTargetForm">
+	<template is="dom-template">
+		<form is="cbn-form">
+			<cbn-dynamic-form config="{{config}}" target="#testTarget" before-target=".before"></cbn-dynamic-form>
+			<div id="testTarget">
+				<h1 class="existing">Existing Element</h1>
+				
+				<div class="before">Before Target</div>
+			</div>
+		</form>
+	</template>
+</test-fixture>
+
+<test-fixture id="dynAPIFixture">
+	<template is="dom-template">
+		<div>
+			<cbn-dynamic-form manual target="light" config="{{config}}"></cbn-dynamic-form>
+			<div id="testManualTarget"></div>
+		</div>
+	</template>
+</test-fixture>
+
+<script>
+	
+	var basicConfig = {
+		"elements": [
+			{
+				"name": "first",
+				"type": "text",
+				"title": "First",
+				"className": "test test-1"
+			},
+			{
+				"name": "second",
+				"type": "text",
+				"title": "Second", 
+				"className": "test test-2"
+			}
+		]
+	};
+	
+	var extendedConfig = {
+		"types": {
+			"text": "test-native-input"
+		},
+		"defaults": {
+			"myContainer": {
+				"type": "container",
+				"wrapChildren": {
+					"element": "div",
+					"className": "wrapper"
+				}
+			},
+			"myInput": {
+				"className": "x-1"
+			}
+		},
+		"elements": [
+			{
+				"inherit": "myInput",
+				"name": "first",
+				"type": "text",
+				"title": "One",
+				"className": "overridden"
+			},
+			{
+				"inherit": "myContainer",
+				"caption": "Test Container",
+				"children": [
+					{
+						"inherit": "myInput",
+						"name": "two.second",
+						"type": "text"
+					},
+					{
+						"inherit": "myInput",
+						"name": "two.third",
+						"type": "text"
+					}
+				]
+			}
+		]
+	};
+	
+	suite('cbn-form', function () {
+		var f;
+		
+		test('simple dynamic config', function () {
+			f = fixture('dynBasic', {
+				config: basicConfig
+			});
+			
+			var elements = Polymer.dom(f.root).querySelectorAll('*:not(content)');
+			
+			assert.equal(elements.length, 2, 'elements created');
+			
+			assert.equal(elements[0].tagName.toLowerCase(), 'simple-input', 'element #1 is simple-input');
+			assert.equal(elements[1].tagName.toLowerCase(), 'simple-input', 'element #2 is simple-input');
+			
+			assert.ok(elements[0].isVisible(), 'first input visible');
+			assert.ok(elements[1].isVisible(), 'second input visible');
+			
+			assert.equal(elements[0].getAttribute('title'), 'First', '1st input title attribute');
+			assert.ok(elements[1].classList.contains('test-2'), '2nd input classes set');
+		});
+		
+		test('extended config', function () {
+			f = fixture('dynExtConfig', {
+				config: extendedConfig
+			});
+			
+			var input1 = Polymer.dom(f).querySelector('input[name="first"]');
+			var input2 = Polymer.dom(f).querySelector('input[name="two.second"]');
+			var input3 = Polymer.dom(f).querySelector('input[name="two.third"]');
+			var container = Polymer.dom(f).querySelector('simple-container');
+			
+			var allInputs = Polymer.dom(f).querySelectorAll('input');
+			var allContainers = Polymer.dom(f).querySelectorAll('simple-container');
+			
+			assert.ok(input1, 'first input exists');
+			assert.ok(input2, 'second input exists');
+			assert.ok(input3, 'third input exists');
+			assert.ok(container, 'group exists');
+			
+			assert.ok(input1.isVisible(), 'first input visible');
+			assert.ok(input2.isVisible(), 'second input visible');
+			assert.ok(input3.isVisible(), 'third input visible');
+			assert.ok(container.isVisible(), 'group visible');
+			
+			assert.equal(allInputs.length, 3, 'total inputs count');
+			assert.equal(allContainers.length, 1, 'one group should exist');
+			
+			assert.equal(input1.getAttribute('title'), 'One', '1st input title attribute');
+			assert.ok(input2.classList.contains('x-1'), 'inherited className');
+			assert.ok(input1.classList.contains('overridden'), 'overridden className');
+			
+			assert.ok(Polymer.dom(f).querySelector('simple-container > div.wrapper > input'), 
+					'children wrapped inside div');
+		});
+		
+		test('targeted rendering', function () {
+			f = fixture('dynTargetForm', {
+				config: basicConfig
+			});
+			var dynForm = f.querySelector('cbn-dynamic-form');
+			var target = f.querySelector('#testTarget');
+			
+			var input1 = target.querySelector('simple-input[name=first]');
+			var input2 = target.querySelector('simple-input[name=second]');
+			var existing = target.querySelector('h1.existing');
+			
+			var allInputs = target.querySelectorAll('simple-input');
+			
+			assert.ok(input1, 'first input exists');
+			assert.ok(input2, 'second input exists');
+			assert.ok(existing, 'existing element untouched');
+			
+			assert.ok(input1.isVisible(), 'first input visible');
+			assert.ok(input2.isVisible(), 'second input visible');
+			
+			assert.equal(allInputs.length, 2, 'total inputs count');
+			
+			// check children's order
+			assert.strictEqual(input1.nextElementSibling, input2, 'input1 + input2');
+			assert.strictEqual(input2.nextElementSibling, target.querySelector('.before'), 'input2 + .before');
+			
+			// cleanup test
+			dynForm.cleanUp();
+			
+			existing = target.querySelector('h1.existing');
+			allInputs = target.querySelectorAll('simple-input');
+			
+			assert.equal(allInputs.length, 0, 'inputs removed');
+			assert.ok(existing, 'existing element still exists');
+		});
+		
+		test('manual rendering', function () {
+			f = fixture('dynAPIFixture', {
+				config: basicConfig
+			});
+			var dynForm = f.querySelector('cbn-dynamic-form');
+			var target = f.querySelector('#testManualTarget');
+			var allInputs;
+			
+			allInputs = target.querySelectorAll('simple-input');
+			assert.equal(allInputs.length, 0, 'nothing is rendered initially');
+			
+			dynForm.render(target);
+			allInputs = target.querySelectorAll('simple-input');
+			assert.equal(allInputs.length, 2, 'inputs rendered');
+			
+			dynForm.render(target);
+			allInputs = target.querySelectorAll('simple-input');
+			assert.equal(allInputs.length, 2, 'inputs re-rendered');
+			
+			dynForm.cleanUp(target);
+			allInputs = target.querySelectorAll('simple-input');
+			assert.equal(allInputs.length, 0, 'target cleaned up');
+		});
+		
+	});
+	
+</script>
+
+</body>
+</html>

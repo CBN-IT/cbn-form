@@ -8,7 +8,8 @@
 		
 		behaviors: [
 			CbnForm.NativeInputElement,
-			CbnForm.Validatable
+			CbnForm.Validatable,
+			CbnForm.DynamicElement
 		],
 		
 		properties: {
@@ -21,9 +22,20 @@
 			
 		},
 		
+		dynamicAttributes: {
+			title: true
+		},
+		
 		_bindValueChanged: function(newValue) {
 			this._setValue(newValue);
 		}
 		
 	});
+	
+	CbnForm.registerElement('test-native-input', {
+		types: [ 'text', 'number' ],
+		extends: 'input',
+		priority: 1
+	});
+	
 </script>

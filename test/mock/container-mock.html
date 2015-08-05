@@ -3,6 +3,8 @@
 
 <dom-module id="simple-container">
 	<template>
+		<h1>{{caption}}</h1>
+		
 		<content></content>
 	</template>
 </dom-module>
@@ -12,11 +14,36 @@
 		is: 'simple-container',
 		
 		behaviors: [
-			CbnForm.FormContainer
+			CbnForm.FormContainer,
+			CbnForm.InputElement,
+			CbnForm.DynamicElement
 		],
 		
 		properties: {
+			value: {
+				type: Object,
+				notify: false
+			},
+			
+			caption: {
+				type: String,
+				value: ''
+			}
+		},
+		
+		dynamicAttributes: {
+			caption: true
+		},
+		
+		created: function() {
+			this.linkPaths('model', 'value');
+			this.linkPaths('value', 'model');
 		}
 		
 	});
+	
+	CbnForm.registerElement('simple-container', {
+		types: [ 'container' ]
+	});
+	
 </script>

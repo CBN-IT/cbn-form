@@ -1,0 +1,505 @@
+<!--
+`cbn-dynamic-form` is an extensible dynamic form component that renders form fields (Polymer-based elements) based on 
+user-supplied template objects.
+
+Example:
+```
+    <cbn-form url="/do/something/save" method="post">
+    	<cbn-dynamic-form config="{{formInputs}}"></cbn-dynamic-form>
+    	<button is="cbn-form-button" type="submit"></button>
+    </cbn-form>
+```
+
+Where `config` is a custom object that describes the form's layout and the input fields to be dynamically generated.
+
+Example config JSON definition: 
+```
+	{
+		"types": {
+			"text": "iron-input",
+			"select": "cbn-select"
+		},
+		"defaults": {
+			"*": { "inherit": "input" },
+			"paperInput": {
+				"element": "paper-input"
+			}
+		},
+		"elements": [{
+			"type": "group",
+			"caption": "Main Form",
+			
+			"children": [
+				{
+					"inherit": "input",
+					"name": "name",
+					"label": "Name: ",
+					"type": "text",
+					"preview": true
+				},
+				{
+					"inherit": "input",
+					"name": "type",
+					"label": "Type: ",
+					"type": "select",
+					"options": { "1": "Person", "2": "Company" }
+				}
+			]
+		}]
+	}
+```
+
+@group cbn-form
+@element cbn-dynamic-form
+-->
+
+<!-- Imports -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="lib/include.html">
+
+<dom-module id="cbn-dynamic-form">
+	<style>
+		:host {
+			display: block;
+		}
+	</style>
+	
+	<template>
+		<content></content>
+	</template>
+</dom-module>
+
+<script>
+	
+	Polymer({
+		is: 'cbn-dynamic-form',
+		
+		properties: {
+			
+			/**
+			 * The form configuration object that contains the inputs to be rendered, their layout and their properties.
+			 */
+			config: {
+				type: Object,
+				value: function() {
+					return {};
+				},
+				observer: '_configChanged'
+			},
+			
+			/**
+			 * The target element to draw the dynamic form elements to.
+			 *
+			 * Can be any valid DOM query selector or one of the following special values:
+			 * - shadow: draws the elements inside this element's shadow root (immediately after `<content>`);
+			 * - light: draws the form inside the element's light DOM (aka as `<content>`).
+			 *
+			 * If a selector is specified, it first searches inside the element't light DOM. if not found, it
+			 * queries the parent `cbn-form` element.
+			 *
+			 * The elements are inserted using appendChild / insertBefore (if {@link #beforeTarget} is specified).
+			 * If there were any children before rendering, they will be preserved (even after cleanup).
+			 */
+			target: {
+				type: String,
+				value: 'shadow',
+				observer: '_targetChanged'
+			},
+			
+			/**
+			 * Specifies a DOM query selector of the element that determines where to insert the generated form.
+			 * The selector is relative to the `target` element (i.e. a selector for its contents).
+			 * 
+			 * If empty, it appends to the end of target's contents.
+			 */
+			beforeTarget: {
+				type: String,
+				value: ''
+			},
+			
+			/**
+			 * Set to true to disable auto-rendering when this element is initialized or the target / config
+			 * attributes are changed.
+			 */
+			manual: {
+				type: Boolean,
+				value: false
+			},
+			
+			// Private properties
+			
+			/**
+			 * This is a non-input form element.
+			 */
+			_hasModelValue: {
+				type: Boolean,
+				value: false
+			}
+			
+		},
+		
+		behaviors: [
+			CbnForm.FormElement
+		],
+		
+		
+		// Events
+		
+		/**
+		 * Fired when the dynamic form has finished rendering its inputs.
+		 * 
+		 * @event cbn-dynamic-form-rendered
+		 */
+		
+		
+		// Private properties:
+		
+		/**
+		 * Stores the last rendered config and target objects.
+		 * 
+		 * @private
+		 * @type { { config: Object, target: Element } }
+		 */
+		_renderedObject: null,
+		
+		
+		// Public API:
+		
+		/**
+		 * Requests the dynamic-form element to render its children to the specified target node (optional).
+		 * 
+		 * @param {String|Element} [target] The target to render to. If not specified, {@link #target} is used.
+		 * @param {Object}         [config] The dynamic template / config of the form. Defaults to {@link #config}.
+		 * @param {Boolean}        [force]  Force rendering (even if the same config/target is already rendered).
+		 * @return {Boolean} True if the elements were rendered, false if rendering failed (invalid target).
+		 */
+		render: function (target, config, force) {
+			target = this._getTarget(target ? target : /**@type {String}*/(this.target));
+			if (!target) return false;
+			
+			if (!config) config = this.config;
+			if (!config) return false;
+			
+			// prevent duplicate rendering (for idempotence / performance reasons)
+			if (!force && this._renderedObject && this._renderedObject.config === config && this._renderedObject.target === target)
+				return true;
+			
+			this._renderedObject = {
+				config: config,
+				target: target
+			};
+			
+			this.cleanUp(target);
+			
+			if (!this._renderForm(this._extendConfig(config.elements, config), target, config))
+				return false;
+			
+			Polymer.dom.flush();
+			
+			this.fire('cbn-dynamic-form-rendered', {
+				element: this,
+				config: config
+			}, null, true, false);
+			
+			return true;
+		},
+		
+		/**
+		 * Cleans up the specified target of all dynamically rendered elements.
+		 *
+		 * @param {String|Element} [target] The target to clean up. If not specified, {@link #target} is used.
+		 */
+		cleanUp: function (target) {
+			target = this._getTarget(target ? target : this.target);
+			if (!target) return false;
+			
+			this._cleanUpTarget(target);
+		},
+		
+		// Implementation:
+		
+		/**
+		 * Called when polymer element has been fully prepared.
+		 *
+		 * Listens for input attached / detached events and initializes them.
+		 */
+		ready: function () {
+			this._elementReady = true;
+			
+			if (!this.manual) this.render();
+		},
+		
+		/**
+		 * Called when the element is attached and its parent is accessible.
+		 */
+		attached: function() {
+			if (!this.manual) this.render();
+			this.async(function() {
+				if (!this.manual) this.render();
+			});
+		},
+		
+		/**
+		 * Called when the config property is changed.
+		 * Used to infer defaults to the form fields' configuration objects.
+		 */
+		_configChanged: function () {
+			if (!this.config || !this._elementReady) return;
+			
+			if (!this.manual) this.render();
+		},
+		
+		/**
+		 * Called when the target property is changed.
+		 * 
+		 * @param {String} oldVal The old target selector value.
+		 */
+		_targetChanged: function(oldVal) {
+			// need to cleanup the old target
+			var oldTarget = this._getTarget(oldVal);
+			if (oldTarget)
+				this._cleanUpTarget(oldTarget);
+			
+			if (!this.target || !this._elementReady) return;
+			
+			// render to the new target
+			if (!this.manual) this.render();
+		},
+		
+		/**
+		 * Removes the old rendered elements from the specified target container.
+		 * 
+		 * @param {Element} target The target element to clean up.
+		 */
+		_cleanUpTarget: function(target) {
+			var node = target.firstChild;
+			var next;
+			while (node) {
+				next = node.nextSibling; // save the next sibling reference
+				if (node['_isDynamicElement']) { // if the node belongs to cbn-dynamic-form
+					target.removeChild(node);
+				}
+				node = next;
+			}
+		},
+		
+		/**
+		 * Returns the target container to render the elements to.
+		 * 
+		 * If given a selector, the method will first search for the selector inside the .
+		 * 
+		 * @param {String|Element} targetSelector The target selector (`target` attribute value).
+		 * @return {Element} The target element, null if the selector is invalid.
+		 */
+		_getTarget: function(targetSelector) {
+			if (targetSelector instanceof Node) 
+				return targetSelector;
+			
+			var target;
+			if (targetSelector == 'shadow') {
+				target = Polymer.dom(this.root);
+			} else if (targetSelector == 'light') {
+				target = Polymer.dom(this);
+			} else {
+				target = Polymer.dom(this).querySelector(targetSelector);
+				if (target) 
+					return target;
+				if (!this.parentForm)
+					return null;
+				target = Polymer.dom(this.parentForm).querySelector(targetSelector);
+			}
+			
+			return target;
+		},
+		
+		/**
+		 * The main routine that renders the dynamic form elements based on the value of the config JSON object.
+		 * 
+		 * @private
+		 * @param {[CbnForm.DynamicElementConfig]} elementsConfig The dynamic template to use for rendering the form.
+		 * @param {Element}                root The root element to append the rendered elements to.
+		 * @param {CbnForm.DynamicConfig}          config The root of the configuration object.
+		 * @param {Boolean}                [isRecursion] Will be true when the function is called recursively. 
+		 * @return {Boolean} Returns true if the rendering was totally successful, false if something failed to 
+		 *                   render.
+		 */
+		_renderForm: function(elementsConfig, root, config, isRecursion) {
+			var i;
+			if (!elementsConfig) return false;
+			
+			var beforeEl = ( this.beforeTarget && !isRecursion ? 
+				(root.querySelector(/**@type {String}*/(this.beforeTarget))) : null );
+			function insertChild(root, child) {
+				if (beforeEl) {
+					root.insertBefore(child, beforeEl);
+				} else {
+					root.appendChild(child);
+				}
+			}
+			
+			for (i=0; i<elementsConfig.length; i++) {
+				var element = this._createFormElement(elementsConfig[i], config);
+				if (!element) continue;
+				
+				element._isDynamicElement = true;
+				insertChild(root, element);
+				
+				if (elementsConfig[i].children && elementsConfig[i].children.length) {
+					var containerElement = element;
+					if (elementsConfig[i].wrapChildren) {
+						var wrapper = this._createChildrenWrapper(elementsConfig[i].wrapChildren);
+						if (wrapper) {
+							containerElement = wrapper;
+							Polymer.dom(element).appendChild(wrapper);
+						}
+					}
+					
+					this._renderForm(elementsConfig[i].children, Polymer.dom(containerElement), config);
+				}
+			}
+			
+			return true;
+		},
+		
+		/**
+		 * Creates a form elements using the specified configuration (template) object.
+		 * 
+		 * @private
+		 * @param {CbnForm.DynamicElementConfig} elConfig The template object to generate the element from.
+		 * @param {CbnForm.DynamicConfig}        config   The root of the configuration object.
+		 * @return {Element|null} The instantiated form element, null if failed.
+		 */
+		_createFormElement: function(elConfig, config) {
+			/**@type {Element} */
+			var element;
+			var elementName;
+			
+			if (elConfig.element) {
+				elementName = elConfig.element;
+			} else {
+				elementName = CbnForm.getElementForType(elConfig.type, config.types);
+				if (!elementName) {
+					console.error("`cbn-dynamic-form`: no element registered for type '" + elConfig.type + "'");
+					return null;
+				}
+			}
+			
+			var elementDef = CbnForm.getElementDescriptor(elementName);
+			if (elementDef) {
+				if (elementDef.extends) {
+					element = document.createElement.call(document, elementDef.extends, elementName);
+				} else {
+					element = document.createElement(elementName);
+				}
+			}
+			
+			if (!elementDef || !element) {
+				console.error("`cbn-dynamic-form`: invalid form element ('" + elementName + "')");
+				return null;
+			}
+			
+			var dynElement = /**@type {CbnForm.DynamicElement}*/(element);
+			
+			// set element attributes
+			for (var c in elConfig) {
+				if (!elConfig.hasOwnProperty(c)) 
+					continue;
+				
+				if (!dynElement.setDynamicAttribute || !dynElement.getDynamicAttributeDescriptor) {
+					console.warn('`cbn-dynamic-form`: element doesn\'t implement the CbnForm.DynamicElement!', 
+						dynElement);
+					return element;
+				}
+				
+				if (c == 'style' || c == 'className' || c == 'preview') {
+					// always apply to the root element
+					dynElement.setDynamicAttribute(c, elConfig[c]);
+					
+				} else {
+					if (dynElement.getDynamicAttributeDescriptor(c)) {
+						dynElement.setDynamicAttribute(c, elConfig[c]);
+					}
+				}
+			}
+			//noinspection JSUnresolvedFunction
+			dynElement._setSourceDynamicConfig(elConfig);
+			
+			return element;
+		},
+		
+		/**
+		 * Creates a basic HTML wrapper element using the specified configuration (template) object.
+		 * 
+		 * @private
+		 * @param {CbnForm.DynamicElementConfig} elConfig The template object (a basic key-value map representing the element attributes).
+		 * @return {Boolean | HTMLElement} The generated DOM element.
+		 */
+		_createChildrenWrapper: function(elConfig) {
+			var wrapper = document.createElement(elConfig.element);
+			if (!wrapper) return false;
+			
+			Polymer.Base.mixin(wrapper, CbnForm.DynamicElement);
+			wrapper.created();
+			
+			for (var c in elConfig) {
+				if (!elConfig.hasOwnProperty(c)) 
+					continue;
+				
+				if (c == 'element') {
+					// ignore
+				} else {
+					wrapper.setDynamicAttribute(c, elConfig[c]);
+				}
+			}
+			
+			return wrapper;
+		},
+		
+		/**
+		 * Pre-processes and extends the specified configuration/template object based on its inherit property 
+		 * and the {@link DynamicConfig#defaults} object.
+		 * 
+		 * @param {[CbnForm.DynamicElementConfig]} elements The template objects to extend.
+		 * @param {CbnForm.DynamicConfig|Object}   config   The root of the configuration object.
+		 * @return {[CbnForm.DynamicElementConfig]} The resulting config objects list, extended with the defaults.
+		 */
+		_extendConfig: function(elements, config) {
+			if (!elements)
+				return elements;
+			
+			var extendedConfig = [];
+			for (var i=0; i<elements.length; i++) {
+				var exConfig = elements[i];
+				if (config.defaults && config.defaults['*']) {
+					exConfig = this._extendObject({}, exConfig, config.defaults['*']);
+				}
+				if (exConfig.inherit && config.defaults.hasOwnProperty(exConfig.inherit)) {
+					exConfig = this._extendObject({}, exConfig, config.defaults[exConfig.inherit]);
+					delete exConfig.inherit;
+				}
+				if (exConfig.children && exConfig.children.length) {
+					exConfig.children = this._extendConfig(exConfig.children, config);
+				}
+				extendedConfig.push(exConfig);
+			}
+			return extendedConfig;
+		},
+		
+		/**
+		 * Lightweight object extend function (jQuery-like, right to left processing order).
+		 * First argument is the destination object.
+		 * @private
+		 * @returns {Object} The extended object.
+		 */
+		_extendObject: function() {
+			for (var i = arguments.length - 1; i >= 1; i--) {
+				for (var key in arguments[i])
+					if (arguments[i].hasOwnProperty(key))
+						arguments[0][key] = arguments[i][key];
+			}
+			return arguments[0];
+		}
+		
+	});
+	
+</script>
