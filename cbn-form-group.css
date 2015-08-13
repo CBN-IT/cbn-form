@@ -20,10 +20,10 @@
 	margin: 10px;
 }
 
-#content.preview ::content > :not([preview]):not(.group-inner) {
+#content.preview ::content > :not([preview]):not(.group-inner):not(.invalid) {
 	display: none;
 }
 
-#content.preview ::content > .group-inner > :not([preview]) {
+#content.preview ::content > .group-inner > :not([preview]):not(.invalid) {
 	display: none;
 }
