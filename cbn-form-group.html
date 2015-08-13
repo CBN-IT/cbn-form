@@ -15,7 +15,7 @@ visual features (preview / edit stances etc.).
 	<template>
 		<link rel="stylesheet" href="cbn-form-group.css">
 
-		<paper-shadow id="container" z="0" animated class="shadow">
+		<paper-shadow id="container" z="1" animated style="background-color: white;">
 			<template if="{{caption}}">
 				<div class="caption">{{caption}}</div>
 			</template>
@@ -136,10 +136,6 @@ visual features (preview / edit stances etc.).
 						if (currentlyOpenGroup && currentlyOpenGroup != this)
 							currentlyOpenGroup.close();
 						currentlyOpenGroup = this;
-						this.$.container.setZ(1);
-
-					} else {
-						this.$.container.setZ(1);
 					}
 					this.previewState = false;
 				},
@@ -150,7 +146,6 @@ visual features (preview / edit stances etc.).
 				close: function () {
 					if (currentlyOpenGroup == this)
 						currentlyOpenGroup = null;
-					this.$.container.setZ(1);
 					this.previewState = true;
 				}
 
