@@ -20,7 +20,7 @@ visual features (preview / edit stances etc.).
 		<paper-shadow id="container" z="1" animated class="{{ {wide: !previewState} | tokenList }}">
 			<div style="padding:10px;font-size:18px" class="{{ {header: !previewState && toggleable}|tokenList}}">
 						{{caption}}
-				<paper-button id="toogle-button" class="contract-button" on-tap="{{toogle}}" style="min-width: 0px;margin-top: -5px;vertical-align: middle;">
+				<paper-button id="toggle-button" style="min-width: 0px;margin-top: -5px;vertical-align: middle;">
 					<template if="{{toggleable}}">
 						<core-icon icon="{{ {'arrow-drop-up': !previewState, 'arrow-drop-down': previewState} | tokenList }}"></core-icon>
 			</template>
@@ -103,7 +103,7 @@ visual features (preview / edit stances etc.).
 						if (this.toggleable) {
 							var found;
 							for (var i = 0; i < event.path.length; i++) {
-								if (event.path[i].id && event.path[i].id.toLowerCase() == 'toogle-button')
+								if (event.path[i].id && event.path[i].id.toLowerCase() == 'toggle-button')
 									found = true;
 							}
 							if(found && !this.previewState){
