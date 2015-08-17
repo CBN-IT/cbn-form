@@ -9,18 +9,25 @@ visual features (preview / edit stances etc.).
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-shadow/paper-shadow.html">
+<link rel="import" href="../core-icon/core-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="lib/include.html">
 
 <polymer-element name="cbn-form-group">
 	<template>
 		<link rel="stylesheet" href="cbn-form-group.css">
 
-		<paper-shadow id="container" z="1" animated style="background-color: white;">
-			<template if="{{caption}}">
-				<div class="caption">{{caption}}</div>
+		<paper-shadow id="container" z="1" animated class="{{ {wide: !previewState} | tokenList }}">
+			<div style="padding:10px;font-size:18px" class="{{ {header: !previewState && toggleable}|tokenList}}">
+						{{caption}}
+				<paper-button id="toogle-button" class="contract-button" on-tap="{{toogle}}" style="min-width: 0px;margin-top: -5px;vertical-align: middle;">
+					<template if="{{toggleable}}">
+						<core-icon icon="{{ {'arrow-drop-up': !previewState, 'arrow-drop-down': previewState} | tokenList }}"></core-icon>
 			</template>
-
-			<div id="content" class="{{ { preview: previewState } | tokenList}}">
+				</paper-button>
+			</div>
+			<div id="dropShadow" class="{{ {shadow: !previewState && toggleable}|tokenList}}"></div>
+			<div id="content" class="{{ { preview: previewState && toggleable } | tokenList}}" style="margin: 0px 10px 10px 10px;">
 				<content></content>
 			</div>
 
@@ -93,10 +100,21 @@ visual features (preview / edit stances etc.).
 
 					// stop click event propagation (so the group won't get closed)
 					this.addEventListener('click', function(event) {
-						if (currentGroup.toggleable) {
-							event.stopPropagation();
-							currentGroup.open();
+						if (this.toggleable) {
+							var found;
+							for (var i = 0; i < event.path.length; i++) {
+								if (event.path[i].id && event.path[i].id.toLowerCase() == 'toogle-button')
+									found = true;
+							}
+							if(found && !this.previewState){
+								this.close();
+							}
+							else{
+								this.open();
+								this.fire("close-all");
+							}
 						}
+							event.stopPropagation();
 					}, false);
 
 					// Bind the magic 'previewState' attribute to the form inputs
@@ -136,6 +154,7 @@ visual features (preview / edit stances etc.).
 						if (currentlyOpenGroup && currentlyOpenGroup != this)
 							currentlyOpenGroup.close();
 						currentlyOpenGroup = this;
+						this.$.container.setZ(5);
 					}
 					this.previewState = false;
 				},
@@ -147,6 +166,7 @@ visual features (preview / edit stances etc.).
 					if (currentlyOpenGroup == this)
 						currentlyOpenGroup = null;
 					this.previewState = true;
+					this.$.container.setZ(1);
 				}
 
 			}, CbnForm.AbstractContainer, CbnForm.DynamicControl ));
