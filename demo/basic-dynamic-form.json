@@ -1,6 +1,7 @@
 {
 	"types": {
-		"text": "cbn-basic-input"
+		"text": "cbn-basic-input",
+		"select": "cbn-select"
 	}, 
 	"defaults": {
 		"group-flex": {
@@ -36,6 +37,21 @@
 					},
 					"autoValidate": true,
 					"validationMessage": "Invalid name!"
+				},
+				{
+					"name": "personal.ceva",
+					"defaultValue": "Mr.",
+					"type": "select",
+					"preview": true,
+					"label": "ceva",
+					"className": "col-xs-6 col-md-6",
+					"validation": {
+						"required":false
+					},
+					"options":["a","b","c"],
+					"autoValidate": true,
+					"validationMessage": "Invalid name!",
+					"freeText":true
 				},
 				{
 					"inherit": "input",
