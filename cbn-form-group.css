@@ -4,23 +4,49 @@
 
 :host {
 	display: block;
+	width:100%;
 }
-
+paper-shadow:hover{
+	background-color: rgb(236, 241, 253);
+}
+paper-shadow:not(:hover){
+	background-color: white;
+}
+paper-shadow.wide{
+	background-color: white;
+}
+.shadow{
+	background-color: white
+}
 .caption {
-	font-size: 1.5em;
+	font-size: 20px;
 	color: #333;
-	margin-bottom: 15px;
+	margin-bottom: 8px;
 }
 
 #container {
-	padding: 10px;
-	margin: 10px;
+	border-bottom: 1px solid #E0E0E0;
 }
-
-#content.preview ::content > :not([preview]):not(.group-inner) {
+#content.preview ::content > :not([preview]):not(.group-inner):not(.invalid) {
 	display: none;
 }
 
-#content.preview ::content > .group-inner > :not([preview]) {
+#content.preview ::content > .group-inner > :not([preview]):not(.invalid) {
 	display: none;
+}
+#container:not(.wide){
+	margin: 0px 10px;
+}
+.wide{
+	margin: 20px 5px;
+}
+paper-button /deep/ .button-content{
+	padding:0px;
+}
+.header{
+	background-color: #3277ec;
+	color:white;
+}
+.shadow{
+	height: 6px;box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
 }
