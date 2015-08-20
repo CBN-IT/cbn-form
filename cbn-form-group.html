@@ -104,8 +104,8 @@ visual features (preview / edit stances etc.).
 							var found;
 							for (var i = 0; i < event.path.length; i++) {
 								if (event.path[i].id && 
-										(event.path[i].id.toLowerCase() == 'toggle-button')||
-										(event.path[i].id.toLowerCase() == 'toggle-bar')) {
+										(event.path[i].id.toLowerCase() == 'toggle-button' ||
+										event.path[i].id.toLowerCase() == 'toggle-bar')) {
 									
 									found = true;
 								}
