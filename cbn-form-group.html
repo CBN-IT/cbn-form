@@ -18,8 +18,8 @@ visual features (preview / edit stances etc.).
 		<link rel="stylesheet" href="cbn-form-group.css">
 
 		<paper-shadow id="container" z="1" animated class="{{ {wide: !previewState} | tokenList }}">
-			<div style="padding:10px;font-size:18px" class="{{ {header: !previewState && toggleable, hidden: !caption}|tokenList}}">
-						{{caption}}
+			<div style="padding:10px;font-size:18px" class="{{ {header: !previewState && toggleable, hidden: !caption}|tokenList}}" id="toggle-bar">
+						<span>{{caption}}</span>
 				<paper-button id="toggle-button" style="min-width: 0px;margin-top: -5px;vertical-align: middle;">
 					<template if="{{toggleable}}">
 						<core-icon icon="{{ {'arrow-drop-up': !previewState, 'arrow-drop-down': previewState} | tokenList }}"></core-icon>
@@ -103,8 +103,12 @@ visual features (preview / edit stances etc.).
 						if (this.toggleable) {
 							var found;
 							for (var i = 0; i < event.path.length; i++) {
-								if (event.path[i].id && event.path[i].id.toLowerCase() == 'toggle-button')
+								if (event.path[i].id && 
+										(event.path[i].id.toLowerCase() == 'toggle-button')||
+										(event.path[i].id.toLowerCase() == 'toggle-bar')) {
+									
 									found = true;
+								}
 							}
 							if(found && !this.previewState){
 								this.close();
