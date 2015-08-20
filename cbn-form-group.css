@@ -50,3 +50,6 @@ paper-button /deep/ .button-content{
 .shadow{
 	height: 6px;box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
 }
+.hidden{
+	display:none;
+}

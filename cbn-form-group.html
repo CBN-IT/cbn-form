@@ -18,7 +18,7 @@ visual features (preview / edit stances etc.).
 		<link rel="stylesheet" href="cbn-form-group.css">
 
 		<paper-shadow id="container" z="1" animated class="{{ {wide: !previewState} | tokenList }}">
-			<div style="padding:10px;font-size:18px" class="{{ {header: !previewState && toggleable}|tokenList}}">
+			<div style="padding:10px;font-size:18px" class="{{ {header: !previewState && toggleable, hidden: !caption}|tokenList}}">
 						{{caption}}
 				<paper-button id="toggle-button" style="min-width: 0px;margin-top: -5px;vertical-align: middle;">
 					<template if="{{toggleable}}">
