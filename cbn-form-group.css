@@ -35,10 +35,10 @@ paper-shadow.wide{
 	display: none;
 }
 #container:not(.wide){
-	margin: 0px 10px;
+	margin: 5px 10px;
 }
 .wide{
-	margin: 20px 5px;
+	margin: 10px 5px;
 }
 paper-button /deep/ .button-content{
 	padding:0px;
