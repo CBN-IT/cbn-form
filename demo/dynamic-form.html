@@ -37,7 +37,7 @@
 		<form id="demoForm" is="cbn-form" model>
 			
 			<cbn-dynamic-form target="light" config="[[formConfig]]"></cbn-dynamic-form>
-			
+			<br />
 			<button type="submit">Submit</button> <button type="reset">Reset</button>
 			
 		</form>
@@ -52,18 +52,29 @@
 	var tpl = document.querySelector('template[is=dom-bind]');
 	
 	tpl.formConfig = {
+		"defaults": {
+			"iron": {
+				"type": "text",
+				"element": "iron-input"
+			},
+			"paper": {
+				"type": "text",
+				"element": "paper-input"
+			}
+		},
 		"elements": [
 			{
 				"name": "first",
-				"type": "text",
+				"inherit": "iron",
 				"title": "First",
-				"className": "test test-1"
+				"className": ""
 			},
 			{
 				"name": "second",
-				"type": "text",
+				"label": "Paper Input",
+				"inherit": "paper",
 				"title": "Second", 
-				"className": "test test-2"
+				"className": ""
 			}
 		]
 	};

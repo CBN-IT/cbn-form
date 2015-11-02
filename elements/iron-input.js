@@ -28,12 +28,6 @@
 			
 		},
 		
-		behaviors: [
-			CbnForm.NativeInputElement,
-			CbnForm.Validatable,
-			CbnForm.DynamicElement
-		],
-		
 		ready: function() {
 			
 		},
