@@ -292,15 +292,15 @@ Example config JSON definition:
 		 * @return {Element} The target element, null if the selector is invalid.
 		 */
 		_getTarget: function(targetSelector) {
-			if (targetSelector instanceof Node) 
+			if (targetSelector instanceof Node || typeof targetSelector == 'object') 
 				return targetSelector;
 			
-			var target;
+			var target = null;
 			if (targetSelector == 'shadow') {
 				target = Polymer.dom(this.root);
 			} else if (targetSelector == 'light') {
 				target = Polymer.dom(this);
-			} else {
+			} else if (typeof targetSelector == 'string') {
 				target = Polymer.dom(this).querySelector(targetSelector);
 				if (target) 
 					return target;
