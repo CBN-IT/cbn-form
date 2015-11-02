@@ -10,7 +10,8 @@
         "bower_components",
         "../",
         "test",
-        "demo"
+        "demo",
+        "index.html"
     ],
     "dependencies": {
         "polymer": "Polymer/polymer#^1.0",
