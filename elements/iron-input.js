@@ -28,6 +28,12 @@
 			
 		},
 		
+		behaviors: [
+			CbnForm.NativeInputElement,
+			CbnForm.Validatable,
+			CbnForm.DynamicElement
+		],
+		
 		ready: function() {
 			
 		},
@@ -57,6 +63,13 @@
 	};
 	
 	Polymer.injectBehaviors('iron-input', [ CbnForm.FormElement, CbnForm.NativeInputElementImpl, 
+			CbnForm.Validatable, CbnForm.DynamicElement,
 			CbnForm.PolymerElements.IronInputExtension ]);
+	
+	CbnForm.registerElement('iron-input', {
+			types: [ 'text', 'number' ],
+			extends: 'input',
+			priority: 1
+		});
 	
 })(CbnForm);

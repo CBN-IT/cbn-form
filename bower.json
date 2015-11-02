@@ -13,8 +13,7 @@
         "demo"
     ],
     "dependencies": {
-        "polymer": "Polymer/polymer#^1.1",
-        "webcomponentsjs": "^0.7",
+        "polymer": "Polymer/polymer#^1.0",
         "polymer-reflection": "niflostancu/polymer-reflection#master",
         "iron-ajax": "PolymerElements/iron-ajax#^1.0",
         "iron-input": "PolymerElements/iron-input#^1.0",
