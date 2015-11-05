@@ -79,10 +79,7 @@
 				},
 				
 				formModel: {
-					type: Object,
-					value: function() {
-						return {};
-					}
+					type: Object
 				}
 			},
 			
@@ -107,6 +104,14 @@
 	
 	<x-app></x-app>
 </div>
+
+<script>
+	window.addEventListener('WebComponentsReady', function() {
+		var app = document.querySelector('x-app');
+		
+		app.formModel = {};
+	});
+</script>
 
 </body>
 </html>
