@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>Cbn-Dynamic-Form Demo</title>
+	
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	
+	<link rel="import" href="../../polymer-reflection/polymer-reflection.html" />
+	<link rel="import" href="../../font-roboto/roboto.html" />
+	
+	<link rel="import" href="../../iron-input/iron-input.html" />
+	<link rel="import" href="../../paper-input/paper-input.html" />
+	
+	<link rel="import" href="../cbn-form.html">
+	<link rel="import" href="../cbn-dynamic-form.html">
+	<link rel="import" href="../elements/polymer-elements.html" />
+	
+	<style>
+		body {
+			font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			font-size: 14px;
+		}
+	</style>
+	
+	<dom-module id="x-app">
+		<template>
+			<form id="form" is="cbn-form" model="{{formModel}}" 
+				  on-value-changed="updateOutput">
+				
+				<cbn-dynamic-form target="light" config="[[formConfig]]"></cbn-dynamic-form>
+				<br />
+				<button type="submit">Submit</button> <button type="reset">Reset</button>
+				
+			</form>
+			
+			<p style="font-weight: bold;">Output: </p>
+			<pre id="stringifiedJson"></pre>
+		</template>
+	</dom-module>
+	
+	<script>
+		Polymer({
+			is: 'x-app',
+			
+			properties: {
+				
+				formConfig: {
+					type: Object,
+					value: function() {
+						return {
+							"defaults": {
+								"iron": {
+									"type": "text",
+									"element": "iron-input"
+								},
+								"paper": {
+									"type": "text",
+									"element": "paper-input"
+								}
+							},
+							"elements": [
+								{
+									"name": "first",
+									"inherit": "iron",
+									"title": "First",
+									"className": ""
+								},
+								{
+									"name": "second",
+									"label": "Paper Input",
+									"inherit": "paper",
+									"title": "Second", 
+									"className": ""
+								}
+							]
+						};
+					}
+				},
+				
+				formModel: {
+					type: Object,
+					value: function() {
+						return {};
+					}
+				}
+			},
+			
+			ready: function() {
+				this.updateOutput();
+			},
+			
+			updateOutput: function () {
+				if (!this.$.stringifiedJson) return;
+				this.$.stringifiedJson.textContent = JSON.stringify(this.formModel, null, 4);
+			}
+			
+		});
+		
+	</script>
+	
+</head>
+<body>
+
+<div style="margin: 20px auto; width: 500px;">
+	<h1>Cbn-Dynamic-Form Demo</h1>
+	
+	<x-app></x-app>
+</div>
+
+</body>
+</html>
