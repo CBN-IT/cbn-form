@@ -38,14 +38,14 @@
 	
 	<template is="dom-bind">
 		
-		<form id="demoForm" is="cbn-form" model>
+		<form id="demoForm" is="cbn-form" action="test.json" method="GET" model serialization-options='{ "mode": "deep" }'>
 			
 			<div>
-				Iron Input: <input is="iron-input" type="text" name="iron1" title="Iron Input" />
+				Iron Input: <input is="iron-input" type="text" name="iron1.iron2" title="Iron Input" />
 			</div>
 			
 			<div>
-				<paper-input name="paper1" label="Paper Input"></paper-input>
+				<paper-input name="papa.paper1" label="Paper Input"></paper-input>
 			</div>
 			<br />
 			

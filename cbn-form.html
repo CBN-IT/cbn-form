@@ -195,6 +195,10 @@ Example:
 			if (!this._ironAjax || !this.action) 
 				return false;
 			
+			if (this.params && typeof this.params != 'object') {
+				console.warn('`cbn-form`: invalid params object', this.params);
+			}
+			
 			this._ironAjax.url = this.action;
 			this._ironAjax.method = this.method;
 			this._ironAjax.params = this.params;
@@ -235,9 +239,12 @@ Example:
 		serialize: function(serializationOptions) {
 			if (!serializationOptions)
 				serializationOptions = this.serializationOptions;
+			if (!serializationOptions || typeof serializationOptions != 'object') {
+				console.warn('`cbn-form`: invalid serialization options object given', serializationOptions);
+				return null;
+			}
 			
 			var contentType = this.contentType;
-			
 			serializationOptions = JSON.parse(JSON.stringify(serializationOptions));
 			if (!serializationOptions.as) { // autodetect from method, content type etc.
 				if (this.method.toUpperCase() == 'GET') {
