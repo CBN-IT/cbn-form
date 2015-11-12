@@ -35,8 +35,8 @@
 </div>
 
 <test-fixture id="formContainer">
-	<template>
-		<simple-container>
+	<template is="dom-template">
+		<simple-container model="[[model]]">
 			
 			<simple-input id="c_one" name="one" title="Test1"></simple-input>
 			<simple-input id="c_two" name="two.one" title="Test2"></simple-input>
@@ -136,7 +136,7 @@
 		var f;
 		
 		test('formElements populated', function (done) {
-			f = fixture('formContainer');
+			f = fixture('formContainer', { model: {} });
 			
 			assert.equal(f.formElements.length, 4, 'all elements accounted for');
 			
@@ -158,11 +158,15 @@
 		});
 		
 		test('two-way model binding', function () {
-			f = fixture('formContainer');
+			f = fixture('formContainer', {
+				model: {
+					two: { one: 'one!!!111' }
+				}
+			});
 			
 			// test default values
-			f.model = {};
 			assert.equal(f.getElementByName('one').value, '', 'empty value');
+			assert.equal(f.getElementByName('two.one').value, 'one!!!111', 'input value from default model');
 			assert.equal(f.getElementByName('three.four.nein').value, '999', 'default value');
 			
 			// change the input values
@@ -193,9 +197,8 @@
 		});
 		
 		test('dirty flag', function () {
-			f = fixture('formContainer');
+			f = fixture('formContainer', { model: {} });
 			
-			f.model = {};
 			assert.equal(f.isDirty, false, 'isDirty at initial model');
 			
 			f.set('model.one', 'get');
