@@ -67,14 +67,24 @@
 				"name": "first",
 				"inherit": "iron",
 				"title": "First",
-				"className": ""
+				"className": "",
+				"defaultValue": "666",
+				"validation": {
+					"required": true
+				}
 			},
 			{
 				"name": "second",
 				"label": "Paper Input",
 				"inherit": "paper",
 				"title": "Second", 
-				"className": ""
+				"className": "",
+				"validation": {
+					"required": true,
+					"pattern": "^[0-9a-zA-Z-]*$"
+				},
+				"autoValidate": true,
+				"defaultValue": "333"
 			}
 		]
 	};

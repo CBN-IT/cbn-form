@@ -5,23 +5,54 @@
 	/**
 	 * The behavior to use for extending Polymer's `paper-input` element with `cbn-form` features.
 	 */
-	CbnForm.PolymerElements.PaperInputExtension = {
+	var ext = CbnForm.PolymerElements.PaperInputExtension = {
 		
 		/**
-		 * Defines the common dynamic attributes for all form elements.
+		 * Additional input properties that should be copied by paper-input.
 		 */
-		dynamicAttributes: {
-			"type" 		: { type: 'attribute' },
-			"name" 		: { type: 'attribute' },
-			"defaultValue" : { type: 'attribute' },
-			"preview"	: { type: 'attribute' },
-			"label" 	: { type: 'attribute' }
+		_customInputProperties: [
+			"defaultValue", "preview",
+			"validation", "validationOrder", "validationType", "defaultValidationMessage"
+		],
+		
+		observers: [],
+		
+		listeners: {
+			'cbn-form-register': '_cbnInputElementRegistered'
+		},
+		
+		ready: function() {
+			this._cbnResetInputAttributes();
+		},
+		
+		/**
+		 * Captures the `cbn-form-register` event to set the correct defaultValue property on it.
+		 * 
+		 * @param event The event object.
+		 */
+		_cbnInputElementRegistered: function(event) {
+			if (this.defaultValue !== undefined)
+				event.target.defaultValue = this.defaultValue;
+		},
+		
+		/**
+		 * Re-sets (copies) the custom properties to the child iron-input element.
+		 */
+		_cbnResetInputAttributes: function() {
+			if (!this.$.input) return;
+			this._customInputProperties.forEach(function(prop) {
+				this.$.input[prop] = this[prop];
+			}, this);
 		}
 		
 	};
 	
+	ext._customInputProperties.forEach(function(prop) {
+		ext.observers.push('_cbnResetInputAttributes(' + prop + ')');
+	});
+	
 	Polymer.injectBehaviors('paper-input', [ CbnForm.DynamicElement,
-			CbnForm.PolymerElements.PaperInputExtension ]);
+		CbnForm.PaperContainer, CbnForm.PolymerElements.PaperInputExtension ]);
 	
 	CbnForm.registerElement('paper-input', {
 			types: [ 'text', 'number' ],

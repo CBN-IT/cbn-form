@@ -272,12 +272,12 @@ Example config JSON definition:
 		 * @param {Element} target The target element to clean up.
 		 */
 		_cleanUpTarget: function(target) {
-			var node = target.firstChild;
+			var node = Polymer.dom(target).firstChild;
 			var next;
 			while (node) {
-				next = node.nextSibling; // save the next sibling reference
+				next = Polymer.dom(node).nextSibling; // save the next sibling reference
 				if (node['_isDynamicElement']) { // if the node belongs to cbn-dynamic-form
-					target.removeChild(node);
+					Polymer.dom(target).removeChild(node);
 				}
 				node = next;
 			}
@@ -297,9 +297,9 @@ Example config JSON definition:
 			
 			var target = null;
 			if (targetSelector == 'shadow') {
-				target = Polymer.dom(this.root);
+				target = this.root;
 			} else if (targetSelector == 'light') {
-				target = Polymer.dom(this);
+				target = this;
 			} else if (typeof targetSelector == 'string') {
 				target = Polymer.dom(this).querySelector(targetSelector);
 				if (target) 
@@ -328,12 +328,12 @@ Example config JSON definition:
 			if (!elementsConfig) return false;
 			
 			var beforeEl = ( this.beforeTarget && !isRecursion ? 
-				(root.querySelector(/**@type {String}*/(this.beforeTarget))) : null );
+				(Polymer.dom(root).querySelector(/**@type {String}*/(this.beforeTarget))) : null );
 			function insertChild(root, child) {
 				if (beforeEl) {
-					root.insertBefore(child, beforeEl);
+					Polymer.dom(root).insertBefore(child, beforeEl);
 				} else {
-					root.appendChild(child);
+					Polymer.dom(root).appendChild(child);
 				}
 			}
 			
@@ -354,7 +354,7 @@ Example config JSON definition:
 						}
 					}
 					
-					this._renderForm(elementsConfig[i].children, Polymer.dom(containerElement), config);
+					this._renderForm(elementsConfig[i].children, containerElement, config);
 				}
 			}
 			

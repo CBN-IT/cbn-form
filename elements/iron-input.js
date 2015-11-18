@@ -28,8 +28,23 @@
 			
 		},
 		
-		ready: function() {
+		created: function() {
+			this._origIronInputValidate = this.validate;
+			this.validate = this._cbnFormValidate;
+		},
+		
+		/**
+		 * The actual validate() method replacement.
+		 * 
+		 * @return {Boolean} True if the input validates, false otherwise.
+		 */
+		_cbnFormValidate: function() {
+			var result = this._origIronInputValidate.call(this);
+			if (!result) return false;
 			
+			result = CbnForm.Validatable.validate.call(this);
+			this.invalid = !result;
+			return result;
 		},
 		
 		/**
