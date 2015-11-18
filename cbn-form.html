@@ -168,6 +168,7 @@ Example:
 			'application/json': { as: 'json' }
 		},
 		
+		
 		// Public API:
 		
 		/**
@@ -192,7 +193,7 @@ Example:
 			
 			var data = this.serialize();
 			
-			if (!this._ironAjax || !this.action) 
+			if (!this._ironAjax || !this.action || this._ironAjax.loading) 
 				return false;
 			
 			if (this.params && typeof this.params != 'object') {
