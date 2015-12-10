@@ -28,6 +28,12 @@
 			
 		},
 		
+		/**
+		 * Whether the bind-value attribute was internally changed (to exclude it from being processed by the observer).
+		 */
+		_ir_valueInternallyChanged: false,
+		
+		
 		created: function() {
 			this._origIronInputValidate = this.validate;
 			this.validate = this._cbnFormValidate;
@@ -61,11 +67,15 @@
 		 * @protected
 		 */
 		_setValue: function (value) {
-			if (this._fe_previousValue !== value) {
+			if (this._ir_valueInternallyChanged) return;
+			try {
+				this._ir_valueInternallyChanged = true;
 				this.value = value;
 				this.bindValue = value;
 				this._fe_previousValue = value;
 				this._fe_valueChanged(value);
+			} finally {
+				this._ir_valueInternallyChanged = false;
 			}
 		}
 		
