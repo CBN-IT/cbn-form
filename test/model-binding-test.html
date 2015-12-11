@@ -194,6 +194,12 @@
 			f.reset();
 			assert.equal(f.getElementByName('one').value, '', 'empty value after reset');
 			assert.equal(f.getElementByName('three.four.nein').value, '999', 'default value after reset');
+			
+			// test with zero / false values
+			f.set('model.one', 0);
+			f.set('model.two.one', false);
+			assert.equal(f.getElementByName('one').value+'', '0', 'zero value');
+			assert.equal(f.getElementByName('two.one').value+'', 'false', 'false value');
 		});
 		
 		test('dirty flag', function () {
