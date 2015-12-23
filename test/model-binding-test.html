@@ -194,26 +194,29 @@
 			f.reset();
 			assert.equal(f.getElementByName('one').value, '', 'empty value after reset');
 			assert.equal(f.getElementByName('three.four.nein').value, '999', 'default value after reset');
+			
+			// test with zero / false values
+			f.set('model.one', 0);
+			f.set('model.two.one', false);
+			assert.equal(f.getElementByName('one').value+'', '0', 'zero value');
+			assert.equal(f.getElementByName('two.one').value+'', 'false', 'false value');
 		});
 		
 		test('dirty flag', function () {
 			f = fixture('formContainer', { model: {} });
 			
 			assert.equal(f.isDirty, false, 'isDirty at initial model');
+			assert.equal(f.isPathDirty('one') || f.isPathDirty('two.one'), false, 'inputs are not dirty');
 			
-			f.set('model.one', 'get');
-			f.set('model.two.one', 'dirty');
-			assert.equal(f.isDirty, true, 'isDirty after model is now dirty');
+			f.getElementByName('one').value = 'dirty';
+			f.getElementByName('two.one').value = 'model';
+			assert.equal(f.isPathDirty('one') && f.isPathDirty('two.one'), true, 'inputs are dirty');
+			assert.equal(f.isDirty, true, 'model is dirty');
 			
-			f.reset('one');
-			f.reset('two');
-			assert.equal(f.isDirty, false, 'isDirty after model is reset');
-			
-			f.set('model.three.four.nein', 'dirty again');
-			assert.equal(f.isDirty, true, 'isDirty after model is dirty again');
-			
-			f.set('model.three.four.nein', '999');
-			assert.equal(f.isDirty, false, 'isDirty after default value set');
+			f.set('model.one', 're');
+			f.set('model.two.one', 'set');
+			console.log(f._dirtyModelPaths);
+			assert.equal(f.isDirty, false, 'inputs reset');
 		});
 		
 	});

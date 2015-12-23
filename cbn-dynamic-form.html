@@ -81,9 +81,7 @@ Example config JSON definition:
 			 */
 			config: {
 				type: Object,
-				value: function() {
-					return {};
-				},
+				value: null,
 				observer: '_configChanged'
 			},
 			
@@ -134,6 +132,14 @@ Example config JSON definition:
 			_hasModelValue: {
 				type: Boolean,
 				value: false
+			},
+			
+			/**
+			 * Whether the element has been attached to the main DOM yet.
+			 */
+			_dynamicFormAttached: {
+				type: Boolean,
+				value: false
 			}
 			
 		},
@@ -181,7 +187,7 @@ Example config JSON definition:
 			if (!config) return false;
 			
 			// prevent duplicate rendering (for idempotence / performance reasons)
-			if (!force && this._renderedObject && this._renderedObject.config === config && this._renderedObject.target === target)
+			if (!force && this._isRendered(config, target))
 				return true;
 			
 			this._renderedObject = {
@@ -195,11 +201,16 @@ Example config JSON definition:
 				return false;
 			
 			Polymer.dom.flush();
+			if (window.CustomElements && CustomElements.upgradeSubtree) {
+				CustomElements.upgradeSubtree(target);
+			}
+			if (window.CustomElements && window.CustomElements.takeRecords) {
+				window.CustomElements.takeRecords();
+			}
 			
-			this.fire('cbn-dynamic-form-rendered', {
-				element: this,
-				config: config
-			}, null, true, false);
+			if (this._dynamicFormAttached) {
+				this._emitRendered(config);
+			}
 			
 			return true;
 		},
@@ -235,8 +246,37 @@ Example config JSON definition:
 		attached: function() {
 			if (!this.manual) this.render();
 			this.async(function() {
-				if (!this.manual) this.render();
+				this._dynamicFormAttached = true;
+				if (this._isRendered()) {
+					this._emitRendered();
+				} else if (!this.manual) this.render();
 			});
+		},
+		
+		/**
+		 * Whether the form elements have been rendered.
+		 * 
+		 * @param {Object} [config] The form config.
+		 * @param {Object} [target] The target parent.
+		 */
+		_isRendered: function(config, target) {
+			target = this._getTarget(target ? target : /**@type {String}*/(this.target));
+			config = config || this.config;
+			return (this._renderedObject && this._renderedObject.config === config && 
+					this._renderedObject.target === target);
+		},
+		
+		/**
+		 * Emits the cbn-dynamic-form-rendered event.
+		 * 
+		 * @param {Object} [config] The form config to check.
+		 */
+		_emitRendered: function(config) {
+			config = config || this.config;
+			this.fire('cbn-dynamic-form-rendered', {
+				element: this,
+				config: config
+			}, null, true, false);
 		},
 		
 		/**
