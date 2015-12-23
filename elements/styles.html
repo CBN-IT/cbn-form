@@ -1,5 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
-
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <!--
 `cbn-grid-shared-style` 
 
@@ -27,6 +27,10 @@
 				};
 				padding: 0 10px;
 				overflow: hidden; /*this if because of the animation*/
+			}
+			cbn-dynamic-form{
+				@apply(--layout-horizontal);
+				@apply(--layout-wrap);
 			}
 		</style>
 	</template>
