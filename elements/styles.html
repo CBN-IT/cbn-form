@@ -1,0 +1,33 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`cbn-grid-shared-style` 
+
+    <cbn-grid-shared-style></cbn-grid-shared-style>
+
+### Validation
+
+### Styling
+
+@demo demo/index.html
+@class cbn-grid-shared-style
+-->
+
+<dom-module id="cbn-form-shared-style">
+	<template>
+		<style>
+			cbn-paper-select,
+			cbn-cif-input,
+			cbn-iban-input,
+			cbn-paper-datepicker,
+			cbn-paper-address,
+			paper-input {
+				--paper-input-container: {
+					padding: 4px 0;
+				};
+				padding: 0 10px;
+				overflow: hidden; /*this if because of the animation*/
+			}
+		</style>
+	</template>
+</dom-module>
