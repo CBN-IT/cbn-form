@@ -57,7 +57,7 @@
 		 * Observes when the bindValue changes and sets the value.
 		 */
 		_fe_bindValueChanged: function(newValue) {
-			if (this.value != newValue) {
+			if (this._fe_previousValue !== newValue) {
 				this._setValue(newValue);
 			}
 		},
