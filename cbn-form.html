@@ -225,10 +225,10 @@ Example:
 				
 				var request = this._ironAjax.generateRequest();
 				request.then(function(){
-					this.resolve(request);
+					resolve(request);
 				}.bind(this)).catch(function(){
-					this.reject(request);
-				}.bind(this));
+					reject(request);
+				});
 				this.fire('cbn-form-submit', {
 					request: request,
 					data: data
