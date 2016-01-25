@@ -178,52 +178,62 @@ Example:
 		 * @param {Boolean} [noPrevent] Set to true to prevent firing the `cbn-form-before-submit` event.
 		 */
 		submit: function(noPrevent) {
-			// first, validate the form
-			if (!this.noValidate && !this.validate()) {
-				this.fire('cbn-form-invalid');
-				return;
-			}
-			
-			if (!noPrevent) {
-				var ev = this.fire('cbn-form-before-submit', {}, {
-					cancelable: true
-				});
-				if (ev.defaultPrevented) return;
-			}
-			
-			var data = this.serialize();
-			
-			if (!this._ironAjax || !this.action || this._ironAjax.loading) 
-				return false;
-			
-			if (this.params && typeof this.params != 'object') {
-				console.warn('`cbn-form`: invalid params object', this.params);
-			}
-			
-			this._ironAjax.url = this.action;
-			this._ironAjax.method = this.method;
-			this._ironAjax.params = this.params;
-			this._ironAjax.contentType = this.contentType;
-			
-			if (this.method.toUpperCase() == 'GET') {
-				if (this._ironAjax.params) {
-					this._ironAjax.params = JSON.parse(JSON.stringify(this._ironAjax.params));
-				} else {
-					this._ironAjax.params = {};
+			return new Promise(function(resolve, reject){
+				// first, validate the form
+				if (!this.noValidate && !this.validate()) {
+					this.fire('cbn-form-invalid');
+					reject('cbn-form-invalid');
+					return;
 				}
-				// and extend it with the form data object
-				Polymer.Base.mixin(this._ironAjax.params, data);
 				
-			} else {
-				this._ironAjax.body = data;
-			}
-			
-			var request = this._ironAjax.generateRequest();
-			
-			this.fire('cbn-form-submit', {
-				request: request,
-				data: data
-			});
+				if (!noPrevent) {
+					var ev = this.fire('cbn-form-before-submit', {}, {
+						cancelable: true
+					});
+					if (ev.defaultPrevented) {
+						reject('default prevented');
+						return;
+					}
+				}
+				
+				var data = this.serialize();
+				
+				if (!this._ironAjax || !this.action || this._ironAjax.loading) 
+					return false;
+				
+				if (this.params && typeof this.params != 'object') {
+					console.warn('`cbn-form`: invalid params object', this.params);
+				}
+				
+				this._ironAjax.url = this.action;
+				this._ironAjax.method = this.method;
+				this._ironAjax.params = this.params;
+				this._ironAjax.contentType = this.contentType;
+				
+				if (this.method.toUpperCase() == 'GET') {
+					if (this._ironAjax.params) {
+						this._ironAjax.params = JSON.parse(JSON.stringify(this._ironAjax.params));
+					} else {
+						this._ironAjax.params = {};
+					}
+					// and extend it with the form data object
+					Polymer.Base.mixin(this._ironAjax.params, data);
+					
+				} else {
+					this._ironAjax.body = data;
+				}
+				
+				var request = this._ironAjax.generateRequest();
+				request.then(function(){
+					this.resolve(request);
+				}.bind(this)).catch(function(){
+					this.reject(request);
+				}.bind(this));
+				this.fire('cbn-form-submit', {
+					request: request,
+					data: data
+				});
+			}.bind(this));
 		},
 		
 		/**
