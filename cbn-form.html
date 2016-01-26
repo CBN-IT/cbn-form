@@ -224,7 +224,7 @@ Example:
 				}
 				
 				var request = this._ironAjax.generateRequest();
-				request.then(function(){
+				request.completes.then(function(){
 					resolve(request);
 				}.bind(this)).catch(function(){
 					reject(request);

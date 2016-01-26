@@ -53,8 +53,7 @@
 			
 			assert.equal(f.defaultValue, 'default');
 			
-			f.bindValue = 'changed';
-			f.bindValue = 'changed';
+			f._setValue('changed');
 			assert.equal(f.value, 'changed', 'value changed');
 			assert.ok(handler.calledOnce && !handler.args[0][0].detail.indirect, 'value-changed fired');
 			handler.reset();
@@ -91,7 +90,6 @@
 			// change the input values
 			f.getElementByName('one.one').bindValue = 'new-test1';
 			f.getElementByName('two.one.one').bindValue = 'new-test2';
-			
 			assert.equal(f.get('model.one.one'), 'new-test1');
 			assert.equal(f.get('model.two.one.one'), 'new-test2');
 			
