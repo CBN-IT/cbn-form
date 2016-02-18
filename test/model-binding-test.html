@@ -149,7 +149,7 @@
 			assert.equal((nein ? nein.name : undefined), 'three.four.nein', 'getElementByName works #2');
 			
 			// remove one element now
-			f.removeChild(c_one1);
+			Polymer.dom(f).removeChild(c_one1);
 			
 			setTimeout(function () {
 				assert.equal(f.formElements.length, 3, 'element unregistered from container');
