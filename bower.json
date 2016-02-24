@@ -20,8 +20,8 @@
     "polymer-reflection": "niflostancu/polymer-reflection#master",
     "iron-ajax": "PolymerElements/iron-ajax#1.1.1",
     "iron-input": "PolymerElements/iron-input#1.0.8",
-    "paper-input": "PolymerElements/paper-input#1.1.7",
-    "paper-styles": "PolymerElements/paper-styles#4c2c0dc4b3c1a06e4adf7456019a29065e2b9433",
+    "paper-input": "PolymerElements/paper-input#1.1.8",
+    "paper-styles": "PolymerElements/paper-styles#1.1.4",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#1.2.3"
   },
   "devDependencies": {
