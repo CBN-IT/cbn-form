@@ -178,7 +178,7 @@ Example:
 		 * @param {Boolean} [noPrevent] Set to true to prevent firing the `cbn-form-before-submit` event.
 		 */
 		submit: function(noPrevent) {
-			return new Promise(function(resolve, reject){
+			var prom = new Promise(function(resolve, reject) {
 				// first, validate the form
 				if (!this.noValidate && !this.validate()) {
 					this.fire('cbn-form-invalid');
@@ -198,11 +198,21 @@ Example:
 				
 				var data = this.serialize();
 				
-				if (!this._ironAjax || !this.action || this._ironAjax.loading) 
+				if (!this._ironAjax) {
+					console.error('`cbn-form`: no iron-ajax object provided!');
 					return false;
+				}
+				if (!this.action) {
+					console.error('`cbn-form`: no action provided!');
+					return false;
+				}
+				
+				if (this._ironAjax.loading) {
+					return false;
+				}
 				
 				if (this.params && typeof this.params != 'object') {
-					console.warn('`cbn-form`: invalid params object', this.params);
+					console.error('`cbn-form`: invalid params object', this.params);
 				}
 				
 				this._ironAjax.url = this.action;
@@ -234,6 +244,12 @@ Example:
 					data: data
 				});
 			}.bind(this));
+			
+			prom.catch(function(){
+				// stop the browser from annoying us on failed requests
+			});
+			
+			return prom;
 		},
 		
 		/**
@@ -300,7 +316,7 @@ Example:
 				this._ironAjax = this.$$(this.customAjax);
 				
 				if (!this._ironAjax) {
-					console.warn('`cbn-form`: invalid iron-ajax selector (element not found)', this.customAjax);
+					console.error('`cbn-form`: invalid iron-ajax selector (element not found)', this.customAjax);
 				}
 				
 			} else {
