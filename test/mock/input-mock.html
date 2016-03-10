@@ -1,0 +1,53 @@
+<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../lib/include.html">
+
+<dom-module id="simple-input">
+	<template>
+		<input id="input" type="text" value="[[value]]"  title="[[title]]" />
+	</template>
+</dom-module>
+
+<script>
+	Polymer({
+		is: 'simple-input',
+		
+		behaviors: [
+			CbnForm.InputElement,
+			CbnForm.Validatable,
+			CbnForm.DynamicElement
+		],
+		
+		listeners: {
+			'input': '_onInput'
+		},
+		
+		properties: {
+			
+			value: {
+				type: String,
+				value: ''
+			},
+			
+			title: {
+				type: String,
+				value: ''
+			}
+			
+		},
+		
+		dynamicAttributes: {
+			title: true
+		},
+		
+		_onInput: function () {
+			this.value = this.$.input.value;
+		}
+		
+	});
+	
+	CbnForm.registerElement('simple-input', {
+		types: [ 'text' ],
+		priority: 2
+	});
+	
+</script>

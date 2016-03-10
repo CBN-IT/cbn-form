@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>Cbn-Form Demo</title>
+	
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	
+	<link rel="import" href="../../polymer-reflection/polymer-reflection.html" />
+	<link rel="import" href="../../font-roboto/roboto.html" />
+	
+	<link rel="import" href="../../iron-input/iron-input.html" />
+	<link rel="import" href="../../paper-input/paper-input.html" />
+	
+	<link rel="import" href="../cbn-form.html">
+	<link rel="import" href="../elements/polymer-elements.html" />
+	<link rel="import" href="../../cbn-select/cbn-paper-select.html" />
+	
+	<style>
+		body {
+			font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			font-size: 14px;
+		}
+	</style>
+	
+	<style is="custom-style">
+		* {
+			--paper-input-container {
+				padding: 0 !important;
+			}
+		}
+	</style>
+</head>
+<body>
+
+<div style="margin: 20px auto; width: 500px;">
+	<h1>Cbn-Form Demo</h1>
+	
+	<template is="dom-bind">
+		
+		<form id="demoForm" is="cbn-form" action="test.json" method="GET" model serialization-options='{ "mode": "deep" }'>
+			
+			<div>
+				Iron Input: <input is="iron-input" type="text" name="iron1.iron2" title="Iron Input" />
+			</div>
+			
+			<div>
+				<paper-input name="papa.paper1" label="Paper Input"></paper-input>
+			</div>
+			<br />
+			
+			<div>
+				<cbn-paper-select use-iron-list label="Single" name="select1" options="[[demoOptions1]]"></cbn-paper-select>
+			</div>
+			<br />
+			
+			<button type="submit">Submit</button> <button type="reset">Reset</button>
+			
+		</form>
+		
+		<p style="font-weight: bold;">Output: </p>
+		<pre id="stringifiedJson"></pre>
+		
+	</template>
+</div>
+
+<script>
+	var tpl = document.querySelector('template[is=dom-bind]');
+	
+	tpl.demoOptions1 = [];
+	for (i=0; i<30; i++) {
+		tpl.demoOptions1.push("x" + i);
+	}
+	
+	tpl.addEventListener('dom-change', function(){
+		/** @namespace tpl.$.demoForm */
+		var form = tpl.$.demoForm;
+		
+		function updateOutput() {
+			/** @namespace tpl.$.stringifiedJson */
+			tpl.$.stringifiedJson.textContent = JSON.stringify(form.model, null, 4);
+		}
+		
+		form.addEventListener('value-changed', updateOutput);
+		updateOutput();
+	});
+	
+</script>
+
+</body>
+</html>

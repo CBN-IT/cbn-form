@@ -1,0 +1,227 @@
+<!doctype html>
+<!--suppress HtmlUnknownTag -->
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	
+	<script src="../../test-fixture/test-fixture-mocha.js"></script>
+	<link rel="import" href="../../test-fixture/test-fixture.html" />
+	
+	<link rel="import" href="mock/container-mock.html" />
+	<link rel="import" href="mock/input-mock.html" />
+	<link rel="import" href="mock/native-input-mock.html" />
+	
+</head>
+<body>
+
+<div id="simpleElementContainer">
+	<test-fixture id="simpleElement">
+		<template>
+			<simple-input id="standalone1" name="test"></simple-input>
+		</template>
+	</test-fixture>
+</div>
+
+<div id="nativeInputContainer">
+	<test-fixture id="nativeInput">
+		<template>
+			<input is="test-native-input" id="native1" name="test1" title="Native Input"/>
+		</template>
+	</test-fixture>
+</div>
+
+<test-fixture id="formContainer">
+	<template is="dom-template">
+		<simple-container model="[[model]]">
+			
+			<simple-input id="c_one" name="one" title="Test1"></simple-input>
+			<simple-input id="c_two" name="two.one" title="Test2"></simple-input>
+			
+			<simple-input name="three.four.five" title="Test3"></simple-input>
+			<simple-input name="three.four.nein" default-value="999" title="Test3_2"></simple-input>
+			
+		</simple-container>
+	</template>
+</test-fixture>
+
+<script>
+	
+	suite('form element', function () {
+		var f;
+		
+		test('element attachment', function () {
+			var cont = document.getElementById('simpleElementContainer');
+			var handler = sinon.spy();
+			cont.addEventListener('cbn-form-register', handler);
+			
+			f = fixture('simpleElement');
+			
+			assert.ok(handler.calledOnce, 'register called');
+			assert.ok(handler.args[0][0] && handler.args[0][0].detail.element == f, 
+				'element registered successfully');
+		});
+		
+		test('element unregisters', function (done) {
+			f = fixture('simpleElement');
+			
+			var cont = document.getElementById('simpleElementContainer');
+			var handler = sinon.spy();
+			cont.addEventListener('cbn-form-unregister', handler);
+			f._setParentForm(cont);
+			
+			f.parentNode.removeChild(f);
+			setTimeout(function () {
+				assert.ok(handler.calledOnce, 'unregister called');
+				done();
+			}, 1);
+		});
+		
+		test('value-change event', function () {
+			f = fixture('simpleElement');
+			
+			var handler = sinon.spy();
+			f.addEventListener('value-changed', handler);
+			
+			f.value = 'changed';
+			f.value = 'changed';
+			assert.equal(f.value, 'changed', 'value changed');
+			assert.ok(handler.calledOnce && !handler.args[0][0].detail.indirect, 'value-changed fired');
+			handler.reset();
+			
+			f._setIndirectValue('indirect');
+			assert.ok(handler.calledOnce && handler.args[0][0].detail.indirect, 'indirect value-changed fired');
+			assert.equal(f.value, 'indirect', 'indirect value set');
+		});
+		
+	});
+	
+	suite('native input element', function () {
+		var f;
+		
+		test('element attachment', function () {
+			var cont = document.getElementById('nativeInputContainer');
+			var handler = sinon.spy();
+			cont.addEventListener('cbn-form-register', handler);
+			
+			f = fixture('nativeInput');
+			
+			assert.ok(handler.calledOnce, 'register called');
+			assert.ok(handler.args[0][0] && handler.args[0][0].detail.element == f,
+				'element registered successfully');
+		});
+		
+		test('value-change event', function () {
+			f = fixture('nativeInput');
+			
+			var handler = sinon.spy();
+			f.addEventListener('value-changed', handler);
+			
+			f.bindValue = 'changed';
+			assert.equal(f.value, 'changed', 'value changed');
+			assert.ok(handler.calledOnce && !handler.args[0][0].detail.indirect, 'value-changed fired');
+			handler.reset();
+			
+			f._setIndirectValue('indirect');
+			assert.ok(handler.calledOnce && handler.args[0][0].detail.indirect, 'indirect value-changed fired');
+			assert.equal(f.value, 'indirect', 'indirect value set');
+		});
+		
+	});
+	
+	suite('form container', function () {
+		var f;
+		
+		test('formElements populated', function (done) {
+			f = fixture('formContainer', { model: {} });
+			
+			assert.equal(f.formElements.length, 4, 'all elements accounted for');
+			
+			// find an element
+			var c_one1 = f.getElementByName('one');
+			var c_one2 = f.querySelector('#c_one');
+			assert.ok(c_one1 && c_one1 === c_one2, 'getElementByName works #1');
+			
+			var nein = f.getElementByName('three.four.nein');
+			assert.equal((nein ? nein.name : undefined), 'three.four.nein', 'getElementByName works #2');
+			
+			// remove one element now
+			Polymer.dom(f).removeChild(c_one1);
+			
+			setTimeout(function () {
+				assert.equal(f.formElements.length, 3, 'element unregistered from container');
+				done();
+			}, 1);
+		});
+		
+		test('two-way model binding', function () {
+			f = fixture('formContainer', {
+				model: {
+					two: { one: 'one!!!111' }
+				}
+			});
+			
+			// test default values
+			assert.equal(f.getElementByName('one').value, '', 'empty value');
+			assert.equal(f.getElementByName('two.one').value, 'one!!!111', 'input value from default model');
+			assert.equal(f.getElementByName('three.four.nein').value, '999', 'default value');
+			
+			// change the input values
+			f.getElementByName('one').value = 'test1';
+			f.getElementByName('two.one').value = 'test2';
+			f.getElementByName('three.four.five').value = 'test3';
+			
+			assert.deepEqual(f.model, {
+				one: 'test1',
+				two: { one: 'test2' },
+				three: { four: { five: 'test3', nein: '999' } }
+			}, 'change input values');
+			
+			// and vice-versa:
+			f.set('model.one', 'another one');
+			f.set('model.two.one', 'bites the dust');
+			assert.equal(f.getElementByName('one').value, 'another one', 'model to value #1');
+			assert.equal(f.getElementByName('two.one').value, 'bites the dust', 'model to value #2');
+			
+			// reset path
+			f.reset('two');
+			assert.equal(f.getElementByName('two.one').value, '', 'empty value after reset path');
+			
+			// reset the model
+			f.reset();
+			assert.equal(f.getElementByName('one').value, '', 'empty value after reset');
+			assert.equal(f.getElementByName('three.four.nein').value, '999', 'default value after reset');
+			
+			// test with zero / false values
+			f.set('model.one', 0);
+			f.set('model.two.one', false);
+			assert.equal(f.getElementByName('one').value+'', '0', 'zero value');
+			assert.equal(f.getElementByName('two.one').value+'', 'false', 'false value');
+		});
+		
+		test('dirty flag', function () {
+			f = fixture('formContainer', { model: {} });
+			
+			assert.equal(f.isDirty, false, 'isDirty at initial model');
+			assert.equal(f.isPathDirty('one') || f.isPathDirty('two.one'), false, 'inputs are not dirty');
+			
+			f.getElementByName('one').value = 'dirty';
+			f.getElementByName('two.one').value = 'model';
+			assert.equal(f.isPathDirty('one') && f.isPathDirty('two.one'), true, 'inputs are dirty');
+			assert.equal(f.isDirty, true, 'model is dirty');
+			
+			f.set('model.one', 're');
+			f.set('model.two.one', 'set');
+			console.log(f._dirtyModelPaths);
+			assert.equal(f.isDirty, false, 'inputs reset');
+		});
+		
+	});
+	
+</script>
+
+</body>
+</html>

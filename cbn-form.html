@@ -5,9 +5,9 @@ Supports AJAX file upload.
 
 Example:
 ```
-    <cbn-form url="/do/something/save" method="post">
+    <form is="cbn-form" action="/do/something/save" method="post">
     	Form fields here...
-    </cbn-form>
+    </form>
 ```
 
 @group cbn-form
@@ -17,563 +17,369 @@ Example:
 <!-- Imports -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="lib/include.html">
-<link rel="import" href="cbn-form-group.html">
 
-<polymer-element name="cbn-form">
-	<template>
-		<style>
-			:host { display: block; }
-		</style>
-		
-		<!-- Insert form's content -->
-		<content></content>
-		
-	</template>
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+
+<script>
 	
-	<script>
-		Polymer('cbn-form', Polymer.implementBehaviors({
+	Polymer({
+		is: 'cbn-form',
+		
+		extends: 'form',
+		
+		properties: {
 			
-			publish: { // Published attributes:
-				
-				/**
-				 * Form's data model object.
-				 * 
-				 * @attribute model
-				 * @type {Object}
-				 * @default {}
-				 */
-				model: null,
-				
-				/**
-				 * The URL to submit the form to.
-				 * 
-				 * @attribute url
-				 * @type {String}
-				 * @default ""
-				 */
-				url: "",
-				
-				/**
-				 * The method to use for the submission.
-				 * 
-				 * @attribute method
-				 * @type {String}
-				 * @default "POST"
-				 */
-				method: "POST",
-				
-				/**
-				 * Additional URL parameters to use.
-				 * 
-				 * @attribute params
-				 * @type {Object}
-				 * @default {}
-				 */
-				params: null,
-				
-				/**
-				 * Additional options to pass to the XHR (see core-xhr documentation).
-				 * 
-				 * @attribute xhr-options
-				 * @type {Object}
-				 * @default {}
-				 */
-				xhrOptions: null,
-				
-				/**
-				 * Form serialization method to use for submitting the form values via XHR.
-				 * 
-				 * Serialization types:
-				 * - plain: passes the form data as a standard parameters map (each field has a separate parameter);
-				 * - json: pass the entire model JSON as a form parameter (specified by the `param` property);
-				 * - deep: recursively serializes the whole JSON as flat parameters map, using the following algorithm: 
-				 *   > if the value is an array, it appends each item with its index inside square brackets (e.g. 
-				 *     'item[0]=value'); 
-				 *   > if the item is an object, it separately appends each member using parent dot property (e.g. 
-				 *     'obj.property=value'); 
-				 *   > it goes recursively (applies the same serialization to children objects).
-				 * 
-				 * If asFormData is true, a FormData object will be returned (instead of a plain map).
-				 * 
-				 * If useBrackets is true, for multiple-valued inputs, array append brackets ('[]') will be automatically 
-				 * added after the input's name.
-				 * 
-				 * @attribute serialization-options
-				 * @type {{ type: String, param?: String, asFormData: Boolean, useBrackets: Boolean }}
-				 * @default { type: 'plain', param: 'data', useBrackets: false }
-				 */
-				serializationOptions: null,
-				
-				/**
-				 * The response type to parse/return (available inside the cbn-form-complete family events).
-				 * 
-				 * Available response types:
-				 * - `text`: uses `XHR.responseText`.
-				 * - `xml`: uses `XHR.responseXML`.
-				 * - `json`: uses `XHR.responseText` parsed as JSON.
-				 * - `arraybuffer`: uses `XHR.response`.
-				 * - `blob`: uses `XHR.response`.
-				 * - `document`: uses `XHR.response`.
-				 * 
-				 * @attribute handleAs
-				 * @type string
-				 * @default 'json'
-				 */
-				handleAs: 'json'
-				
+			/**
+			 * Content type to use when sending data. Also affects form model serialization.
+			 * 
+			 * Available content types: 
+			 * 
+			 * - 'application/x-www-form-urlencoded': the form will be serialized to a String using the urlencode convention;
+			 * - 'multipart/form-data': the form will be sent using a FormData object; supports file uploads;
+			 * - 'application/json': the entire model will be serialized as a JSON string and sent as POST body.
+			 */
+			contentType: {
+				type: String,
+				value: "application/x-www-form-urlencoded"
 			},
 			
 			/**
-			 * The `cbn-form` should be the only master container.
-			 */
-			isMasterContainer: true,
-			
-			// Events:
-			
-			/**
-			 * Fired when submit command was issued.
-			 * The event takes place before the actual submission (to the URL, if specified) is made and you can alter 
-			 * its behavior or cancel it.
+			 * Additional query string arguments to append to the action URL when submitting the request.
 			 * 
-			 * @event cbn-form-submit
+			 * If specified, must be a plain JSON key-value map of GET parameters.
 			 */
-			
-			/**
-			 * Fired if / when the form was successfully submitted.
-			 * Event detail object has 2 properties: the 'xhr' object and the parsed 'response'.
-			 * 
-			 * @event cbn-form-success
-			 */
-			
-			/**
-			 * Fired if the submission AJAX request failed.
-			 * Event detail object has 2 properties: the 'xhr' object and the parsed 'response' (if available).
-			 * 
-			 * @event cbn-form-error
-			 */
-			
-			/**
-			 * Fired if the submission AJAX request finished (with either error or success status; see core-xhr 
-			 * documentation).
-			 * Event detail object has 2 properties: the 'xhr' object and the parsed 'response' (if available).
-			 * 
-			 * @event cbn-form-complete
-			 */
-			
-			
-			// Functions and event handlers
-			
-			/**
-			 * Fires when the element is created. Used to initialize its attributes.
-			 */
-			created: function() {
-				if (!this.model)
-					this.model = {};
-				if (!this.params)
-					this.params = {};
-				if (!this.xhrOptions)
-					this.xhrOptions = {};
-				if (!this.serializationOptions)
-					this.serializationOptions = { type: 'plain', param: 'data', useBrackets: false };
+			params: {
+				type: Object
 			},
 			
 			/**
-			 * Called when polymer element has been fully prepared.
+			 * Form serialization method to use for submitting the form data.
+			 * Only used if a form model object is used (i.e. the `model` attribute is not null).
 			 * 
-			 * Listens for input attached / detached events and initializes them.
+			 * Specifies how to serialize a (possibly) complex model object to a format recognized by the HTTP 
+			 * protocol / server.
+			 * 
+			 * You only need to specify the 'mode' and their options (if you desire other behavior than the default).
+			 * The `as` option is automatically detected and filled from the `contentType` attribute and/or form contents.
+			 * 
+			 * Available modes:
+			 * 
+			 * - `plain`: the model's own properties are returned as parameters; objects deeper than that are serialized 
+			 *            using JSON;
+			 * - `deep`: the model is recursively traversed and its values are appended as separate parameters (using the 
+			 *            path within the object as name);
+			 * - `json`: the entire model is serialized as a JSON object and stored inside a single parameter (by default, 
+			 *           'data', but it can be overridden).
+			 * 
+			 * See {@link CbnForm.Serialization} for documentation on all serialization formats supported and their 
+			 * options.
 			 */
-			ready: function() {
-				var form = this;
-				
-				// bind tap handler to the submit buttons
-				var submitButtons = this.querySelectorAll('[submit], input[type="submit"], button[type="submit"]');
-				for (var i=0; i<submitButtons.length; i++) {
-					PolymerGestures.addEventListener(submitButtons[i], 'tap', function(event) {
-						if (!event.defaultPrevented) 
-							form.submit();
-					});
-				}
-				
-				// reset buttons
-				var resetButtons = this.querySelectorAll('[reset], input[type="reset"], button[type="reset"]');
-				for (var i=0; i<resetButtons.length; i++) {
-					PolymerGestures.addEventListener(resetButtons[i], 'tap', function(event) {
-						if (!event.defaultPrevented) 
-							form.reset();
-					});
+			serializationOptions: {
+				type: Object,
+				value: function() {
+					return { mode: 'plain' };
 				}
 			},
 			
 			/**
-			 * Submits the form to the specified URL and, if successful, executes the callback (optional).
+			 * If given, the form element will use a custom `iron-ajax` instance to submit its requests that matches the 
+			 * given selector. Useful if you want to supply advanced parameters for the ajax requests.
 			 * 
-			 * If no URL was specified, it will execute the callback with the form data as argument.
+			 * The `iron-ajax` element must exist at creation time (i.e. won't work if present inside a template).
 			 * 
-			 * @return {Boolean} If the form validates and the request successfully started.
+			 * And make sure it doesn't have the `auto` attribute set ;) 
 			 */
-			submit: function() {
-				var form = this;
-				
-				// process all Observer events so we have an up-to-date model
-				WebComponents.performMicrotaskCheckpoint();
-				
-				if (!this.validate()) 
-					return false;
-				
-				var i, j;
-				var hasFiles = false;
-				
-				for (i=0; i<this.childInputs.length; i++) {
-					// special case: file inputs
-					if (this.childInputs[i].isFileInput) {
-						// check if any files were posted
-						var files = this.childInputs[i].getFiles();
-						for (j=0; j<files.length; j++) {
-							hasFiles = true;
-						}
-					}
-				}
-				
-				// build the body
-				var body;
-				var url = this._getUrlWithParams(this.url, this.params);
-				if (this.method.toUpperCase() == 'GET') {
-					url += (url.indexOf('?') > 0 ? '&' : '?') + 
-						this.serialize({ asFormData: false });
-					body = null;
-				} else {
-					body = this.serialize({ asFormData: hasFiles });
-				}
-				
-				var event = this.fire('cbn-form-submit', {
-					data: this.model, 
-					hasFiles: hasFiles
-					
-				}, null, false, true); // cancelable
-				if (event.defaultPrevented) 
-					return false;
-				
-				var xhr = this._buildXHR(
-					Polymer.mixin({
-						url: url,
-						method: this.method,
-						responseType: this.handleAs
-						
-					}, this.xhrOptions) );
-				
-				// bind XHR events
-				xhr.onreadystatechange = function() {
-					if (xhr.readyState==4) {
-						var response = form._handleXHRResponse(xhr);
-						
-						// fire some events!
-						if (xhr.status == 200) {
-							// success!
-							form.fire('cbn-form-success', {
-								xhr: xhr,
-								response: response
-							}, null, false, false);
-						} else {
-							// error!
-							form.fire('cbn-form-error', {
-								xhr: xhr,
-								response: response
-							}, null, false, false);
-						}
-						form.fire('cbn-form-complete', {
-							xhr: xhr,
-							response: response
-						}, null, false, false);
-					}
-				};
-				
-				xhr.send(body);
-				
-				return true;
-			},
-			
-			/**
-			 * Serializes the form data.
-			 * 
-			 * @param {Object} serializationOptions If specified, will override the element's serialization options.
-			 * @return {String|FormData} The serialized form string / FormData object.
-			 */
-			serialize: function(serializationOptions) {
-				var i, n, f;
-				
-				if (!serializationOptions) {
-					serializationOptions = this.serializationOptions;
-					
-				} else {
-					serializationOptions = Polymer.mixin({ param: 'data' }, 
-						this.serializationOptions, serializationOptions);
-				}
-				
-				var fields = []; // array of { key:String, value:String } pairs
-				var fileInputs = {}; // the File input objects
-				
-				function deepSerializeObject(prefix, value) {
-					var i, n;
-					if (!prefix) prefix = '';
-					
-					if (Array.isArray(value)) {
-						for (i=0; i<value.length; i++) {
-							if (serializationOptions.useBrackets) {
-								deepSerializeObject(prefix + "[" + i + "]", value[i]);
-							} else {
-								deepSerializeObject(prefix + i, value[i]);
-							}
-						}
-						
-					} else if (typeof value == 'object') {
-						for (n in value) {
-							if (!value.hasOwnProperty(n)) continue;
-							
-							deepSerializeObject((prefix ? prefix + '.' : '') + n, value[n]);
-						}
-						
-					} else if (value === undefined || value === null) {
-						fields.push({ key: prefix, value: "" });
-					} else {
-						fields.push({ key: prefix, value: value.toString() });
-					}
-				}
-				
-				var data = null;
-				if (serializationOptions.type == 'plain') {
-					// flatten the model object
-					for (n in this.model) {
-						if (this.model.hasOwnProperty(n)) {
-							if (serializationOptions.useBrackets && Array.isArray(this.model[n])) {
-								fields.push({ key: n+"[]", value: this.model[n].toString() });
-								
-							} else if (this.model[n] == undefined) {
-								fields.push({ key: n, value: "" });
-								
-							} else {
-								fields.push({ key: n, value: this.model[n].toString() });
-							}
-						}
-					}
-					
-				} else if (serializationOptions.type == 'json') {
-					// send the JSON object as string
-					fields.push({ key: serializationOptions.param, value: JSON.stringify(this.model) });
-					
-				} else if (serializationOptions.type == 'deep') {
-					deepSerializeObject(null, this.model);
-				}
-				
-				// determine the file inputs
-				for (i=0; i<this.childInputs.length; i++) {
-					f = this.childInputs[i];
-					if (f.isFileInput) {
-						fileInputs[f.name] = f;
-					}
-				}
-				
-				if (serializationOptions.asFormData) {
-					data = new FormData();
-					for (i=0; i<fields.length; i++) {
-						data.append(fields[i].key, fields[i].value);
-					}
-					
-					for (f in fileInputs) {
-						if (!fileInputs.hasOwnProperty(f))
-							continue;
-						var files = fileInputs[f].getFiles();
-						for (i=0; i<files.length; i++) {
-							if (serializationOptions.useBrackets && fileInputs[f].multiple) {
-								data.append(f+"[]", files[i]);
-							} else {
-								data.append(f, files[i]);
-							}
-						}
-					}
-					
-				} else {
-					data = [];
-					for (i=0; i<fields.length; i++) {
-						data.push(encodeURIComponent(fields[i].key) + '=' + 
-								encodeURIComponent(fields[i].value));
-					}
-					data = data.join('&');
-				}
-				
-				return data;
-			},
-			
-			
-			// Utility methods
-			
-			/**
-			 * Builds a XHR object and returns it. 
-			 * 
-			 * Similar to `core-xhr`, but with some enhancements and the difference that it doesn't send the request 
-			 * automatically after building it.
-			 * 
-			 * @private
-			 * @param {Object} options XHR options object.
-			 *    @param {String}  options.url The url to which the request is sent.
-			 *    @param {String}  options.method The HTTP method to use (default is GET).
-			 *    @param {Boolean} options.sync To send synchronous requests, set to true. Default is false (asynchronous).
-			 *    @param {Object}  options.params URL parameters to be sent to the server.
-			 *    @param {Object}  options.headers HTTP request headers.
-			 *    @param {String}  options.responseType The response type. Default is 'text'.
-			 *    @param {Boolean} options.withCredentials Whether or not to send credentials on the request. Default is false.
-			 * @return {XMLHttpRequest} The resulting XMLHttpRequest object.
-			 */
-			_buildXHR: function(options) {
-				var xhr = new XMLHttpRequest();
-				var url = options.url;
-				var method = options.method || 'GET';
-				var async = !options.sync;
-				
-				if (options.params) {
-					url = this._getUrlWithParams(url, options.params);
-				}
-				
-				if (options.eventHandlers) {
-					for (var ev in options.eventHandlers) {
-						if (options.eventHandlers.hasOwnProperty(ev)) {
-							xhr.addEventListener(ev, options.eventHandlers[ev]);
-						}
-					}
-				}
-				
-				xhr.open(method, url, async);
-				
-				if (!options.headers) {
-					options.headers = {};
-				}
-				if (!options.headers["Content-Type"]) {
-					options.headers["Content-Type"] = "application/x-www-form-urlencoded";
-				}
-				
-				if (options.responseType) 
-					xhr.responseType = xhr._responseType = options.responseType;
-				if (options.withCredentials) 
-					xhr.withCredentials = true;
-				
-				// set headers
-				if (options.headers) {
-					for (var name in options.headers) {
-						if (options.headers.hasOwnProperty(name))
-							xhr.setRequestHeader(name, options.headers[name]);
-					}
-				}
-				
-				return xhr;
-			},
-			
-			/**
-			 * Returns the parsed response.
-			 * Code 'borrowed' from iron-ajax ;) 
-			 * 
-			 * @param {XMLHttpRequest} xhr The XHR object of the request.
-			 * @return {Object} The parsed response (based on the {@link #handleAs} property).
-			 */
-			_handleXHRResponse: function (xhr) {
-				var responseType = xhr.responseType || xhr._responseType;
-				// If we don't have a natural `xhr.responseType`, we prefer parsing
-				// `xhr.responseText` over returning `xhr.response`..
-				var preferResponseText = !xhr.responseType;
-				try {
-					switch (responseType) {
-						case 'json':
-							// If xhr.response is undefined, responseType `json` may not be supported.
-							if (preferResponseText || xhr.response === undefined) {
-								// If accessing `xhr.responseText` throws, responseType `json`
-								// is supported and the result is rightly `undefined`.
-								try {
-									//noinspection BadExpressionStatementJS
-									xhr.responseText;
-								} catch (e) {
-									return xhr.response;
-								}
-								// Otherwise, attempt to parse `xhr.responseText` as JSON.
-								if (xhr.responseText) {
-									return JSON.parse(xhr.responseText);
-								}
-							}
-							return xhr.response;
-						case 'xml':
-							return xhr.responseXML;
-						case 'blob':
-						case 'document':
-						case 'arraybuffer':
-							return xhr.response;
-						case 'text':
-						default:
-							return xhr.responseText;
-					}
-					
-				} catch (e) {
-					console.log('Could not parse XHR response!', e);
-					return null;
-				}
-			},
-			
-			
-			/**
-			 * Returns the url with the specified query string parameters appended to it.
-			 * Uses the same params format as `core-xhr`.
-			 * 
-			 * @private
-			 * @param {String} url The original URL. Can already contain query string parameters.
-			 * @param {Object|String} params The query string parameters to add.
-			 * @return {String} The URL with the parameters appended.
-			 */
-			_getUrlWithParams: function(url, params) {
-				if (!this._isEmpty(params)) {
-					// serialize the parameters
-					var strParams = null;
-					if (typeof params == 'object') {
-						strParams = this._serializeFormData(params);
-					} else {
-						strParams = params.toString();
-					}
-					// append them to the URL
-					url += (url.indexOf('?') > 0 ? '&' : '?') + strParams;
-				}
-				return url;
-			}, 
-			
-			/**
-			 * Serializes the specified parameters map using the 'application/x-www-form-urlencoded' (query string) 
-			 * format.
-			 * 
-			 * @private
-			 * @param   {Object} params The parameters map to serialize.
-			 * @returns {String} The serialized parameters.
-			 */
-			_serializeFormData: function(params) {
-				var r = [];
-				for (var n in params) {
-					if (params.hasOwnProperty(n)) {
-						if (params[n] === true) {
-							r.push(params[n] == null ? n : encodeURIComponent(n));
-						} else {
-							r.push(params[n] == null ? n : (encodeURIComponent(n) +
-									'=' + encodeURIComponent(params[n])));
-						}
-					}
-				}
-				return r.join('&');
-			},
-			
-			/**
-			 * Checks whether the specified object is empty / false.
-			 * 
-			 * @param {*} obj The object to check. 
-			 * @private
-			 */
-			_isEmpty: function(obj) {
-				if (!obj) return true;
-				return Object.getOwnPropertyNames(obj).length == 0;
+			customAjax: {
+				type: String,
+				value: ''
 			}
 			
-		}, CbnForm.AbstractContainer));
-	</script>
+		},
+		
+		behaviors: [
+			CbnForm.FormContainer
+		],
+		
+		listeners: {
+			'submit': '_onSubmit'
+		},
+		
+		// Events
+		
+		/**
+		 * Fired if the form cannot be submitted because it's invalid.
+		 * 
+		 * @event cbn-form-invalid
+		 */
+		
+		/**
+		 * Fired before the form is submitted (preventable).
+		 * 
+		 * If you want to prevent it temporarily (and then submit again, asynchronously), you can call `submit` with the 
+		 * `true` argument (which means it won't fire this event a second time).
+		 * 
+		 * @event cbn-form-before-submit
+		 */
+		
+		/**
+		 * Fired after the form is submitted.
+		 * 
+		 * Detail properties:
+		 * 
+		 * - `data`: the serialized data that has been submitted;
+		 * - `request`: reference to the `iron-request` object used for making the request.
+		 * 
+		 * @event cbn-form-submit
+		 */
+		
+		/**
+		 * Fired after the form is submitted and a response is received.
+		 * 
+		 * The detail object contains the `request` and the `response` keys.
+		 * 
+		 * @event cbn-form-response
+		 */
+		
+		/**
+		 * Fired after the form is submitted and an error is received.
+		 * 
+		 * The detail object contains the `request` and the `error` keys.
+		 * 
+		 * @event cbn-form-error
+		 */
+		
+		
+		// Private properties:
+		
+		/**
+		 * Stores reference to the `iron-ajax` that is used for submitting.
+		 * It is either an internally-generated one, or, if the user supplies {@link #customAjax}, it refers to that 
+		 * element (if found).
+		 */
+		_ironAjax: null,
+		
+		/**
+		 * Maps the content types to the serialization settings to use for `CbnForm.Serialization`.
+		 * @type {Object<String,String>}
+		 */
+		_serializationMap: {
+			'application/x-www-form-urlencoded': { as: 'urlencoded' },
+			'multipart/form-data': { as: 'FormData' },
+			'application/json': { as: 'json' }
+		},
+		
+		
+		// Public API:
+		
+		/**
+		 * Called when the for is submitted.
+		 * You can also call this if you want to manually trigger the submission method.
+		 * 
+		 * @param {Boolean} [noPrevent] Set to true to prevent firing the `cbn-form-before-submit` event.
+		 */
+		submit: function(noPrevent) {
+			var prom = new Promise(function(resolve, reject) {
+				// first, validate the form
+				if (!this.noValidate && !this.validate()) {
+					this.fire('cbn-form-invalid');
+					reject('cbn-form-invalid');
+					return;
+				}
+				
+				if (!noPrevent) {
+					var ev = this.fire('cbn-form-before-submit', {}, {
+						cancelable: true
+					});
+					if (ev.defaultPrevented) {
+						reject('default prevented');
+						return;
+					}
+				}
+				
+				var data = this.serialize();
+				
+				if (!this._ironAjax) {
+					console.error('`cbn-form`: no iron-ajax object provided!');
+					return false;
+				}
+				if (!this.action) {
+					console.error('`cbn-form`: no action provided!');
+					return false;
+				}
+				
+				if (this._ironAjax.loading) {
+					return false;
+				}
+				
+				if (this.params && typeof this.params != 'object') {
+					console.error('`cbn-form`: invalid params object', this.params);
+				}
+				
+				this._ironAjax.url = this.action;
+				this._ironAjax.method = this.method;
+				this._ironAjax.params = this.params;
+				this._ironAjax.contentType = this.contentType;
+				
+				if (this.method.toUpperCase() == 'GET') {
+					if (this._ironAjax.params) {
+						this._ironAjax.params = JSON.parse(JSON.stringify(this._ironAjax.params));
+					} else {
+						this._ironAjax.params = {};
+					}
+					// and extend it with the form data object
+					Polymer.Base.mixin(this._ironAjax.params, data);
+					
+				} else {
+					this._ironAjax.body = data;
+				}
+				
+				var request = this._ironAjax.generateRequest();
+				request.completes.then(function(){
+					resolve(request);
+				}.bind(this)).catch(function(){
+					reject(request);
+				});
+				this.fire('cbn-form-submit', {
+					request: request,
+					data: data
+				});
+			}.bind(this));
+			
+			prom.catch(function(){
+				// stop the browser from annoying us on failed requests
+			});
+			
+			return prom;
+		},
+		
+		/**
+		 * Uses the `CbnForm.Serialization` library to serialize the form's contents.
+		 * 
+		 * If a form model is used, the serialization will use it with the given serialization options.
+		 * Otherwise, the form's elements will be iterated and serialized instead (using the `as` format specified inside 
+		 * `serializationOptions`).
+		 * 
+		 * You can customize the output serialization format using `serializationOptions`.
+		 * 
+		 * @param {CbnForm.SerializationOptions} [serializationOptions] Override the form's serialization options.
+		 */
+		serialize: function(serializationOptions) {
+			if (!serializationOptions)
+				serializationOptions = this.serializationOptions;
+			if (!serializationOptions || typeof serializationOptions != 'object') {
+				console.warn('`cbn-form`: invalid serialization options object given', serializationOptions);
+				return null;
+			}
+			
+			var contentType = this.contentType;
+			serializationOptions = JSON.parse(JSON.stringify(serializationOptions));
+			if (!serializationOptions.as) { // autodetect from method, content type etc.
+				if (this.method.toUpperCase() == 'GET') {
+					// GET only accepts the params as a key-value map
+					serializationOptions.as = 'jsonMap';
+					
+				} else if (this._serializationMap[contentType]) {
+					/** @namespace Polymer.Base */
+					Polymer.Base.mixin(serializationOptions, this._serializationMap[contentType]);
+					
+				} else {
+					// just default to urlencoded, but the request will not be well-formed
+					serializationOptions.as = 'urlencoded';
+				}
+			}
+			
+			if (this.model) {
+				return CbnForm.Serialization.serialize(this.model, serializationOptions);
+			} else {
+				var params = CbnForm.Serialization.serializeFormElements(/**@type [HTMLElement]*/(this.formElements));
+				return CbnForm.Serialization.serialize(params, serializationOptions);
+			}
+		},
+		
+		
+		// Implementation (callbacks, private methods):
+		
+		/**
+		 * The component is ready to use.
+		 */
+		ready: function() {
+			this._handleFormResponse = this._handleFormResponse.bind(this);
+			this._handleFormError = this._handleFormError.bind(this);
+		},
+		
+		/**
+		 * After the element is attached to the DOM, search its light children for a custom `iron-ajax` to use.
+		 * If not found, create one (for internal use only).
+		 */
+		attached: function() {
+			if (this.customAjax) {
+				this._ironAjax = this.$$(this.customAjax);
+				
+				if (!this._ironAjax) {
+					console.error('`cbn-form`: invalid iron-ajax selector (element not found)', this.customAjax);
+				}
+				
+			} else {
+				this._ironAjax = document.createElement('iron-ajax');
+			}
+			
+			if (this._ironAjax) {
+				this._ironAjax.addEventListener('response', this._handleFormResponse);
+				this._ironAjax.addEventListener('error', this._handleFormError);
+			}
+		},
+		
+		/**
+		 * If a custom `iron-ajax` was used, need to detach the event handlers from it.
+		 */
+		detached: function() {
+			if (this._ironAjax) {
+				this._ironAjax.removeEventListener('response', this._handleFormResponse);
+				this._ironAjax.removeEventListener('error', this._handleFormError);
+			}
+		},
+		
+		/**
+		 * Form submit handler, used to interrupt the HTML form's native submit handler and call our own.
+		 * 
+		 * @param {Event} event The `submit` event object.
+		 * @returns {boolean} Whether to continue with the native submission.
+		 * @private
+		 */
+		_onSubmit: function (event) {
+			if (event) {
+				event.preventDefault();
+			}
+			this.submit();
+			return false;
+		},
+		
+		/**
+		 * Handles the `iron-ajax` response event.
+		 * 
+		 * @param event The `response` event's object.
+		 * @private
+		 */
+		_handleFormResponse: function(event) {
+			this.fire('cbn-form-response', {
+				request: event.detail,
+				response: event.detail.response
+			});
+		},
+		
+		/**
+		 * Handles the `iron-ajax` error event.
+		 *
+		 * @param event The `error` event's object.
+		 * @private
+		 */
+		_handleFormError: function (event) {
+			this.fire('cbn-form-error', {
+				request: event.detail.request,
+				error: event.detail.error
+			});
+		}
+		
+	});
 	
-</polymer-element>
+</script>

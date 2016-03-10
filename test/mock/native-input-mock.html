@@ -1,0 +1,41 @@
+<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../lib/include.html">
+
+<script>
+	Polymer({
+		is: 'test-native-input',
+		extends: 'input',
+		
+		behaviors: [
+			CbnForm.NativeInputElement,
+			CbnForm.Validatable,
+			CbnForm.DynamicElement
+		],
+		
+		properties: {
+			
+			bindValue: {
+				type: String,
+				value: '', 
+				observer: '_bindValueChanged'
+			}
+			
+		},
+		
+		dynamicAttributes: {
+			title: true
+		},
+		
+		_bindValueChanged: function(newValue) {
+			this._setValue(newValue);
+		},
+		
+	});
+	
+	CbnForm.registerElement('test-native-input', {
+		types: [ 'text', 'number' ],
+		extends: 'input',
+		priority: 1
+	});
+	
+</script>

@@ -1,0 +1,113 @@
+<!doctype html>
+<!--suppress HtmlUnknownTag -->
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	
+	<link rel="import" href="../../polymer-reflection/polymer-reflection.html" />
+	
+	<link rel="import" href="../../iron-input/iron-input.html" />
+	
+	<link rel="import" href="mock/container-mock.html" />
+	<link rel="import" href="../elements/polymer-elements.html" />
+	
+	<script src="../../test-fixture/test-fixture-mocha.js"></script>
+	<link rel="import" href="../../test-fixture/test-fixture.html" />
+	
+</head>
+<body>
+
+<div id="ironInputContainer">
+	<test-fixture id="ironInput">
+		<template>
+			<input is="iron-input" id="native1" name="test1" default-value="default" title="Native Input"/>
+		</template>
+	</test-fixture>
+</div>
+
+<test-fixture id="formContainer">
+	<template>
+		<simple-container>
+			
+			<input is="iron-input" id="c_one" name="one.one" title="Test11" />
+			<input is="iron-input" name="two.one.one" default-value="211" title="Test211" />
+			
+		</simple-container>
+	</template>
+</test-fixture>
+
+<script>
+	
+	suite('iron-input', function () {
+		var f;
+		
+		test('input value change', function () {
+			f = fixture('ironInput');
+			
+			var handler = sinon.spy();
+			f.addEventListener('value-changed', handler);
+			
+			assert.equal(f.defaultValue, 'default');
+			
+			f._setValue('changed');
+			assert.equal(f.value, 'changed', 'value changed');
+			assert.ok(handler.calledOnce && !handler.args[0][0].detail.indirect, 'value-changed fired');
+			handler.reset();
+			
+			f._setIndirectValue('indirect');
+			assert.ok(handler.calledOnce && handler.args[0][0].detail.indirect, 'indirect value-changed fired');
+			assert.equal(f.value, 'indirect', 'indirect value set');
+		});
+		
+		test('inputs in container', function (done) {
+			f = fixture('formContainer');
+			
+			assert.equal(f.formElements.length, 2, 'all inputs accounted for');
+			
+			// remove one element now
+			var c_one = f.getElementByName("one.one");
+			f.removeChild(c_one);
+			
+			setTimeout(function () {
+				assert.equal(f.formElements.length, 1, 'input unregistered from container');
+				done();
+			}, 1);
+		});
+		
+		test('two-way model binding', function () {
+			f = fixture('formContainer');
+			
+			// test default values
+			f.model = {};
+			
+			assert.equal(f.getElementByName('one.one').value, '', 'empty value');
+			assert.equal(f.getElementByName('two.one.one').value, '211', 'default value');
+			
+			// change the input values
+			f.getElementByName('one.one').bindValue = 'new-test1';
+			f.getElementByName('two.one.one').bindValue = 'new-test2';
+			assert.equal(f.get('model.one.one'), 'new-test1');
+			assert.equal(f.get('model.two.one.one'), 'new-test2');
+			
+			// model to input value propagation:
+			f.set('model.one.one', 'another one');
+			f.set('model.two.one.one', 'bites the dust');
+			assert.equal(f.getElementByName('one.one').value, 'another one', 'model to value #1');
+			assert.equal(f.getElementByName('two.one.one').bindValue, 'bites the dust', 'model to value #2');
+			
+			// reset the model
+			f.reset();
+			assert.equal(f.getElementByName('one.one').value, '', 'empty value after reset');
+			assert.equal(f.getElementByName('two.one.one').value, '211', 'default value after reset');
+		});
+		
+	});
+	
+</script>
+
+</body>
+</html>

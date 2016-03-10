@@ -1,0 +1,27 @@
+<!--
+Extends Polymer's iron-* and paper-* form elements with specific `cbn-form` features.
+
+Warning: uses polymer-reflection library, which is experimental!
+
+@group cbn-form
+-->
+
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../lib/include.html">
+<link rel="import" href="styles.html">
+
+<script>
+	(function(CbnForm) {
+		
+		if (!Polymer.reflect) return;
+		
+		// the namespace for the extension behaviors
+		CbnForm.PolymerElements = {};
+		
+	})(window.CbnForm);
+</script>
+
+<!-- Include individual element extensions -->
+
+<script src="iron-input.js"></script>
+<script src="paper-input.js"></script>
