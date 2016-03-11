@@ -44,12 +44,40 @@ Example:
 			},
 			
 			/**
+			 * Specifies the format of the response.
+			 * 
+			 * See `iron-ajax` for all available response types.
+			 */
+			handleAs: {
+				type: String,
+				value: 'json'
+			},
+			
+			/**
 			 * Additional query string arguments to append to the action URL when submitting the request.
 			 * 
 			 * If specified, must be a plain JSON key-value map of GET parameters.
 			 */
 			params: {
 				type: Object
+			},
+			
+			/**
+			 * An URL to fetch an unique upload URL.
+			 * 
+			 * Useful for AppEngine file uploads using the provided dispatcher.
+			 */
+			preUploadUrl: {
+				type: String,
+				value: '/GetUploadURL'
+			},
+			
+			/**
+			 * The pre-upload request parameter to send with the actual action URL.
+			 */
+			preUploadUrlParam: {
+				type: String,
+				value: 'redirectUrl'
 			},
 			
 			/**
@@ -215,34 +243,75 @@ Example:
 					console.error('`cbn-form`: invalid params object', this.params);
 				}
 				
-				this._ironAjax.url = this.action;
-				this._ironAjax.method = this.method;
-				this._ironAjax.params = this.params;
-				this._ironAjax.contentType = this.contentType;
-				
+				var contentType = this.contentType;
+				var params = this.params;
 				if (this.method.toUpperCase() == 'GET') {
-					if (this._ironAjax.params) {
-						this._ironAjax.params = JSON.parse(JSON.stringify(this._ironAjax.params));
+					if (params) {
+						// clone the params object, will be modified
+						params = JSON.parse(JSON.stringify(params));
 					} else {
-						this._ironAjax.params = {};
+						params = {};
 					}
 					// and extend it with the form data object
-					Polymer.Base.mixin(this._ironAjax.params, data);
+					Polymer.Base.mixin(params, data);
+				}
+				var url = this._getRequestUrl(this.action, params);
+				
+				var doSubmitForm = function() {
+					this._ironAjax.url = url;
+					this._ironAjax.method = this.method;
+					this._ironAjax.params = null; // manually appended into the URL
+					this._ironAjax.contentType = contentType;
+					this._ironAjax.handleAs = this.handleAs;
 					
-				} else {
-					this._ironAjax.body = data;
+					if (this.method.toUpperCase() != 'GET') {
+						this._ironAjax.body = data;
+					}
+					
+					var request = this._ironAjax.generateRequest();
+					request.completes.then(function(){
+						resolve(request);
+					}).catch(function(){
+						reject(request);
+					});
+					this.fire('cbn-form-submit', {
+						request: request,
+						data: data
+					});
+				}.bind(this);
+				
+				var asyncSubmit = false;
+				if (data && data instanceof FormData) {
+					contentType = 'multipart/form-data';
+					if (this.preUploadUrl) {
+						asyncSubmit = true;
+						
+						this._ironAjax.url = this.preUploadUrl;
+						this._ironAjax.method = 'GET';
+						this._ironAjax.contentType = 'plain/text';
+						var preUploadParams = {};
+						if (this.preUploadUrlParam)
+							preUploadParams[this.preUploadUrlParam] = url;
+						this._ironAjax.params = preUploadParams;
+						this._ironAjax.handleAs = 'text';
+						
+						var preUploadRequest = this._ironAjax.generateRequest();
+						preUploadRequest.completes
+							.then(function(req) {
+								if (req.response && typeof req.response == 'string') {
+									url = req.response;
+								}
+								doSubmitForm();
+							})
+							.catch(function() {
+								reject(preUploadRequest);
+							});
+					}
+				}
+				if (!asyncSubmit) {
+					doSubmitForm();
 				}
 				
-				var request = this._ironAjax.generateRequest();
-				request.completes.then(function(){
-					resolve(request);
-				}.bind(this)).catch(function(){
-					reject(request);
-				});
-				this.fire('cbn-form-submit', {
-					request: request,
-					data: data
-				});
 			}.bind(this));
 			
 			prom.catch(function(){
@@ -378,7 +447,45 @@ Example:
 				request: event.detail.request,
 				error: event.detail.error
 			});
+		},
+		
+		/**
+		 * Appends the specified parameters to the source URL and returns the resulting URL.
+		 * 
+		 * @param {String} url The original URL.
+		 * @param {Object|String} params The URL parameters to append.
+		 * @return {String} The URL with appended query string arguments.
+		 */
+		_getRequestUrl: function(url, params) {
+			var queryString = '';
+			var queryParts = [];
+			var param;
+			var value;
+			if (params && typeof params == 'object') {
+				for (param in params) {
+					if (!params.hasOwnProperty(param))
+						continue;
+					value = params[param];
+					param = window.encodeURIComponent(param);
+					if (Array.isArray(value)) {
+						for (var i = 0; i < value.length; i++) {
+							queryParts.push(param + '=' + window.encodeURIComponent(value[i]));
+						}
+					} else if (value !== null) {
+						queryParts.push(param + '=' + window.encodeURIComponent(value));
+					} else {
+						queryParts.push(param);
+					}
+				}
+				queryString = queryParts.join('&');
+			} else if (params) {
+				queryString = params + '';
+			}
+			
+			var bindingChar = url.indexOf('?') >= 0 ? '&' : '?';
+			return url + (queryString? bindingChar + queryString : '');
 		}
+		
 		
 	});
 	
