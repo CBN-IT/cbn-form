@@ -203,13 +203,17 @@
 			assert.equal(data, 'one=1%25%20()&obj=%7B%7D&arr=1&arr=2&tru=true&fal=false', 'urlencoded string');
 		});
 		
-		test('as FormData', function () {
+		test('as FormData / file upload', function () {
+			var file1 = new Blob(["File 1"], {type : 'text/plain'});
+			var file2 = new Blob(["File 2"], {type : 'text/plain'});
 			var simpleModel = {
 				one: '1',
 				obj: {},
 				arr: [1, 2],
 				tru: true,
-				fal: false
+				fal: false,
+				file1: file1,
+				moreFiles: [ file1, file2 ]
 			};
 			
 			// override FormData
@@ -230,7 +234,10 @@
 				{ key: 'arr', value: '1' },
 				{ key: 'arr', value: '2' },
 				{ key: 'tru', value: 'true' },
-				{ key: 'fal', value: 'false' }
+				{ key: 'fal', value: 'false' },
+				{ key: 'file1', value: file1 },
+				{ key: 'moreFiles', value: file1 },
+				{ key: 'moreFiles', value: file2 }
 			], 'serialized form data');
 			
 			// restore FormData

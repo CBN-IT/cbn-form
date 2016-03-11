@@ -57,6 +57,19 @@
 	</template>
 </test-fixture>
 
+<test-fixture id="uploadForm">
+	<template>
+		<form is="cbn-form" pre-upload-url="" action="/" method="post" model>
+			
+			<simple-input name="one" title="Test1"></simple-input>
+			<simple-input name="two.one" title="Test2"></simple-input>
+			
+			<simple-file-input name="file1"></simple-file-input>
+			<simple-file-input name="moreFiles" multiple></simple-file-input>
+			
+		</form>
+	</template>
+</test-fixture>
 
 <script>
 	
@@ -161,6 +174,24 @@
 			assert.equal(this.requests.length, 1, 'request has been made');
 			assert.equal(this.requests[0].requestBody, JSON.stringify(initialModel), 
 				'POST body equals to the posted model JSON');
+		});
+		
+		test('file upload form', function () {
+			f = fixture('uploadForm');
+			
+			var file1 = new Blob(["File 1"], {type : 'text/plain'});
+			var file2 = new Blob(["File 2"], {type : 'text/plain'});
+			f.model = {
+				one: 'one',
+				two: { one: 'another one' },
+				file1: file1,
+				moreFiles: [ file1, file2 ]
+			};
+			f.submit();
+			
+			assert.equal(this.requests.length, 1, 'request has been made');
+			assert.ok(this.requests[0].requestBody instanceof FormData, 'request body is FormData');
+			assert.include(this.requests[0].requestHeaders['content-type'], 'multipart/form-data');
 		});
 		
 		test('form serialization with inputs and model', function () {
