@@ -27,7 +27,6 @@
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0",
-    "web-component-tester": "Polymer/web-component-tester",
-    "cbn-select": "git@bitbucket.org:cbn-it/cbn-select.git#master"
+    "web-component-tester": "Polymer/web-component-tester"
   }
 }
