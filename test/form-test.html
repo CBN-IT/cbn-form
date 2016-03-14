@@ -79,10 +79,10 @@
 		setup(function () {
 			// fake XHR
 			this.xhr = sinon.useFakeXMLHttpRequest();
-			var requests = this.requests = [];
+			this.requests = [];
 			
 			this.xhr.onCreate = function (xhr) {
-				requests.push(xhr);
+				this.requests.push(xhr);
 			}.bind(this);
 		});
 		
@@ -118,6 +118,43 @@
 				assert.deepEqual(responseHandler.args[0][0].detail.response, { success: 'yesss' }, 'response object');
 				done();
 			}, 1);
+		});
+		
+		test('form submit promises', function (done) {
+			f = fixture('inputForm');
+			
+			var promiseResolved = sinon.spy();
+			var promiseRejected = sinon.spy();
+			
+			f.params = { it: 'works' };
+			
+			var prom = f.submit();
+			prom.then(promiseResolved)
+				.catch(promiseRejected);
+			
+			this.requests[0].respond(404);
+			
+			setTimeout(function() {
+				assert.notOk(promiseResolved.called, 'completion handler not called');
+				assert.ok(promiseRejected.calledOnce, 'promise rejected');
+				
+				promiseRejected.reset();
+				promiseResolved.reset();
+				this.requests = [];
+				var prom = f.submit();
+				prom.then(promiseResolved)
+					.catch(promiseRejected);
+				this.requests[0].respond(200,  { "Content-Type": "application/json" }, '{ "success": true }');
+				
+				setTimeout(function() {
+					assert.notOk(promiseRejected.called, 'rejection handler not called');
+					assert.ok(promiseResolved.calledOnce, 'promise resolved');
+					
+					assert.equal(this.requests.length, 1, 'request has been made');
+					
+					done();
+				}.bind(this), 5);
+			}.bind(this), 5);
 		});
 		
 		test('form submission using native button', function () {

@@ -210,7 +210,7 @@ Example:
 				// first, validate the form
 				if (!this.noValidate && !this.validate()) {
 					this.fire('cbn-form-invalid');
-					reject('cbn-form-invalid');
+					reject({ type: 'invalid' });
 					return;
 				}
 				
@@ -219,30 +219,33 @@ Example:
 						cancelable: true
 					});
 					if (ev.defaultPrevented) {
-						reject('default prevented');
+						reject({ type: 'before-submit-prevented' });
 						return;
 					}
 				}
-				
-				var data = this.serialize();
-				
 				if (!this._ironAjax) {
-					console.error('`cbn-form`: no iron-ajax object provided!');
+					console.error('`cbn-form`: no iron-ajax element provided!');
+					reject({ type: 'error', message: 'no iron-ajax element provided' });
 					return false;
 				}
 				if (!this.action) {
 					console.error('`cbn-form`: no action provided!');
+					reject({ type: 'error', message: 'no action provided' });
 					return false;
 				}
 				
 				if (this._ironAjax.loading) {
+					reject({ type: 'loading' });
 					return false;
 				}
 				
 				if (this.params && typeof this.params != 'object') {
 					console.error('`cbn-form`: invalid params object', this.params);
+					reject({ type: 'error', message: 'invalid params object', obj: this.params });
+					return false;
 				}
 				
+				var data = this.serialize();
 				var contentType = this.contentType;
 				var params = this.params;
 				if (this.method.toUpperCase() == 'GET') {
@@ -269,10 +272,10 @@ Example:
 					}
 					
 					var request = this._ironAjax.generateRequest();
-					request.completes.then(function(){
+					request.completes.then(function() {
 						resolve(request);
-					}).catch(function(){
-						reject(request);
+					}).catch(function() {
+						reject({ type: 'request-failed', request: request });
 					});
 					this.fire('cbn-form-submit', {
 						request: request,
@@ -304,7 +307,7 @@ Example:
 								doSubmitForm();
 							})
 							.catch(function() {
-								reject(preUploadRequest);
+								reject({ type: 'pre-upload-request-failed', request: preUploadRequest });
 							});
 					}
 				}
