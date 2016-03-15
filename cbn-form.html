@@ -121,6 +121,16 @@ Example:
 				customAjax: {
 					type: String,
 					value: ''
+				},
+				
+				/**
+				 * Whether a form request is currently running.
+				 */
+				loading: {
+					type: Boolean,
+					notify: true,
+					readOnly: true,
+					value: false
 				}
 				
 			},
@@ -211,7 +221,7 @@ Example:
 					// first, validate the form
 					if (!this.noValidate && !this.validate()) {
 						this.fire('cbn-form-invalid');
-						reject({ type: 'invalid' });
+						reject({ type: 'invalid', request: null });
 						return;
 					}
 					
@@ -220,29 +230,30 @@ Example:
 							cancelable: true
 						});
 						if (ev.defaultPrevented) {
-							reject({ type: 'before-submit-prevented' });
+							reject({ type: 'before-submit-prevented', request: null });
 							return;
 						}
 					}
 					if (!this._ironAjax) {
 						console.error('`cbn-form`: no iron-ajax element provided!');
-						reject({ type: 'error', message: 'no iron-ajax element provided' });
+						reject({ type: 'error', message: 'no iron-ajax element provided', request: null });
 						return false;
 					}
 					if (!this.action) {
 						console.error('`cbn-form`: no action provided!');
-						reject({ type: 'error', message: 'no action provided' });
+						reject({ type: 'error', message: 'no action provided', request: null });
 						return false;
 					}
 					
-					if (this._ironAjax.loading) {
-						reject({ type: 'loading' });
+					if (this.loading) {
+						reject({ type: 'already-loading', request: null });
 						return false;
 					}
 					
 					if (this.params && typeof this.params != 'object') {
 						console.error('`cbn-form`: invalid params object', this.params);
-						reject({ type: 'error', message: 'invalid params object', obj: this.params });
+						reject({ type: 'error', message: 'invalid params object', 
+							obj: this.params, request: null });
 						return false;
 					}
 					
@@ -272,12 +283,24 @@ Example:
 							this._ironAjax.body = data;
 						}
 						
-						var request = this._ironAjax.generateRequest();
+						var request = (document.createElement('iron-request'));
+						var requestOptions = this._ironAjax.toRequestOptions();
+						
+						// set up the event / promise handlers
+						if (request.xhr.upload) {
+							var handler = this._handleUploadProgress.bind(this);
+							request.xhr.upload.addEventListener('load', handler);
+							request.xhr.upload.addEventListener('progress', handler);
+							request.xhr.upload.addEventListener('error', handler);
+							request.xhr.upload.addEventListener('abort', handler);
+						}
 						request.completes.then(function() {
 							resolve(request);
-						}).catch(function() {
-							reject({ type: 'request-failed', request: request });
+						}).catch(function(error) {
+							reject({ type: 'request-failed', request: request, error: error });
 						});
+						
+						request.send(requestOptions);
 						this.fire('cbn-form-submit', {
 							request: request,
 							data: data
@@ -285,6 +308,12 @@ Example:
 					}.bind(this);
 					
 					var asyncSubmit = false;
+					
+					// start the upload progress (as indeterminate)
+					this._handleUploadProgress(null, true);
+					//noinspection JSUnresolvedFunction
+					this._setLoading(true);
+					
 					if (data && data instanceof FormData) {
 						contentType = 'multipart/form-data';
 						if (this.preUploadUrl) {
@@ -308,7 +337,8 @@ Example:
 									doSubmitForm();
 								})
 								.catch(function() {
-									reject({ type: 'pre-upload-request-failed', request: preUploadRequest });
+									reject({ type: 'pre-upload-request-failed', 
+										request: preUploadRequest, error: error });
 								});
 						}
 					}
@@ -318,9 +348,16 @@ Example:
 					
 				}.bind(this));
 				
-				prom.catch(function(){
-					// stop the browser from annoying us on failed requests
-				});
+				prom.then(function(request) {
+						this._handleResponse(request, request.response);
+						this._handleUploadProgress(null, false);
+					}.bind(this))
+					.catch(function(obj) {
+						if (obj.request) {
+							this._handleError(obj.request, obj.error || obj);
+							this._handleUploadProgress(null, false);
+						}
+					}.bind(this));
 				
 				return prom;
 			},
@@ -373,14 +410,6 @@ Example:
 			// Implementation (callbacks, private methods):
 			
 			/**
-			 * The component is ready to use.
-			 */
-			ready: function() {
-				this._handleFormResponse = this._handleFormResponse.bind(this);
-				this._handleFormError = this._handleFormError.bind(this);
-			},
-			
-			/**
 			 * After the element is attached to the DOM, search its light children for a custom `iron-ajax` to use.
 			 * If not found, create one (for internal use only).
 			 */
@@ -394,21 +423,6 @@ Example:
 					
 				} else {
 					this._ironAjax = document.createElement('iron-ajax');
-				}
-				
-				if (this._ironAjax) {
-					this._ironAjax.addEventListener('response', this._handleFormResponse);
-					this._ironAjax.addEventListener('error', this._handleFormError);
-				}
-			},
-			
-			/**
-			 * If a custom `iron-ajax` was used, need to detach the event handlers from it.
-			 */
-			detached: function() {
-				if (this._ironAjax) {
-					this._ironAjax.removeEventListener('response', this._handleFormResponse);
-					this._ironAjax.removeEventListener('error', this._handleFormError);
 				}
 			},
 			
@@ -428,28 +442,60 @@ Example:
 			},
 			
 			/**
-			 * Handles the `iron-ajax` response event.
+			 * Handles the `iron-request` response.
 			 * 
-			 * @param event The `response` event's object.
-			 * @private
+			 * @param {Object} request The `iron-request` object.
+			 * @param {Object} response The response object.
 			 */
-			_handleFormResponse: function(event) {
+			_handleResponse: function(request, response) {
 				this.fire('cbn-form-response', {
-					request: event.detail,
-					response: event.detail.response
+					request: request,
+					response: response
 				});
+				//noinspection JSUnresolvedFunction
+				this._setLoading(false);
 			},
 			
 			/**
-			 * Handles the `iron-ajax` error event.
-			 *
-			 * @param event The `error` event's object.
-			 * @private
+			 * Handles the `iron-request` error.
+			 * 
+			 * @param {Object} request The `iron-request` object.
+			 * @param {Object} error The error object.
 			 */
-			_handleFormError: function (event) {
+			_handleError: function (request, error) {
 				this.fire('cbn-form-error', {
-					request: event.detail.request,
-					error: event.detail.error
+					request: request,
+					error: error
+				});
+				//noinspection JSUnresolvedFunction
+				this._setLoading(false);
+			},
+			
+			/**
+			 * Receives the upload progress events for the current form request.
+			 * 
+			 * Fires a non-bubbling event with the normalized progress.
+			 * 
+			 * Note: if multiple file upload components listen for this event, it is desirable to subtract the size 
+			 * of the individual files from the live event so the next element will receive whether there is anything 
+			 * left for it do display on its progress bar. The `FileInputElement` behavior has this algorithm implemented.
+			 */
+			_handleUploadProgress: function(event, running) {
+				if (running === undefined) {
+					running = (event.type == 'progress');
+				}
+				this.debounce('uploadProgress', function() {
+					var details = { running: running };
+					if (event) {
+						details.lengthComputable = event.lengthComputable;
+						if (event.lengthComputable) {
+							details.total = event.total;
+							details.loaded = event.loaded;
+						}
+					}
+					this.fire('cbn-form-upload-progress', details, {
+						bubbles: false
+					});
 				});
 			},
 			
@@ -489,6 +535,7 @@ Example:
 				var bindingChar = url.indexOf('?') >= 0 ? '&' : '?';
 				return url + (queryString? bindingChar + queryString : '');
 			}
+			
 		});
 		
 	})(window.Cbn.Form);
