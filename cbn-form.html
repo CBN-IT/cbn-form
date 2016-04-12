@@ -315,7 +315,7 @@ Example:
 					this._setLoading(true);
 					
 					if (data && data instanceof FormData) {
-						contentType = 'multipart/form-data';
+						contentType = null; // XHR will automatically set it to multipart/form-data
 						if (this.preUploadUrl) {
 							asyncSubmit = true;
 							
