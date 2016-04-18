@@ -19,7 +19,7 @@
 
 <test-fixture id="inputForm">
 	<template>
-		<form is="cbn-form" action="/" method="post">
+		<form is="cbn-form" action="/" method="post" pre-upload-url="">
 			
 			<simple-input id="c_one" name="one" title="Test1" value="hello"></simple-input>
 			<simple-input id="c_two" name="two.one" title="Test2" value="tu"></simple-input>
@@ -57,6 +57,19 @@
 	</template>
 </test-fixture>
 
+<test-fixture id="uploadForm">
+	<template>
+		<form is="cbn-form" pre-upload-url="" action="/" method="post" model>
+			
+			<simple-input name="one" title="Test1"></simple-input>
+			<simple-input name="two.one" title="Test2"></simple-input>
+			
+			<simple-file-input name="file1"></simple-file-input>
+			<simple-file-input name="moreFiles" multiple></simple-file-input>
+			
+		</form>
+	</template>
+</test-fixture>
 
 <script>
 	
@@ -66,10 +79,10 @@
 		setup(function () {
 			// fake XHR
 			this.xhr = sinon.useFakeXMLHttpRequest();
-			var requests = this.requests = [];
+			this.requests = [];
 			
 			this.xhr.onCreate = function (xhr) {
-				requests.push(xhr);
+				this.requests.push(xhr);
 			}.bind(this);
 		});
 		
@@ -105,6 +118,43 @@
 				assert.deepEqual(responseHandler.args[0][0].detail.response, { success: 'yesss' }, 'response object');
 				done();
 			}, 1);
+		});
+		
+		test('form submit promises', function (done) {
+			f = fixture('inputForm');
+			
+			var promiseResolved = sinon.spy();
+			var promiseRejected = sinon.spy();
+			
+			f.params = { it: 'works' };
+			
+			var prom = f.submit();
+			prom.then(promiseResolved)
+				.catch(promiseRejected);
+			
+			this.requests[0].respond(404);
+			
+			setTimeout(function() {
+				assert.notOk(promiseResolved.called, 'completion handler not called');
+				assert.ok(promiseRejected.calledOnce, 'promise rejected');
+				
+				promiseRejected.reset();
+				promiseResolved.reset();
+				this.requests = [];
+				var prom = f.submit();
+				prom.then(promiseResolved)
+					.catch(promiseRejected);
+				this.requests[0].respond(200,  { "Content-Type": "application/json" }, '{ "success": true }');
+				
+				setTimeout(function() {
+					assert.notOk(promiseRejected.called, 'rejection handler not called');
+					assert.ok(promiseResolved.calledOnce, 'promise resolved');
+					
+					assert.equal(this.requests.length, 1, 'request has been made');
+					
+					done();
+				}.bind(this), 5);
+			}.bind(this), 5);
 		});
 		
 		test('form submission using native button', function () {
@@ -161,6 +211,24 @@
 			assert.equal(this.requests.length, 1, 'request has been made');
 			assert.equal(this.requests[0].requestBody, JSON.stringify(initialModel), 
 				'POST body equals to the posted model JSON');
+		});
+		
+		test('file upload form', function () {
+			f = fixture('uploadForm');
+			
+			var file1 = new Blob(["File 1"], {type : 'text/plain'});
+			var file2 = new Blob(["File 2"], {type : 'text/plain'});
+			f.model = {
+				one: 'one',
+				two: { one: 'another one' },
+				file1: file1,
+				moreFiles: [ file1, file2 ]
+			};
+			f.submit();
+			
+			assert.equal(this.requests.length, 1, 'request has been made');
+			assert.ok(this.requests[0].requestBody instanceof FormData, 'request body is FormData');
+			assert.include(this.requests[0].requestHeaders['content-type'], 'multipart/form-data');
 		});
 		
 		test('form serialization with inputs and model', function () {

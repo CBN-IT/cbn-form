@@ -93,4 +93,4 @@
 			priority: 1
 		});
 	
-})(CbnForm);
+})(window.Cbn.Form);

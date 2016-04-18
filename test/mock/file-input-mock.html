@@ -1,0 +1,41 @@
+<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../lib/include.html">
+
+<dom-module id="simple-file-input">
+	<template>
+		<!-- Actually, those elements do nothing ;) -->
+		<input id="input" type="text" readonly title="[[title]]" />
+		<button>Upload</button>
+	</template>
+</dom-module>
+
+<script>
+	Polymer({
+		is: 'simple-file-input',
+		
+		properties: {
+			
+			value: {
+				type: Object,
+				value: null
+			},
+			
+			title: {
+				type: String,
+				value: ''
+			}
+		},
+		
+		behaviors: [
+			CbnForm.FileInputElement,
+			CbnForm.Validatable,
+			CbnForm.DynamicElement
+		],
+		
+		dynamicAttributes: {
+			title: true
+		}
+		
+	});
+	
+</script>

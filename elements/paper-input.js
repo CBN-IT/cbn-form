@@ -59,4 +59,4 @@
 			priority: 5
 		});
 	
-})(CbnForm);
+})(window.Cbn.Form);
