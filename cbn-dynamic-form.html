@@ -125,6 +125,17 @@ Example config JSON definition:
 					value: false
 				},
 				
+				/**
+				 * Whether to delay form rendering until after the element is attached.
+				 * 
+				 * Use this as workaround for Polymer's style scoping not updating after attaching the element to 
+				 * the main document.
+				 */
+				renderAfterAttach: {
+					type: Boolean,
+					value: false
+				},
+				
 				// Private properties
 				
 				/**
@@ -238,14 +249,13 @@ Example config JSON definition:
 			ready: function () {
 				this._elementReady = true;
 				
-				if (!this.manual) this.render();
+				if (!this.manual && !this.renderAfterAttach) this.render();
 			},
 			
 			/**
 			 * Called when the element is attached and its parent is accessible.
 			 */
 			attached: function () {
-				if (!this.manual) this.render();
 				this.async(function () {
 					this._dynamicFormAttached = true;
 					if (this._isRendered()) {
