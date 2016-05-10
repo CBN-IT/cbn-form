@@ -16,13 +16,13 @@
     "docs"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#1.3.1",
+    "polymer": "Polymer/polymer#1.4.0",
     "polymer-reflection": "niflostancu/polymer-reflection#master",
     "iron-ajax": "PolymerElements/iron-ajax#1.2.0",
-    "iron-input": "PolymerElements/iron-input#1.0.8",
-    "paper-input": "PolymerElements/paper-input#1.1.9",
+    "iron-input": "PolymerElements/iron-input#1.0.10",
+    "paper-input": "PolymerElements/paper-input#1.1.11",
     "paper-styles": "PolymerElements/paper-styles#1.1.4",
-    "iron-flex-layout": "PolymerElements/iron-flex-layout#1.3.0"
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#1.3.1"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0",
