@@ -228,7 +228,6 @@
 			
 			assert.equal(this.requests.length, 1, 'request has been made');
 			assert.ok(this.requests[0].requestBody instanceof FormData, 'request body is FormData');
-			assert.include(this.requests[0].requestHeaders['content-type'], 'multipart/form-data');
 		});
 		
 		test('form serialization with inputs and model', function () {
