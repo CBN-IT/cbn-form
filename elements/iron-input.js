@@ -63,7 +63,7 @@
 		},
 		
 		/**
-		 * Overridden to also change the {@link #bindValue} property. 
+		 * Overridden to also change the `bindValue` property. 
 		 * 
 		 * @param value The value to set.
 		 * @protected

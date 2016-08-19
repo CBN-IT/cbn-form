@@ -1,61 +1,64 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="lib/include.html">
+
 <!--
 `cbn-dynamic-form` is an extensible dynamic form component that renders form fields (Polymer-based elements) based on 
 user-supplied template objects.
 
-Example:
+### Example:
 ```
-    <cbn-form url="/do/something/save" method="post">
-    	<cbn-dynamic-form config="{{formInputs}}"></cbn-dynamic-form>
-    	<button is="cbn-form-button" type="submit"></button>
-    </cbn-form>
+<cbn-form url="/do/something/save" method="post">
+	<cbn-dynamic-form config="{{formInputs}}"></cbn-dynamic-form>
+	<button type="submit"></button>
+</cbn-form>
 ```
 
 Where `config` is a custom object that describes the form's layout and the input fields to be dynamically generated.
 
-Example config JSON definition: 
+Example config object definition: 
 ```
-	{
-		"types": {
-			"text": "iron-input",
-			"select": "cbn-select"
-		},
-		"defaults": {
-			"*": { "inherit": "input" },
-			"paperInput": {
-				"element": "paper-input"
+{
+	"types": {
+		"text": "iron-input",
+		"select": "cbn-select"
+	},
+	"defaults": {
+		"*": { "inherit": "input" },
+		"paperInput": {
+			"element": "paper-input"
+		}
+	},
+	"elements": [{
+		"type": "group",
+		"caption": "Main Form",
+		
+		"children": [
+			{
+				"inherit": "input",
+				"name": "name",
+				"label": "Name: ",
+				"type": "text",
+				"preview": true
+			},
+			{
+				"inherit": "input",
+				"name": "type",
+				"label": "Type: ",
+				"type": "select",
+				"options": { "1": "Person", "2": "Company" }
 			}
-		},
-		"elements": [{
-			"type": "group",
-			"caption": "Main Form",
-			
-			"children": [
-				{
-					"inherit": "input",
-					"name": "name",
-					"label": "Name: ",
-					"type": "text",
-					"preview": true
-				},
-				{
-					"inherit": "input",
-					"name": "type",
-					"label": "Type: ",
-					"type": "select",
-					"options": { "1": "Person", "2": "Company" }
-				}
-			]
-		}]
-	}
+		]
+	}]
+}
 ```
 
-@group cbn-form
-@element cbn-dynamic-form
--->
+See [dynamic form documentation](docs/dynamic-form.md) for config object syntax.
 
-<!-- Imports -->
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="lib/include.html">
+@group CBN Elements
+@element cbn-dynamic-form
+@demo demo/dynamic-form.html Dynamic form
+@demo demo/containing-model.html Dynamic form, embedded
+-->
 
 <dom-module id="cbn-dynamic-form">
 	<style>
@@ -96,7 +99,7 @@ Example config JSON definition:
 				 * If a selector is specified, it first searches inside the element't light DOM. if not found, it
 				 * queries the parent `cbn-form` element.
 				 *
-				 * The elements are inserted using appendChild / insertBefore (if {@link #beforeTarget} is specified).
+				 * The elements are inserted using appendChild / insertBefore (if `beforeTarget` is specified).
 				 * If there were any children before rendering, they will be preserved (even after cleanup).
 				 */
 				target: {
@@ -186,8 +189,9 @@ Example config JSON definition:
 			/**
 			 * Requests the dynamic-form element to render its children to the specified target node (optional).
 			 *
-			 * @param {String|Element} [target] The target to render to. If not specified, {@link #target} is used.
-			 * @param {Object}         [config] The dynamic template / config of the form. Defaults to {@link #config}.
+			 * @param {String|Element} [target] The target to render to. If not specified, `target` is used.
+			 * @param {Object}         [config] The dynamic template / config of the form. Defaults
+			 *                                  to `config`.
 			 * @param {Boolean}        [force]  Force rendering (even if the same config/target is already rendered).
 			 * @return {Boolean} True if the elements were rendered, false if rendering failed (invalid target).
 			 */
@@ -230,7 +234,7 @@ Example config JSON definition:
 			/**
 			 * Cleans up the specified target of all dynamically rendered elements.
 			 *
-			 * @param {String|Element} [target] The target to clean up. If not specified, {@link #target} is used.
+			 * @param {String|Element} [target] The target to clean up. If not specified, `target` is used.
 			 */
 			cleanUp: function (target) {
 				target = this._getTarget(target ? target : this.target);
@@ -509,7 +513,7 @@ Example config JSON definition:
 			
 			/**
 			 * Pre-processes and extends the specified configuration/template object based on its inherit property
-			 * and the {@link DynamicConfig#defaults} object.
+			 * and the `defaults` object.
 			 *
 			 * @param {[CbnForm.DynamicElementConfig]} elements The template objects to extend.
 			 * @param {CbnForm.DynamicConfig|Object}   config   The root of the configuration object.

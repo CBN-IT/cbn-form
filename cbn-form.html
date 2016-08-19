@@ -1,24 +1,24 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="lib/include.html">
+
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+
 <!--
 `cbn-form` is an extensible ajax form component that manages a set of custom input elements and submits the data via XHR.
 
 Supports AJAX file upload.
 
-Example:
+### Example:
 ```
-    <form is="cbn-form" action="/do/something/save" method="post">
-    	Form fields here...
-    </form>
+<form is="cbn-form" action="/do/something/save" method="post">
+	Form fields here...
+</form>
 ```
 
-@group cbn-form
+@group CBN Elements
 @element cbn-form
+@demo demo/index.html
 -->
-
-<!-- Imports -->
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="lib/include.html">
-
-<link rel="import" href="../iron-ajax/iron-ajax.html">
 
 <script>
 	(function(CbnForm) {
@@ -100,7 +100,7 @@ Example:
 				 * - `json`: the entire model is serialized as a JSON object and stored inside a single parameter (by default, 
 				 *           'data', but it can be overridden).
 				 * 
-				 * See {@link CbnForm.Serialization} for documentation on all serialization formats supported and their 
+				 * See `CbnForm.Serialization` for documentation on all serialization formats supported and their 
 				 * options.
 				 */
 				serializationOptions: {
@@ -192,7 +192,7 @@ Example:
 			
 			/**
 			 * Stores reference to the `iron-ajax` that is used for submitting.
-			 * It is either an internally-generated one, or, if the user supplies {@link #customAjax}, it refers to that 
+			 * It is either an internally-generated one, or, if the user supplies `customAjax`, it refers to that 
 			 * element (if found).
 			 */
 			_ironAjax: null,
