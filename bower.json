@@ -24,7 +24,8 @@
     "iron-input": "PolymerElements/iron-input#~1.0.0",
     "paper-input": "PolymerElements/paper-input#~1.1.0",
     "paper-styles": "PolymerElements/paper-styles#^1.1.4",
-    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.3.1"
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.3.1",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.2.5"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0",

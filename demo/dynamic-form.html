@@ -3,26 +3,29 @@
 <head lang="en">
 	<meta charset="UTF-8">
 	<title>Cbn-Dynamic-Form Demo</title>
-	
+
 	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-	
-	<link rel="import" href="../../polymer-reflection/polymer-reflection.html" />
-	<link rel="import" href="../../font-roboto/roboto.html" />
-	
-	<link rel="import" href="../../iron-input/iron-input.html" />
-	<link rel="import" href="../../paper-input/paper-input.html" />
-	
+
+	<link rel="import" href="../../polymer-reflection/polymer-reflection.html"/>
+	<link rel="import" href="../../font-roboto/roboto.html"/>
+
+	<link rel="import" href="../../iron-input/iron-input.html"/>
+	<link rel="import" href="../../paper-input/paper-input.html"/>
+
 	<link rel="import" href="../cbn-form.html">
 	<link rel="import" href="../cbn-dynamic-form.html">
-	<link rel="import" href="../elements/polymer-elements.html" />
-	
+	<link rel="import" href="../elements/polymer-elements.html"/>
+
+	<link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+	<link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+
 	<style>
 		body {
 			font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial, sans-serif;
 			font-size: 14px;
 		}
 	</style>
-	
+
 	<style is="custom-style">
 	</style>
 </head>
@@ -30,26 +33,30 @@
 
 <div style="margin: 20px auto; width: 500px;">
 	<h1>Cbn-Dynamic-Form Demo</h1>
-	
-	<template is="dom-bind">
-		
-		<form id="demoForm" is="cbn-form" model>
-			
-			<cbn-dynamic-form target="light" config="[[formConfig]]"></cbn-dynamic-form>
-			<br />
-			<button type="submit">Submit</button> <button type="reset">Reset</button>
-			
-		</form>
-		
-		<p style="font-weight: bold;">Output: </p>
-		<pre id="stringifiedJson"></pre>
-		
-	</template>
+
+	<form id="demoForm" is="cbn-form" model>
+		<demo-snippet class="centered-demo" style="position:relative">
+			<template is="dom-bind">
+				<cbn-dynamic-form target="light" config="[[formConfig]]"></cbn-dynamic-form>
+				<br/>
+				<button type="submit">Submit</button>
+				<button type="reset">Reset</button>
+			</template>
+		</demo-snippet>
+		<br/>
+		<p>Check "tpl.formConfig" to see how the elements were created and their properties/validation rules etc. </p>
+	</form>
+
+	<p style="font-weight: bold;">Output: </p>
+	<pre id="stringifiedJson"></pre>
+
 </div>
 
 <script>
 	var tpl = document.querySelector('template[is=dom-bind]');
-	
+	var form = document.querySelector('form[is=cbn-form]');
+	var output = document.getElementById('stringifiedJson');
+
 	tpl.formConfig = {
 		"defaults": {
 			"iron": {
@@ -73,7 +80,7 @@
 				"name": "second",
 				"label": "Paper Input",
 				"inherit": "paper",
-				"title": "Second", 
+				"title": "Second",
 				"className": "",
 				"validation": {
 					"required": true,
@@ -96,20 +103,19 @@
 			}
 		]
 	};
-	
-	tpl.addEventListener('dom-change', function(){
+
+	tpl.addEventListener('dom-change', function () {
 		/** @namespace tpl.$.demoForm */
-		var form = tpl.$.demoForm;
 		
 		function updateOutput() {
 			/** @namespace tpl.$.stringifiedJson */
-			tpl.$.stringifiedJson.textContent = JSON.stringify(form.model, null, 4);
+			output.textContent = JSON.stringify(form.model, null, 4);
 		}
-		
+
 		form.addEventListener('value-changed', updateOutput);
 		updateOutput();
 	});
-	
+
 </script>
 
 </body>
