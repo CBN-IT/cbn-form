@@ -1,9 +1,11 @@
 {
   "name": "cbn-form",
-  "version": "1.0.0",
-  "private": true,
-  "description": "An AJAX form component suite with dynamic elements creation features and more.",
-  "main": "cbn-form.html",
+  "version": "1.1.0",
+  "description": "An AJAX form component suite with dynamic inputs features and more.",
+  "main": [
+	"cbn-form.html",
+	"cbn-dynamic-form.html"
+  ],
   "ignore": [
     "**/.*",
     "node_modules",
@@ -17,7 +19,7 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#>=1.5.0 <1.7.0",
-    "polymer-reflection": "niflostancu/polymer-reflection#master",
+    "polymer-reflection": "niflostancu/polymer-reflection#^1.1.0",
     "iron-ajax": "PolymerElements/iron-ajax#^1.2.0",
     "iron-input": "PolymerElements/iron-input#~1.0.0",
     "paper-input": "PolymerElements/paper-input#~1.1.0",
