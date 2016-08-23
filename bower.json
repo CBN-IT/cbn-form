@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#>=1.5.0 <1.7.0",
-    "polymer-reflection": "niflostancu/polymer-reflection#^1.1.0",
+    "polymer-reflection": "CBN-IT/polymer-reflection#^1.1.0",
     "iron-ajax": "PolymerElements/iron-ajax#^1.2.0",
     "iron-input": "PolymerElements/iron-input#~1.0.0",
     "paper-input": "PolymerElements/paper-input#~1.1.0",
