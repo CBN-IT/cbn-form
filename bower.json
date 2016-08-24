@@ -1,6 +1,6 @@
 {
   "name": "cbn-form",
-  "version": "1.1.1",
+  "version": "1.1.0",
   "description": "An AJAX form component suite with dynamic inputs features and more.",
   "main": [
     "cbn-form.html",
@@ -21,8 +21,8 @@
     "polymer": "Polymer/polymer#>=1.5.0 <1.7.0",
     "polymer-reflection": "CBN-IT/polymer-reflection#^1.1.0",
     "iron-ajax": "PolymerElements/iron-ajax#^1.2.0",
-    "iron-input": "PolymerElements/iron-input#~1.0.0",
-    "paper-input": "PolymerElements/paper-input#~1.1.0",
+    "iron-input": "PolymerElements/iron-input#~1.0.10",
+    "paper-input": "PolymerElements/paper-input#~1.1.17",
     "paper-styles": "PolymerElements/paper-styles#^1.1.4",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.3.1"
   },
