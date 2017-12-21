@@ -1,0 +1,168 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<link rel="import" href="../iron-form/iron-form.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../cbn-grid/cbn-grid.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
+
+<dom-module id="cbn-form">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            paper-item{
+                padding: 10px;
+            }
+            paper-input,paper-dropdown-menu-light{
+                padding: 0 10px;
+            }
+            paper-dropdown-menu-light{
+                --paper-menu-button-dropdown:{
+                    margin-top:46px;
+                };
+            }
+        </style>
+        <style include="iron-flex cbn-grid"></style>
+        <div class="container vertical layout">
+            <div>
+                <iron-form on-iron-form-presubmit="presubmit" on-iron-form-response="savedForm">
+                    <form id="form" class="horizontal layout wrap"></form>
+                </iron-form>
+            </div>
+            <div>
+                <paper-button class="icon-btn background teal margin" on-click="submit">
+                    <iron-icon icon="check"></iron-icon>
+                    <span>Save</span>
+                </paper-button>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        /**
+         * `cbn-form`
+         *
+         *
+         * @customElement
+         * @polymer
+         * @demo demo/index.html
+         */
+        class CbnForm extends Polymer.Element {
+            static get is() {
+                return 'cbn-form';
+            }
+
+            static get properties() {
+                return {
+                    config: {
+                        type: Object,
+                        value: {"elements":[{"label":"C.I.F","type":"text","name":"cifFirma","dbType":"string","className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":true},"autoValidate":true,"floatingLabel":true},{"label":"Firm name","type":"text","name":"numeFirma","dbType":"string","className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":true},"autoValidate":true,"floatingLabel":true},{"label":"Trade Register Number","type":"text","name":"codInmatriculareFirma","dbType":"string","className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":false},"autoValidate":true,"floatingLabel":true},{"type":"select","label":"Country","name":"tara","defaultValue":{"value":"RO","label":"România"},"className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":false},"autoValidate":true,"itemValueProperty":"value","options":[{"value":"AF","label":"Afganistan"},{"value":"ZA","label":"Africa de Sud"},{"value":"AL","label":"Albania"},{"value":"DZ","label":"Algeria"},{"value":"AD","label":"Andorra"},{"value":"AO","label":"Angola"},{"value":"AI","label":"Anguilla"},{"value":"AQ","label":"Antarctica"},{"value":"AG","label":"Antigua și Barbuda"},{"value":"AN","label":"Antilele Olandeze"},{"value":"SA","label":"Arabia Saudită"},{"value":"AR","label":"Argentina"},{"value":"AM","label":"Armenia"},{"value":"AW","label":"Aruba"},{"value":"AU","label":"Australia"},{"value":"AT","label":"Austria"},{"value":"AZ","label":"Azerbaidjan"},{"value":"BS","label":"Bahamas"},{"value":"BH","label":"Bahrain"},{"value":"BD","label":"Bangladesh"},{"value":"BB","label":"Barbados"},{"value":"BY","label":"Belarus"},{"value":"BE","label":"Belgia"},{"value":"BZ","label":"Belize"},{"value":"BJ","label":"Benin"},{"value":"BM","label":"Bermude"},{"value":"BT","label":"Bhutan"},{"value":"BO","label":"Bolivia"},{"value":"BA","label":"Bosnia și Herțegovina"},{"value":"BW","label":"Botswana"},{"value":"BR","label":"Brazilia"},{"value":"BN","label":"Brunei"},{"value":"BG","label":"Bulgaria"},{"value":"BF","label":"Burkina Faso"},{"value":"BI","label":"Burundi"},{"value":"KH","label":"Cambodgia"},{"value":"CM","label":"Camerun"},{"value":"CA","label":"Canada"},{"value":"CZ","label":"Cehia"},{"value":"CL","label":"Chile"},{"value":"TD","label":"Ciad"},{"value":"CY","label":"Cipru"},{"value":"CI","label":"Coasta de Fildeș"},{"value":"CO","label":"Columbia"},{"value":"KM","label":"Comore"},{"value":"CG","label":"Congo"},{"value":"KP","label":"Coreea de Nord"},{"value":"KR","label":"Coreea de Sud"},{"value":"CR","label":"Costa Rica"},{"value":"HR","label":"Croația"},{"value":"CU","label":"Cuba"},{"value":"DK","label":"Danemarca"},{"value":"DJ","label":"Djibouti"},{"value":"DM","label":"Dominica"},{"value":"EC","label":"Ecuador"},{"value":"EG","label":"Egipt"},{"value":"SV","label":"El Salvador"},{"value":"CH","label":"Elveția"},{"value":"AE","label":"Emiratele Arabe Unite"},{"value":"ER","label":"Eritreea"},{"value":"EE","label":"Estonia"},{"value":"ET","label":"Etiopia"},{"value":"FJ","label":"Fiji"},{"value":"PH","label":"Filipine"},{"value":"FI","label":"Finlanda"},{"value":"FR","label":"Franța"},{"value":"GA","label":"Gabon"},{"value":"GM","label":"Gambia"},{"value":"GE","label":"Georgia"},{"value":"GS","label":"Georgia de Sud și Insulele Sandwich de Sud"},{"value":"DE","label":"Germania"},{"value":"GH","label":"Ghana"},{"value":"GI","label":"Gibraltar"},{"value":"GR","label":"Grecia"},{"value":"GD","label":"Grenada"},{"value":"GL","label":"Groenlanda"},{"value":"GP","label":"Guadelupa"},{"value":"GU","label":"Guam"},{"value":"GT","label":"Guatemala"},{"value":"GG","label":"Guernsey"},{"value":"GF","label":"Guiana Franceză"},{"value":"GN","label":"Guineea"},{"value":"GQ","label":"Guineea Ecuatorială"},{"value":"GW","label":"Guineea-Bissau"},{"value":"GY","label":"Guyana"},{"value":"HT","label":"Haiti"},{"value":"HN","label":"Honduras"},{"value":"HK","label":"Hong Kong"},{"value":"IN","label":"India"},{"value":"ID","label":"Indonezia"},{"value":"BV","label":"Insula Bouvet"},{"value":"CX","label":"Insula Crăciunului"},{"value":"HM","label":"Insula Heard și Insulele McDonald"},{"value":"JE","label":"Insula Jersey"},{"value":"IM","label":"Insula Man"},{"value":"NF","label":"Insula Norfolk"},{"value":"KY","label":"Insulele Cayman"},{"value":"CC","label":"Insulele Cocos"},{"value":"CK","label":"Insulele Cook"},{"value":"FK","label":"Insulele Falkland"},{"value":"FO","label":"Insulele Feroe"},{"value":"MP","label":"Insulele Mariane de Nord"},{"value":"MH","label":"Insulele Marshall"},{"value":"SB","label":"Insulele Solomon"},{"value":"TC","label":"Insulele Turks și Caicos"},{"value":"VI","label":"Insulele Virgine Americane"},{"value":"VG","label":"Insulele Virgine Britanice"},{"value":"AX","label":"Insulele Åland"},{"value":"JO","label":"Iordania"},{"value":"IQ","label":"Irak"},{"value":"IR","label":"Iran"},{"value":"IS","label":"Islanda"},{"value":"IL","label":"Israel"},{"value":"IT","label":"Italia"},{"value":"JM","label":"Jamaica"},{"value":"JP","label":"Japonia"},{"value":"KZ","label":"Kazahstan"},{"value":"KE","label":"Kenya"},{"value":"KI","label":"Kiribati"},{"value":"KW","label":"Kuweit"},{"value":"KG","label":"Kârgâzstan"},{"value":"LA","label":"Laos"},{"value":"LS","label":"Lesotho"},{"value":"LV","label":"Letonia"},{"value":"LB","label":"Liban"},{"value":"LR","label":"Liberia"},{"value":"LY","label":"Libia"},{"value":"LI","label":"Liechtenstein"},{"value":"LT","label":"Lituania"},{"value":"LU","label":"Luxemburg"},{"value":"MO","label":"Macao"},{"value":"MG","label":"Madagascar"},{"value":"MY","label":"Malaezia"},{"value":"MW","label":"Malawi"},{"value":"MV","label":"Maldive"},{"value":"ML","label":"Mali"},{"value":"MT","label":"Malta"},{"value":"MA","label":"Maroc"},{"value":"MQ","label":"Martinica"},{"value":"MR","label":"Mauritania"},{"value":"MU","label":"Mauritius"},{"value":"YT","label":"Mayotte"},{"value":"MX","label":"Mexico"},{"value":"FM","label":"Micronezia"},{"value":"MC","label":"Monaco"},{"value":"MN","label":"Mongolia"},{"value":"MS","label":"Montserrat"},{"value":"MZ","label":"Mozambic"},{"value":"ME","label":"Muntenegru"},{"value":"MM","label":"Myanmar"},{"value":"NA","label":"Namibia"},{"value":"NR","label":"Nauru"},{"value":"NP","label":"Nepal"},{"value":"NI","label":"Nicaragua"},{"value":"NE","label":"Niger"},{"value":"NG","label":"Nigeria"},{"value":"NU","label":"Niue"},{"value":"NO","label":"Norvegia"},{"value":"NC","label":"Noua Caledonie"},{"value":"NZ","label":"Noua Zeelandă"},{"value":"OM","label":"Oman"},{"value":"PK","label":"Pakistan"},{"value":"PW","label":"Palau"},{"value":"PA","label":"Panama"},{"value":"PG","label":"Papua Noua Guinee"},{"value":"PY","label":"Paraguay"},{"value":"PE","label":"Peru"},{"value":"PN","label":"Pitcairn"},{"value":"PF","label":"Polinezia franceză"},{"value":"PL","label":"Polonia"},{"value":"PT","label":"Portugalia"},{"value":"PR","label":"Puerto Rico"},{"value":"QA","label":"Qatar"},{"value":"GB","label":"Marea Britanie"},{"value":"CV","label":"Republica Capului Verde"},{"value":"CF","label":"Republica Centrafricană"},{"value":"CD","label":"Republica Democrată Congo"},{"value":"DO","label":"Republica Dominicană"},{"value":"IE","label":"Republica Irlanda"},{"value":"MK","label":"Republica Macedonia"},{"value":"MD","label":"Republica Moldova"},{"value":"CN","label":"Republica Populară Chineză"},{"value":"RO","label":"România"},{"value":"RU","label":"Rusia"},{"value":"RW","label":"Rwanda"},{"value":"RE","label":"Réunion"},{"value":"EH","label":"Sahara Occidentală"},{"value":"BL","label":"Saint Barthélemy"},{"value":"MF","label":"Saint Martin (French part)"},{"value":"WS","label":"Samoa"},{"value":"AS","label":"Samoa americană"},{"value":"SM","label":"San Marino"},{"value":"ST","label":"Sao Tome și Principe"},{"value":"SN","label":"Senegal"},{"value":"RS","label":"Serbia"},{"value":"SC","label":"Seychelles"},{"value":"SH","label":"Sfânta Elena"},{"value":"LC","label":"Sfânta Lucia"},{"value":"KN","label":"Sfântul Kitts și Nevis"},{"value":"PM","label":"Sfântul Pierre și Miquelon"},{"value":"VC","label":"Sfântul Vincent și Grenadine"},{"value":"SL","label":"Sierra Leone"},{"value":"SG","label":"Singapore"},{"value":"SY","label":"Siria"},{"value":"SK","label":"Slovacia"},{"value":"SI","label":"Slovenia"},{"value":"SO","label":"Somalia"},{"value":"ES","label":"Spania"},{"value":"LK","label":"Sri Lanka"},{"value":"US","label":"Statele Unite ale Americii"},{"value":"SD","label":"Sudan"},{"value":"SE","label":"Suedia"},{"value":"SR","label":"Surinam"},{"value":"SJ","label":"Svalbard și Jan Mayen"},{"value":"SZ","label":"Swaziland"},{"value":"TJ","label":"Tadjikistan"},{"value":"TW","label":"Taiwan"},{"value":"TZ","label":"Tanzania"},{"value":"TF","label":"Teritoriile australe și antarctice franceze"},{"value":"PS","label":"Teritoriile Palestiniene Ocupate"},{"value":"IO","label":"Teritoriul Britanic din Oceanul Indian"},{"value":"TH","label":"Thailanda"},{"value":"TL","label":"Timorul de Est"},{"value":"TG","label":"Togo"},{"value":"TK","label":"Tokelau"},{"value":"TO","label":"Tonga"},{"value":"TT","label":"Trinidad și Tobago"},{"value":"TN","label":"Tunisia"},{"value":"TR","label":"Turcia"},{"value":"TM","label":"Turkmenistan"},{"value":"TV","label":"Tuvalu"},{"value":"UA","label":"Ucraina"},{"value":"UG","label":"Uganda"},{"value":"HU","label":"Ungaria"},{"value":"UM","label":"United States Minor Outlying Islands"},{"value":"UY","label":"Uruguay"},{"value":"UZ","label":"Uzbekistan"},{"value":"VU","label":"Vanuatu"},{"value":"VA","label":"Vatican"},{"value":"VE","label":"Venezuela"},{"value":"VN","label":"Vietnam"},{"value":"WF","label":"Wallis și Futuna"},{"value":"YE","label":"Yemen"},{"value":"ZM","label":"Zambia"},{"value":"ZW","label":"Zimbabwe"},{"value":"NL","label":"Țările de Jos"},{"value":"NL","label":"Olanda"}],"floatingLabel":true,"alwaysShowChips":true},{"label":"Locality","type":"address","name":"localitateFirma","dbType":"address","addressRank":2,"className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":false},"freeText":true,"autoValidate":true,"floatingLabel":true},{"label":"Address","type":"text","name":"adresaFirma","dbType":"string","className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":false},"autoValidate":true,"floatingLabel":true},{"label":"Social capital","type":"text","name":"capitalSocialFirma","dbType":"long","className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":false,"number":{"validate":true,"type":"long"}},"autoValidate":true,"floatingLabel":true},{"type":"select","label":"Contact person","name":"persoanaContactFirma","dbType":"list","className":"col-xs-12 col-sm-4 col-lg-3","multiple":true,"autoValidate":true,"freeText":true,"alwaysShowChips":false,"floatingLabel":true},{"type":"select","label":"Fix phone number","name":"telefonFixFirma","dbType":"list","multiple":true,"className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":false},"autoValidate":true,"freeText":true,"alwaysShowChips":false,"floatingLabel":true},{"type":"select","label":"Mobile phone number","name":"telefonMobilFirma","dbType":"list","search":false,"multiple":true,"className":"col-xs-12 col-sm-4 col-lg-3","autoValidate":true,"decorator":"cbn-input-decorator","freeText":true,"floatingLabel":true},{"type":"select","label":"Mail","name":"mailFirma","dbType":"list","multiple":true,"className":"col-xs-12 col-sm-4 col-lg-3","autoValidate":true,"freeText":true,"floatingLabel":true},{"label":"Fax","type":"text","name":"faxFirma","dbType":"string","className":"col-xs-12 col-sm-4 col-lg-3","autoValidate":true,"floatingLabel":true},{"label":"Web","type":"text","name":"adresaWebFirma","dbType":"string","className":"col-xs-12 col-sm-4 col-lg-3","autoValidate":true,"floatingLabel":true},{"label":"Logo","type":"file","name":"logo","className":"col-xs-12 col-sm-4 col-lg-3","autoValidate":true,"floatingLabel":true},{"label":"Stamp","type":"file","name":"stampila","className":"col-xs-12 col-sm-4 col-lg-3","autoValidate":true,"floatingLabel":true},{"label":"ID locality","type":"text","name":"idLocalitate","dbType":"string","className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":true},"autoValidate":true,"floatingLabel":true},{"label":"ID locality","type":"text","name":"idLocalitateApi","dbType":"string","className":"col-xs-12 col-sm-4 col-lg-3","validation":{"required":true},"autoValidate":true,"floatingLabel":true}]}
+                    },
+                    model: {
+                        type: Object,
+                        value: {"tara":"RO","numeFirma":"Elsit & Agronig","codInmatriculareFirma":"","idLocalitate":"681728","cifFirma":"24427310","_deleted":null,"logoBlobKey":"AMIfv97jbubIGx8_ogbR-SlxBa5aoY8oaG9w5pJOZ6NIaYkXRwaasPtg8u9hVPYz8nWNnojBMab5mFfHbcdiZIBh__j6mgvjVrv_x0V9qkRk0Xjx1aaW-I6JwZm3SrDQOWw64KpOJHKfotH6og4ppbePKXDq6dY4YTdTz0LQxDLRuIjDKOkcugw","localitateFirma":{"siruta":"93138","rank":2,"nume_judet":"Județul Ialomița","prescurtare_judet":"IL","nume_superior":"Comuna Ciochina","nume_localitate":"Sat Orezu"},"idLocalitateApi":"00000.12.15423","apiKey":"z2BJ886n34evhDD1zNggvAiD4Yt3gTGfF2-xVjjEACJH3SqofgpDtShhp4TNF--UX1XIxAX4mQo66zhv","adresaFirma":"","capitalSocialFirma":"","persoanaContactFirma":[],"telefonFixFirma":[],"telefonMobilFirma":[],"mailFirma":[],"faxFirma":"","adresaWebFirma":"","stampila":""}
+                    },
+                    form: {
+                        type: Object
+                    },
+                    url: {
+                        type: String
+                    },
+                    method: {
+                        type: String,
+                        value: "get"
+                    }
+                };
+            }
+
+            static get observers() {
+                return [
+                    'changedConfig(model)',
+                    'changedModel(model.*)'
+                ]
+            }
+
+            connectedCallback(){
+                super.connectedCallback();
+                this.$.form.addEventListener("value-changed",this.changedValue.bind(this), true);
+            }
+            changedConfig(){
+                let form = document.createElement('form');
+                form.setAttribute("method", this.method);
+                form.setAttribute("action", this.url);
+                form.setAttribute("class", "horizontal layout wrap");
+
+                for(let i=0; i< this.config.elements.length; i++){
+                    let field = this.config.elements[i];
+                    let input;
+                    if(field["type"] == "text") {
+                        input = document.createElement('paper-input');
+                        input.setAttribute("label", field["label"]);
+                        input.setAttribute("name", field["name"]);
+                        input.setAttribute("class", field["className"]);
+                        if (field["validation"] != undefined) {
+                            input.setAttribute("required", field["validation"]["required"]);
+                            if (field["validation"]["number"] != undefined && field["validation"]["number"]["validate"]) {
+                                input.setAttribute("type", "number");
+                            }
+                        }
+                    } else if(field["type"] == "select" && field["options"] != undefined ){
+                        input = document.createElement('paper-dropdown-menu-light');
+                        input.setAttribute("label", field["label"]);
+                        input.setAttribute("name", field["name"]);
+                        input.setAttribute("class", field["className"]);
+                        input.setAttribute("no-animations", true);
+                        if (field["validation"] != undefined) {
+                            input.setAttribute("required", field["validation"]["required"]);
+                        }
+
+                        let options = document.createElement('paper-listbox');
+                        options.setAttribute("slot", "dropdown-content");
+                        options.setAttribute("attr-for-selected", "value");
+
+                        for(let i=0; i< field["options"].length; i++){
+                            let option = document.createElement('paper-item');
+                            if(field["options"][i]["value"] != undefined){
+                                option.setAttribute("value", field["options"][i]["value"]);
+                                option.setAttribute("label", field["options"][i]["value"]);
+                                option.innerHTML = field["options"][i]["label"];
+                            } else {
+                                option.setAttribute("value", field["options"][i]);
+                                option.setAttribute("label", field["options"][i]["value"]);
+                                option.innerHTML = field["options"][i];
+                            }
+                            options.appendChild(option);
+                        }
+                        input.appendChild(options);
+
+                    }
+                    if(input != undefined){
+                        this.$.form.appendChild(input);
+                    }
+                }
+            }
+
+            changedModel(event){
+                for(let i=0; i< this.config.elements.length; i++){
+                    let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
+                    if(input != undefined && input.value != this.model[this.config.elements[i]["name"]]){
+                        input.value = this.model[this.config.elements[i]["name"]];
+                    }
+                }
+            }
+
+            changedValue(event){
+                this.model[event.path[0].name] = event.detail.value;
+            }
+
+
+        }
+
+        window.customElements.define(CbnForm.is, CbnForm);
+    </script>
+</dom-module>
