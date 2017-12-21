@@ -111,6 +111,7 @@
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("auto-validate", true);
                         input.setAttribute("no-animations", true);
+                        input.setAttribute("horizontal-align", "left");
                         if (field["validation"] != undefined) {
                             input.setAttribute("required", field["validation"]["required"]);
                         }
@@ -139,6 +140,7 @@
                         this.$.form.appendChild(input);
                     }
                 }
+                this.changedModel();
             }
 
             changedModel(event){
