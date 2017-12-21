@@ -30,7 +30,7 @@
         <style include="iron-flex cbn-grid"></style>
             <div>
                 <iron-form id="wrapper" on-iron-form-presubmit="presubmit" on-iron-form-response="savedForm">
-                    <form id="form" method$={{method}} url$="{{url}}" class="horizontal layout wrap"></form>
+                    <form id="form" method$={{method}} action$="{{url}}" class="horizontal layout wrap"></form>
                 </iron-form>
             </div>
     </template>
@@ -145,15 +145,16 @@
 
             changedModel(event){
                 for(let i=0; i< this.config.elements.length; i++){
+                    if(this.model != undefined){
                     let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
                     if(input != undefined && input.value != this.model[this.config.elements[i]["name"]]){
                         input.value = this.model[this.config.elements[i]["name"]];
                     }
                 }
             }
+            }
 
             changedValue(event){
-                console.log(event.path[0].name, event.detail.value);
                 this.model[event.path[0].name] = event.detail.value;
             }
 
