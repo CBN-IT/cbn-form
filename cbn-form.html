@@ -8,6 +8,8 @@
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
+<link rel="import" href="../datetime-picker/overlay-date-picker.html">
+<link rel="import" href="../cbn-datepicker/cbn-datepicker.html">
 
 <dom-module id="cbn-form">
     <template>
@@ -18,7 +20,7 @@
             paper-item{
                 padding: 10px;
             }
-            paper-input,paper-dropdown-menu-light{
+            paper-input,paper-dropdown-menu-light,cbn-datepicker{
                 padding: 0 10px;
             }
             paper-dropdown-menu-light{
@@ -26,6 +28,7 @@
                     margin-top:46px;
                 };
             }
+
         </style>
         <style include="iron-flex cbn-grid"></style>
             <div>
@@ -135,6 +138,21 @@
                         }
                         input.appendChild(options);
 
+                    } else if(field["type"] == "date"){
+                        input = document.createElement("cbn-datepicker");
+                        input.setAttribute("name", field["name"]);
+                        if(field["minDate"] != undefined){
+                            input.setAttribute("min-date", field["minDate"]);
+                        }
+                        if(field["maxDate"] != undefined){
+                            input.setAttribute("max-date", field["maxDate"]);
+                        }
+                        if(field["defaultValue"] != undefined){
+                            input.setAttribute("default-value", field["defaultValue"]);
+                        }
+//                        input.setAttribute("class", field["className"]);
+                        input.setAttribute("no-overlap", true);
+
                     }
                     if(input != undefined){
                         this.$.form.appendChild(input);
@@ -146,16 +164,17 @@
             changedModel(event){
                 for(let i=0; i< this.config.elements.length; i++){
                     if(this.model != undefined){
-                    let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
-                    if(input != undefined && input.value != this.model[this.config.elements[i]["name"]]){
-                        input.value = this.model[this.config.elements[i]["name"]];
+                        let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
+                        if(input != undefined && input.value != this.model[this.config.elements[i]["name"]]){
+                            input.value = this.model[this.config.elements[i]["name"]];
+                        }
                     }
                 }
             }
-            }
 
             changedValue(event){
-                this.model[event.path[0].name] = event.detail.value;
+//                console.log(event.path[0],event.path[0].getAttribute("name"));
+                this.model[event.path[0].getAttribute("name")] = event.detail.value;
             }
 
             presubmit(){
