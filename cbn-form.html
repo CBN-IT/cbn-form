@@ -90,7 +90,10 @@
             }
             changedConfig(){
 
-                this.$.form.innerHtml = "";
+//                this.$.form.innerHtml = "";
+                while (this.$.form.firstChild) {
+                    this.$.form.removeChild(this.$.form.firstChild);
+                }
                 for(let i=0; i< this.config.elements.length; i++){
                     let field = this.config.elements[i];
                     let input;
@@ -162,11 +165,13 @@
             }
 
             changedModel(event){
-                for(let i=0; i< this.config.elements.length; i++){
-                    if(this.model != undefined){
-                        let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
-                        if(input != undefined && input.value != this.model[this.config.elements[i]["name"]]){
-                            input.value = this.model[this.config.elements[i]["name"]];
+                if(this.config != undefined){
+                    for(let i=0; i< this.config.elements.length; i++){
+                        if(this.model != undefined){
+                            let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
+                            if(input != undefined && input.value != this.model[this.config.elements[i]["name"]]){
+                                input.value = this.model[this.config.elements[i]["name"]];
+                            }
                         }
                     }
                 }
