@@ -19,6 +19,7 @@
             }
             paper-item{
                 padding: 10px;
+                min-width: 100px;
             }
             paper-input,paper-dropdown-menu-light,cbn-datepicker{
                 padding: 0 10px;
@@ -134,10 +135,13 @@
                                 option.innerHTML = field["options"][i]["label"];
                             } else {
                                 option.setAttribute("value", field["options"][i]);
-                                option.setAttribute("label", field["options"][i]["value"]);
+                                option.setAttribute("label", field["options"][i]);
                                 option.innerHTML = field["options"][i];
                             }
                             options.appendChild(option);
+                        }
+                        if(field["defaultValue"] != undefined){
+                            input["value"] = field["defaultValue"];
                         }
                         input.appendChild(options);
 
