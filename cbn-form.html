@@ -181,8 +181,7 @@
             }
 
             changedValue(event){
-//                console.log(event.path[0],event.path[0].getAttribute("name"));
-                this.model[event.path[0].getAttribute("name")] = event.detail.value;
+                this.model[event.target.name] = event.detail.value;
             }
 
             presubmit(){
