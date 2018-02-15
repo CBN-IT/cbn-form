@@ -9,6 +9,8 @@
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="../datetime-picker/overlay-date-picker.html">
 <link rel="import" href="../cbn-datepicker/cbn-datepicker.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+
 
 <dom-module id="cbn-form">
     <template>
@@ -20,8 +22,11 @@
                 padding: 10px;
                 min-width: 100px;
             }
-            paper-input,paper-dropdown-menu-light,cbn-datepicker{
+            paper-input,paper-dropdown-menu-light,cbn-datepicker,paper-checkbox{
                 padding: 0 10px;
+            }
+            paper-checkbox{
+                margin: auto 0 8px 0;
             }
             paper-dropdown-menu-light{
                 --paper-menu-button-dropdown:{
@@ -105,7 +110,7 @@
                         input.setAttribute("auto-validate", true);
 
                         if (field["validation"] != undefined) {
-                            input.setAttribute("required", field["validation"]["required"]);
+                            input.required = field["validation"]["required"];
                             if (field["validation"]["number"] != undefined && field["validation"]["number"]["validate"]) {
                                 input.setAttribute("type", "number");
                             }
@@ -119,7 +124,7 @@
                         input.setAttribute("no-animations", true);
                         input.setAttribute("horizontal-align", "left");
                         if (field["validation"] != undefined) {
-                            input.setAttribute("required", field["validation"]["required"]);
+                            input.required = field["validation"]["required"];
                         }
 
                         let options = document.createElement('paper-listbox');
@@ -159,6 +164,17 @@
 //                        input.setAttribute("class", field["className"]);
                         input.setAttribute("no-overlap", true);
 
+                    } else if(field["type"] == "checkbox"){
+                        input = document.createElement("paper-checkbox");
+                        input.setAttribute("class", field["className"]);
+                        input.setAttribute("name", field["name"]);
+                        input.setAttribute("label", field["label"]);
+                        input.textContent = field["label"];
+                        //                        input.setAttribute("class", field["className"]);
+                        if (field["validation"] != undefined) {
+                            input.required = field["validation"]["required"];
+                        }
+                        input.addEventListener("checked-changed",this.changedValue.bind(this), true);
                     }
                     if(input != undefined){
                         this.$.form.appendChild(input);
@@ -173,7 +189,11 @@
                         if(this.model != undefined){
                             let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
                             if(input != undefined && input.value != this.model[this.config.elements[i]["name"]] && this.model[this.config.elements[i]["name"]] != undefined){
-                                input.value = this.model[this.config.elements[i]["name"]];
+                                if(this.config.elements["type"] == "checkbox"){
+                                    input.checked = this.model[this.config.elements[i]["name"]];
+                                } else {
+                                    input.value = this.model[this.config.elements[i]["name"]];
+                                }
                             }
                         }
                     }
@@ -181,7 +201,9 @@
             }
 
             changedValue(event){
-                this.model[event.target.name] = event.detail.value;
+                if(this.model != undefined){
+                    this.model[event.target.name] = event.detail.value;
+                }
             }
 
             presubmit(){
