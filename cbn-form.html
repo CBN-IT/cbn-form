@@ -26,7 +26,7 @@
                 padding: 0 10px;
             }
             paper-checkbox{
-                margin: auto 0 8px 0;
+                margin: auto 0 15px 0;
             }
             paper-dropdown-menu-light{
                 --paper-menu-button-dropdown:{
@@ -152,6 +152,8 @@
                     } else if(field["type"] == "date"){
                         input = document.createElement("cbn-datepicker");
                         input.setAttribute("name", field["name"]);
+                        input.setAttribute("label", field["label"]);
+                        input.setAttribute("class", field["className"]);
                         if(field["minDate"] != undefined){
                             input.setAttribute("min-date", field["minDate"]);
                         }
