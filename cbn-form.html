@@ -11,7 +11,6 @@
 <link rel="import" href="../cbn-datepicker/cbn-datepicker.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 
-
 <dom-module id="cbn-form">
     <template>
         <style>
@@ -37,7 +36,7 @@
         </style>
         <style include="iron-flex cbn-grid"></style>
             <div>
-                <iron-form id="wrapper" on-iron-form-presubmit="presubmit" on-iron-form-response="savedForm">
+                <iron-form id="wrapper" on-iron-form-presubmit="presubmit">
                     <form id="form" method$={{method}} action$="{{url}}" class="horizontal layout wrap"></form>
                 </iron-form>
             </div>
@@ -63,7 +62,10 @@
                         type: Object
                     },
                     model: {
-                        type: Object
+                        type: Object,
+                        value:function(){
+                            return {};
+                        }
                     },
                     form: {
                         type: Object
@@ -102,7 +104,18 @@
                 for(let i=0; i< this.config.elements.length; i++){
                     let field = this.config.elements[i];
                     let input;
-                    if(field["type"] == "text") {
+                    if (field["type"] === "file") {
+                        input = document.createElement('paper-upload');
+                        input.setAttribute("label", field["label"]);
+                        input.setAttribute("name", field["name"]);
+                        input.setAttribute("class", field["className"]);
+                        input.setAttribute("auto-validate", true);
+                        input.multiple = field["multiple"] === true;
+                        if (field["validation"] !== undefined && field["validation"] !== null) {
+                            input.required = field["validation"]["required"] === true;
+                        }
+
+                    } else if (field["type"] === "text") {
                         input = document.createElement('paper-input');
                         input.setAttribute("label", field["label"]);
                         input.setAttribute("name", field["name"]);
@@ -115,7 +128,7 @@
                                 input.setAttribute("type", "number");
                             }
                         }
-                    } else if(field["type"] == "select" && field["options"] != undefined ){
+                    } else if(field["type"] === "select" && field["options"] != undefined ){
                         input = document.createElement('paper-dropdown-menu-light');
                         input.setAttribute("label", field["label"]);
                         input.setAttribute("name", field["name"]);
@@ -131,9 +144,9 @@
                         options.setAttribute("slot", "dropdown-content");
                         options.setAttribute("attr-for-selected", "value");
 
-                        for(let i=0; i< field["options"].length; i++){
+                        for (let i = 0; i < field["options"].length; i++) {
                             let option = document.createElement('paper-item');
-                            if(field["options"][i]["value"] != undefined){
+                            if (field["options"][i]["value"] != undefined) {
                                 option.setAttribute("value", field["options"][i]["value"]);
                                 option.setAttribute("label", field["options"][i]["value"]);
                                 option.innerHTML = field["options"][i]["label"];
@@ -144,29 +157,29 @@
                             }
                             options.appendChild(option);
                         }
-                        if(field["defaultValue"] != undefined){
+                        if (field["defaultValue"] != undefined) {
                             input["value"] = field["defaultValue"];
                         }
                         input.appendChild(options);
 
-                    } else if(field["type"] == "date"){
+                    } else if (field["type"] === "date") {
                         input = document.createElement("cbn-datepicker");
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("label", field["label"]);
                         input.setAttribute("class", field["className"]);
-                        if(field["minDate"] != undefined){
+                        if (field["minDate"] != undefined) {
                             input.setAttribute("min-date", field["minDate"]);
                         }
-                        if(field["maxDate"] != undefined){
+                        if (field["maxDate"] != undefined) {
                             input.setAttribute("max-date", field["maxDate"]);
                         }
-                        if(field["defaultValue"] != undefined){
+                        if (field["defaultValue"] != undefined) {
                             input.setAttribute("default-value", field["defaultValue"]);
                         }
 //                        input.setAttribute("class", field["className"]);
                         input.setAttribute("no-overlap", true);
 
-                    } else if(field["type"] == "checkbox"){
+                    } else if (field["type"] === "checkbox") {
                         input = document.createElement("paper-checkbox");
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("name", field["name"]);
@@ -176,9 +189,9 @@
                         if (field["validation"] != undefined) {
                             input.required = field["validation"]["required"];
                         }
-                        input.addEventListener("checked-changed",this.changedValue.bind(this), true);
+                        input.addEventListener("checked-changed", this.changedValue.bind(this), true);
                     }
-                    if(input != undefined){
+                    if (input != undefined) {
                         this.$.form.appendChild(input);
                     }
                 }
@@ -223,9 +236,57 @@
                 for(let i=0; i<keysModel.length;i++){
                     params[keysModel[i]] = this.model[keysModel[i]];
                 }
+                let haveFile=false;
+                for (let i = 0; i < this.config.elements.length; i++) {
+                    let field = this.config.elements[i];
+                    if (field["type"] === "file") {
+                        let val = params[field["name"]];
+                        if (val === undefined || val === null) {
+                            continue;
+                        }
+                        if (val instanceof Array) {
+                            for (let j = 0; j < val.length; j++) {
+                                if (val[j].file !== undefined) {
+                                    haveFile = true;
+                                }
+                            }
+                        } else {
+                            if (val.file !== undefined) {
+                                haveFile = true;
+                            }
+                        }
 
-                this.$.wrapper.request.params = params;
-
+                    }
+                }
+                if (haveFile) {
+                    let formData = new FormData();
+                    for (let name in params) {
+                        if (!params.hasOwnProperty(name)) {
+                            continue;
+                        }
+                        if (params[name] instanceof Array) {
+                            for (let j = 0; j < params[name].length; j++) {
+                                let val = params[name][j];
+                                if (val.file !== undefined) {
+                                    formData.append(name, val.file);
+                                } else if (val.blobKey !== undefined) {
+                                    formData.append(name + ".blobKey", val.blobKey);
+                                } else {
+                                    formData.append(name, val);
+                                }
+                            }
+                        }
+                    }
+                    this.$.wrapper.request.method = "post";
+                    this.$.wrapper.request.body = formData;
+                    this.$.wrapper.request.contentType = undefined;
+                } else {
+                    if (this.method.toLowerCase() === "get") {
+                        this.$.wrapper.request.params = params;
+                    } else if (this.method.toLowerCase() === "post") {
+                        this.$.wrapper.request.body = params;
+                    }
+                }
             }
 
             submit(){

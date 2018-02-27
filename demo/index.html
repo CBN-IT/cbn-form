@@ -10,7 +10,9 @@
 
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../paper-upload/paper-upload.html">
     <link rel="import" href="../cbn-form.html">
+
 
     <custom-style>
       <style is="custom-style" include="demo-pages-shared-styles">
@@ -19,10 +21,29 @@
   </head>
   <body>
     <div class="vertical-section-container centered">
-      <h3>Basic cbn-form demo</h3>
+      <h3>Basic cbn-form demo</h3><iron-icon icon="alarm" ></iron-icon>
       <demo-snippet>
         <template>
-          <cbn-form></cbn-form>
+          <cbn-form method="post"></cbn-form>
+          <input type="button" value="Save" onclick="document.querySelector('cbn-form').submit()" />
+          <script>
+            console.log(document.querySelector("cbn-form"));
+            document.querySelector("cbn-form").config={elements:[
+                {
+                    type:"file",
+                    name:"logo",
+                    label:"Label",
+                    className:"col-xs-12"
+                },
+                {
+                    type:"file",
+                    name:"logo2",
+                    label:"Label",
+                    className:"col-xs-12",
+                    multiple:true
+                },
+            ]};
+          </script>
         </template>
       </demo-snippet>
     </div>
