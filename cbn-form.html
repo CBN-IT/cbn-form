@@ -80,6 +80,13 @@
                     params: {
                         type: Object,
                         value: {}
+                    },
+                    selectedLanguage: {
+                        type: String,
+                        value: function(){
+                            return window["selectedLanguage"]
+                        },
+                        observer: "changedLanguage"
                     }
                 };
             }
@@ -103,34 +110,30 @@
                 }
                 for(let i=0; i< this.config.elements.length; i++){
                     let field = this.config.elements[i];
+                    let label = field["label"];
+                    if(field["i18n"] !== undefined && this.selectedLanguage !== undefined){
+                        label = field["i18n"][this.selectedLanguage];
+                    }
                     let input;
-                    if (field["type"] === "file") {
-                        input = document.createElement('paper-upload');
-                        input.setAttribute("label", field["label"]);
-                        input.setAttribute("name", field["name"]);
-                        input.setAttribute("class", field["className"]);
-                        input.setAttribute("auto-validate", true);
-                        input.multiple = field["multiple"] === true;
-                        if (field["validation"] !== undefined && field["validation"] !== null) {
-                            input.required = field["validation"]["required"] === true;
-                        }
-
-                    } else if (field["type"] === "text") {
+                    if(field["type"] === "text") {
                         input = document.createElement('paper-input');
-                        input.setAttribute("label", field["label"]);
+                        input.setAttribute("label", label);
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("auto-validate", true);
-
+                        input.disabled = field["disabled"];
                         if (field["validation"] != undefined) {
                             input.required = field["validation"]["required"];
+                            input.minlength = field["validation"]["minLength"];
+                            input.maxlength = field["validation"]["maxLength"];
+                            input.allowedPattern =  field["validation"]["pattern"];
                             if (field["validation"]["number"] != undefined && field["validation"]["number"]["validate"]) {
                                 input.setAttribute("type", "number");
                             }
                         }
                     } else if(field["type"] === "select" && field["options"] != undefined ){
                         input = document.createElement('paper-dropdown-menu-light');
-                        input.setAttribute("label", field["label"]);
+                        input.setAttribute("label", label);
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("auto-validate", true);
@@ -165,8 +168,9 @@
                     } else if (field["type"] === "date") {
                         input = document.createElement("cbn-datepicker");
                         input.setAttribute("name", field["name"]);
-                        input.setAttribute("label", field["label"]);
+                        input.setAttribute("label", label);
                         input.setAttribute("class", field["className"]);
+                        input.disabled = field["disabled"];
                         if (field["minDate"] != undefined) {
                             input.setAttribute("min-date", field["minDate"]);
                         }
@@ -183,9 +187,10 @@
                         input = document.createElement("paper-checkbox");
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("name", field["name"]);
-                        input.setAttribute("label", field["label"]);
+                        input.textContent = label;
                         input.textContent = field["label"];
                         //                        input.setAttribute("class", field["className"]);
+                        input.disabled = field["disabled"];
                         if (field["validation"] != undefined) {
                             input.required = field["validation"]["required"];
                         }
@@ -196,6 +201,19 @@
                     }
                 }
                 this.changedModel();
+            }
+
+            changedLanguage(newValue, lastValue){
+                if(lastValue !== undefined && newValue !== lastValue) {
+                    if (this.config !== undefined) {
+                        for (let i = 0; i < this.config.elements.length; i++) {
+                            if (this.config.elements[i]["i18n"] !== undefined && this.config.elements[i]["i18n"][this.selectedLanguage] !== undefined) {
+                                let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
+                                input.label = this.config.elements[i]["i18n"][this.selectedLanguage];
+                            }
+                        }
+                    }
+                }
             }
 
             changedModel(event){
