@@ -253,11 +253,18 @@
                     for(let i=0; i< this.config.elements.length; i++){
                         if(this.model != undefined){
                             let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
-                            if(input != undefined && input.value != this.model[this.config.elements[i]["name"]] && this.model[this.config.elements[i]["name"]] != undefined){
-                                if(this.config.elements[i]["type"] == "checkbox"){
-                                    input.checked = this.model[this.config.elements[i]["name"]];
+                            if(input != undefined && input.value != this.model[this.config.elements[i]["name"]]){
+                                let newValue = "";
+                                if(this.model[this.config.elements[i]["name"]] != undefined){
+                                    newValue = this.model[this.config.elements[i]["name"]];
+                                } else if(this.config.elements[i]["defaultValue"] != undefined){
+                                    newValue = this.config.elements[i]["defaultValue"];
+                                    this.model[this.config.elements[i]["name"]] = newValue;
+                                }
+                                if(this.config.elements[i]["type"] === "checkbox"){
+                                    input.checked = newValue;
                                 } else {
-                                    input.value = this.model[this.config.elements[i]["name"]];
+                                    input.value = newValue;
                                 }
                             }
                         }
