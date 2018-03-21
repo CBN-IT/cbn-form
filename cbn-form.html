@@ -136,7 +136,18 @@
                         label = field["i18n"][this.selectedLanguage];
                     }
                     let input;
-                    if(field["type"] === "text") {
+                    if (field["type"] === "file") {
+                        input = document.createElement('paper-upload');
+                        input.setAttribute("label", field["label"]);
+                        input.setAttribute("name", field["name"]);
+                        input.setAttribute("class", field["className"]);
+                        input.setAttribute("auto-validate", true);
+                        input.multiple = field["multiple"] === true;
+                        if (field["validation"] !== undefined && field["validation"] !== null) {
+                            input.required = field["validation"]["required"] === true;
+                        }
+
+                    } else if(field["type"] === "text") {
                         input = document.createElement('paper-input');
                         input.setAttribute("label", label);
                         input.setAttribute("name", field["name"]);
