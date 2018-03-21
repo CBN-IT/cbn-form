@@ -80,6 +80,27 @@
                     params: {
                         type: Object,
                         value: {}
+                    },
+                    /**
+                     * An URL to fetch an unique upload URL.
+                     *
+                     * Useful for AppEngine file uploads using the provided dispatcher.
+                     */
+                    preUploadUrl: {
+                        type: String,
+                        value: '/GetUploadURL'
+                    },
+
+                    /**
+                     * The pre-upload request parameter to send with the actual action URL.
+                     */
+                    preUploadUrlParam: {
+                        type: String,
+                        value: 'redirectUrl'
+                    },
+                    _generatedPreUploadUrl:{
+                        type: String,
+                        value: null
                     }
                 };
             }
@@ -221,7 +242,7 @@
                 }
             }
 
-            presubmit(){
+            presubmit(event){
                 let params = {};
                 if(window.namespace != undefined){
                     params["namespace"] = window.namespace;
@@ -259,6 +280,25 @@
                     }
                 }
                 if (haveFile) {
+                    if(this._generatedPreUploadUrl===null){
+                        //we need to generate an uload url;
+                        event.preventDefault();
+
+                        let getUloadRequest = document.createElement('iron-ajax');
+                        getUloadRequest.addEventListener('response', function(){
+                            this._generatedPreUploadUrl=this.responseText;
+                            this.$.wrapper.submit();
+                        }.bind(this));
+                        getUloadRequest.url = this.preUploadUrl;
+                        getUloadRequest.method = 'GET';
+                        getUloadRequest.headers = this.headers;
+                        let params = {};
+                        params[this.preUploadUrlParam]=this.$.wrapper.request.url;
+                        getUloadRequest.params = params;
+                        getUloadRequest.generateRequest();
+
+                        return;
+                    }
                     let formData = new FormData();
                     for (let name in params) {
                         if (!params.hasOwnProperty(name)) {
@@ -280,6 +320,7 @@
                     this.$.wrapper.request.method = "post";
                     this.$.wrapper.request.body = formData;
                     this.$.wrapper.request.contentType = undefined;
+                    this._generatedPreUploadUrl=null;
                 } else {
                     if (this.method.toLowerCase() === "get") {
                         this.$.wrapper.request.params = params;
