@@ -279,7 +279,10 @@
 
                 let keysParams = Object.keys(this.params);
                 for(let i=0; i<keysParams.length;i++){
+                    if(this.params[keysParams[i]] !== undefined){
                     params[keysParams[i]] = this.params[keysParams[i]];
+
+                    }
                 }
 
                 let keysModel = Object.keys(this.model);
@@ -314,10 +317,13 @@
                         event.preventDefault();
 
                         let getUloadRequest = document.createElement('iron-ajax');
-                        getUloadRequest.addEventListener('response', function(){
-                            this._generatedPreUploadUrl=this.responseText;
+
+                        getUloadRequest.addEventListener('response', function(event){
+                            this._generatedPreUploadUrl = event.detail.response;
                             this.$.wrapper.submit();
                         }.bind(this));
+
+                        getUloadRequest["handleAs"] = "text";
                         getUloadRequest.url = this.preUploadUrl;
                         getUloadRequest.method = 'GET';
                         getUloadRequest.headers = this.headers;
@@ -344,8 +350,12 @@
                                     formData.append(name, val);
                                 }
                             }
+                        } else {
+                            formData.append(name, params[name]);
+                            console.log(name, params[name]);
                         }
                     }
+                    this.$.wrapper.request.url = this._generatedPreUploadUrl;
                     this.$.wrapper.request.method = "post";
                     this.$.wrapper.request.body = formData;
                     this.$.wrapper.request.contentType = undefined;
