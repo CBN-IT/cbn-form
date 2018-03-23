@@ -65,7 +65,8 @@
                         type: Object,
                         value:function(){
                             return {};
-                        }
+                        },
+                        notify: true
                     },
                     form: {
                         type: Object
@@ -259,7 +260,7 @@
                                     newValue = this.model[this.config.elements[i]["name"]];
                                 } else if(this.config.elements[i]["defaultValue"] != undefined){
                                     newValue = this.config.elements[i]["defaultValue"];
-                                    this.model[this.config.elements[i]["name"]] = newValue;
+                                    this.set("model." + this.config.elements[i]["name"], newValue);
                                 }
                                 if(this.config.elements[i]["type"] === "checkbox"){
                                     input.checked = newValue;
@@ -274,7 +275,7 @@
 
             changedValue(event){
                 if(this.model != undefined){
-                    this.model[event.target.name] = event.detail.value;
+                    this.set("model." + event.target.name, event.detail.value);
                 }
             }
 
