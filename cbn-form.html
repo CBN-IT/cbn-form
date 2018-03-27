@@ -122,7 +122,7 @@
 
             connectedCallback(){
                 super.connectedCallback();
-                this.$.form.addEventListener("value-changed",this.changedValue.bind(this), true);
+                // this.$.form.addEventListener("value-changed",this.changedValue.bind(this), true);
             }
             changedConfig(){
 
@@ -137,8 +137,22 @@
                         label = field["i18n"][this.selectedLanguage];
                     }
                     let input;
-                    if (field["type"] === "file") {
+
+                    if (field["type"] === "select2" && field["options"] != undefined) {
+                        input = document.createElement('cbn-select');
+                        input.addEventListener("selected-changed",this.changedValue.bind(this), true);
+                        input.multiple = field.multiple === true;
+                        input.freetext = field.freetext === true;
+                        input.setAttribute("label", label);
+                        input.setAttribute("name", field["name"]);
+                        input.setAttribute("class", field["className"]);
+                        input.setAttribute("auto-validate", true);
+                        input.setAttribute("no-animations", true);
+                        input.setAttribute("horizontal-align", "left");
+                    }else if (field["type"] === "file") {
                         input = document.createElement('paper-upload');
+                        input.addEventListener("value-changed",this.changedValue.bind(this), true);
+
                         input.setAttribute("label", field["label"]);
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("class", field["className"]);
@@ -150,6 +164,8 @@
 
                     } else if(field["type"] === "text") {
                         input = document.createElement('paper-input');
+                        input.addEventListener("value-changed",this.changedValue.bind(this), true);
+
                         input.setAttribute("label", label);
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("class", field["className"]);
@@ -166,12 +182,16 @@
                         }
                     } else if(field["type"] === "select" && field["options"] != undefined ){
                         input = document.createElement('paper-dropdown-menu-light');
+                        input.addEventListener("value-changed",this.changedValue.bind(this), true);
+
                         input.setAttribute("label", label);
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("auto-validate", true);
                         input.setAttribute("no-animations", true);
                         input.setAttribute("horizontal-align", "left");
+
+
                         if (field["validation"] != undefined) {
                             input.required = field["validation"]["required"];
                         }
@@ -200,6 +220,8 @@
 
                     } else if (field["type"] === "date") {
                         input = document.createElement("cbn-datepicker");
+                        input.addEventListener("value-changed",this.changedValue.bind(this), true);
+
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("label", label);
                         input.setAttribute("class", field["className"]);

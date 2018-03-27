@@ -12,6 +12,7 @@
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
     <link rel="import" href="../../paper-upload/paper-upload.html">
     <link rel="import" href="../cbn-form.html">
+    <link rel="import" href="../../cbn-select/cbn-select.html">
 
 
     <custom-style>
@@ -42,6 +43,39 @@
                     className:"col-xs-12",
                     multiple:true
                 },
+                    {
+                        type:"select2",
+                        name:"multiple",
+                        label:"label",
+                        className:"class",
+                        multiple:true,
+                        options:["Anglia", "Romania", "Spania" ]
+                    },
+                    {
+                        type:"select2",
+                        name:"nomultiple",
+                        label:"label",
+                        className:"class",
+                        multiple:false,
+                        options:["Anglia", "Romania", "Spania" ]
+                    },
+                    {
+                        type:"select2",
+                        name:"freetext",
+                        label:"label",
+                        className:"class",
+                        freetext:true,
+                        options:["Anglia", "Romania", "Spania" ]
+                    },
+                    {
+                        type:"select2",
+                        name:"freetextandmultiple",
+                        label:"label",
+                        className:"class",
+                        freetext:true,
+                        multiple:true,
+                        options:["Anglia", "Romania", "Spania" ]
+                    }
             ]};
           </script>
         </template>

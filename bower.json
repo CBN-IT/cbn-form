@@ -18,7 +18,8 @@
     "paper-listbox": "PolymerElements/paper-listbox#^2.0.0",
     "paper-item": "PolymerElements/paper-item#^2.0.0",
     "cbn-datepicker": "CBN-IT/cbn-datepicker#polymer2.0",
-    "paper-upload": "CBN-IT/cbn-file-input#polymer-2.0"
+    "paper-upload": "CBN-IT/cbn-file-input#polymer-2.0",
+    "cbn-select": "CBN-IT/cbn-select#polymer2.0"
   },
   "resolutions": {
     "polymer": "^2.0.0",
