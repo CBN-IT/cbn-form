@@ -21,7 +21,7 @@
                 padding: 10px;
                 min-width: 100px;
             }
-            paper-input,paper-dropdown-menu-light,cbn-datepicker,paper-checkbox{
+            paper-input,paper-dropdown-menu-light,cbn-datepicker,paper-checkbox,cbn-select{
                 padding: 0 10px;
             }
             paper-checkbox{
@@ -116,7 +116,7 @@
             static get observers() {
                 return [
                     'changedConfig(config)',
-                    'changedModel(model.*)'
+                    'changedModel(model)'
                 ]
             }
 
@@ -138,7 +138,7 @@
                     }
                     let input;
 
-                    if (field["type"] === "select2" && field["options"] != undefined) {
+                    if (field["type"] === "select2") {
                         input = document.createElement('cbn-select');
                         input.addEventListener("selected-changed",this.changedValue.bind(this), true);
                         input.multiple = field.multiple === true;
@@ -147,11 +147,10 @@
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("auto-validate", true);
-                        input.setAttribute("no-animations", true);
-                        input.setAttribute("horizontal-align", "left");
+                        input.options = field.options !== undefined ? field.options : [];
                     }else if (field["type"] === "file") {
                         input = document.createElement('paper-upload');
-                        input.addEventListener("value-changed",this.changedValue.bind(this), true);
+                        input.addEventListener("selected-changed",this.changedValue.bind(this), true);
 
                         input.setAttribute("label", field["label"]);
                         input.setAttribute("name", field["name"]);
