@@ -299,6 +299,17 @@
                 this.fireEvent(event.target, event.target.name, event.detail.value)
             }
 
+            fireEvent(target, name, value){
+                target.dispatchEvent(new CustomEvent("cbn-value-changed", {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        value: value,
+                        name: name
+                    }
+                }));
+            }
+
             presubmit(event){
                 let params = {};
                 if(window.namespace != undefined){
