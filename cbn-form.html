@@ -21,7 +21,7 @@
                 padding: 10px;
                 min-width: 100px;
             }
-            paper-input,paper-dropdown-menu-light,cbn-datepicker,paper-checkbox,cbn-selec,paper-upload{
+            paper-input,paper-dropdown-menu-light,cbn-datepicker,paper-checkbox,cbn-select,paper-upload{
                 padding: 0 10px;
             }
             paper-checkbox{
@@ -280,6 +280,7 @@
                                     newValue = this.config.elements[i]["defaultValue"];
                                     this.set("model." + this.config.elements[i]["name"], newValue);
                                 }
+                                // this.fireEvent(input, this.config.elements[i]["name"], newValue);
                                 if(this.config.elements[i]["type"] === "checkbox"){
                                     input.checked = newValue;
                                 } else {
@@ -295,6 +296,7 @@
                 if(this.model != undefined){
                     this.set("model." + event.target.name, event.detail.value);
                 }
+                this.fireEvent(event.target, event.target.name, event.detail.value)
             }
 
             presubmit(event){
