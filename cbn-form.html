@@ -140,6 +140,8 @@
                         input.addEventListener("selected-changed",this.changedValue.bind(this), true);
                         input.multiple = field.multiple === true;
                         input.freetext = field.freetext === true;
+                        input.itemValueProperty = field.itemValueProperty;
+                        input.itemLabelProperty = field.itemLabelProperty;
                         input.setAttribute("label", label);
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("class", field["className"]);
@@ -221,7 +223,10 @@
                         input.setAttribute("name", field["name"]);
                         input.setAttribute("label", label);
                         input.setAttribute("class", field["className"]);
-                        input.disabled = field["disabled"];
+                        input.disabled = field["disabled"] === true;
+                        if (field["validation"] != undefined) {
+                            input.required = field["validation"]["required"] === true;
+                        }
                         if (field["minDate"] != undefined) {
                             input.setAttribute("min-date", field["minDate"]);
                         }
@@ -272,7 +277,8 @@
                     for(let i=0; i< this.config.elements.length; i++){
                         if(this.model != undefined){
                             let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
-                            if(input != undefined && input.value != this.model[this.config.elements[i]["name"]]){
+                            if(input != undefined && (input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined)){
+                            // || (this.model[this.config.elements[i]["name"]] === undefined)
                                 let newValue = "";
                                 if(this.model[this.config.elements[i]["name"]] != undefined){
                                     newValue = this.model[this.config.elements[i]["name"]];
