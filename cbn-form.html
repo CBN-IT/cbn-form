@@ -10,6 +10,8 @@
 <link rel="import" href="../datetime-picker/overlay-date-picker.html">
 <link rel="import" href="../cbn-datepicker/cbn-datepicker.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
+
 
 <dom-module id="cbn-form">
     <template>
@@ -21,11 +23,13 @@
                 padding: 10px;
                 min-width: 100px;
             }
-            paper-input,paper-dropdown-menu-light,cbn-datepicker,paper-checkbox,cbn-select,paper-upload{
+            paper-input,paper-dropdown-menu-light,cbn-datepicker,paper-checkbox,cbn-select,paper-upload,paper-textarea{
                 padding: 0 10px;
             }
             paper-checkbox{
-                margin: auto 0 15px 0;
+                --paper-checkbox-label: {
+                    padding: 15px 0 15px 8px;
+                }
             }
             paper-dropdown-menu-light{
                 --paper-menu-button-dropdown:{
@@ -135,7 +139,7 @@
                     }
                     let input;
 
-                    if (field["type"] === "select2") {
+                    if (field["type"] === "select") {
                         input = document.createElement('cbn-select');
                         input.addEventListener("selected-changed",this.changedValue.bind(this), true);
                         input.multiple = field.multiple === true;
@@ -177,6 +181,18 @@
                             if (field["validation"]["number"] != undefined && field["validation"]["number"]["validate"]) {
                                 input.setAttribute("type", "number");
                             }
+                        }
+                    } else if(field["type"] === "textarea") {
+                        input = document.createElement('paper-textarea');
+                        input.addEventListener("value-changed",this.changedValue.bind(this), true);
+
+                        input.setAttribute("label", label);
+                        input.setAttribute("name", field["name"]);
+                        input.setAttribute("class", field["className"]);
+                        input.setAttribute("auto-validate", true);
+                        input.disabled = field["disabled"];
+                        if (field["validation"] != undefined) {
+                            input.required = field["validation"]["required"];
                         }
                     } else if(field["type"] === "select" && field["options"] != undefined ){
                         input = document.createElement('paper-dropdown-menu-light');
@@ -277,7 +293,7 @@
                     for(let i=0; i< this.config.elements.length; i++){
                         if(this.model != undefined){
                             let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
-                            if(input != undefined && (input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined)){
+                            if(input != undefined && ((input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined))){
                             // || (this.model[this.config.elements[i]["name"]] === undefined)
                                 let newValue = "";
                                 if(this.model[this.config.elements[i]["name"]] != undefined){
