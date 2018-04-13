@@ -143,7 +143,7 @@
                         input = document.createElement('cbn-select');
                         input.addEventListener("selected-changed",this.changedValue.bind(this), true);
                         input.multiple = field.multiple === true;
-                        input.freetext = field.freetext === true;
+                        input.freeText = field.freeText === true;
                         input.itemValueProperty = field.itemValueProperty;
                         input.itemLabelProperty = field.itemLabelProperty;
                         input.setAttribute("label", label);
