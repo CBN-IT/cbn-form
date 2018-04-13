@@ -141,7 +141,7 @@
 
                     if (field["type"] === "select") {
                         input = document.createElement('cbn-select');
-                        input.addEventListener("selected-changed",this.changedValue.bind(this), true);
+                        input.addEventListener("cbn-selected-changed",this.changedValue.bind(this), true);
                         input.multiple = field.multiple === true;
                         input.freeText = field.freeText === true;
                         input.itemValueProperty = field.itemValueProperty;
