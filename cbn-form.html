@@ -318,10 +318,12 @@
             }
 
             changedValue(event){
-                if(this.model != undefined){
-                    this.set("model." + event.target.name, event.detail.value);
-                }
-                this.fireEvent(event.target, event.target.name, event.detail.value)
+                setTimeout(function(){
+                    if(this.model != undefined){
+                        this.set("model." + event.target.name, event.detail.value);
+                    }
+                    this.fireEvent(event.target, event.target.name, event.detail.value)
+                }.bind(this));
             }
 
             fireEvent(target, name, value){
