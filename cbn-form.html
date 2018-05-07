@@ -153,7 +153,7 @@
                         input.options = field.options !== undefined ? field.options : [];
                     }else if (field["type"] === "file") {
                         input = document.createElement('paper-upload');
-                        input.addEventListener("selected-changed",this.changedValue.bind(this), true);
+                        input.addEventListener("cbn-selected-changed",this.changedValue.bind(this), true);
 
                         input.setAttribute("label", field["label"]);
                         input.setAttribute("name", field["name"]);
