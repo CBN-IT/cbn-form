@@ -318,12 +318,12 @@
             }
 
             changedValue(event){
-                setTimeout(function(){
-                    if(this.model != undefined){
-                        this.set("model." + event.target.name, event.detail.value);
+                setTimeout(function(target, detail){
+                    if(this.model !== undefined){
+                        this.set("model." + target.name, detail.value);
                     }
-                    this.fireEvent(event.target, event.target.name, event.detail.value)
-                }.bind(this));
+                    this.fireEvent(target, target.name, detail.value)
+                }.bind(this, event.target, event.detail));
             }
 
             fireEvent(target, name, value){
