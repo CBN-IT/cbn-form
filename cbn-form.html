@@ -180,6 +180,9 @@
                             input.allowedPattern =  field["validation"]["pattern"];
                             if (field["validation"]["number"] != undefined && field["validation"]["number"]["validate"]) {
                                 input.setAttribute("type", "number");
+                                if(field["validation"]["number"]["type"] === "float"){
+                                    input.setAttribute("step", "0.01");
+                                }
                             }
                         }
                     } else if(field["type"] === "textarea") {
@@ -438,6 +441,38 @@
                 return this.$.wrapper.validate();
             }
 
+            hideFormElement (form) {
+                for (let i = 0; i < arguments.length; i++) {
+                    let name = arguments[i];
+                    delete this.model[name];
+                    // this.set("model." + name,"");
+                    let el = this.$.form.querySelector("[name=" + name + "]");
+                    if (el != null && el.style.display !== "none") {
+                        el.oldDisplay = el.style.display;
+                        el.oldRequired = el.required;
+                        el.style.display = "none";
+                        el.required = false;
+                    }
+                }
+            }
+
+            showFormElement (form) {
+                for (let i = 0; i < arguments.length; i++) {
+                    let name = arguments[i];
+                    let el = this.$.form.querySelector("[name=" + name + "]");
+                    if (el != null && el.style.display === "none") {
+                        el.style.display = el.oldDisplay;
+                        el.required = el.oldRequired;
+                        el.oldDisplay = null;
+                        el.oldValidation = null;
+                    }
+                }
+            }
+
+            changeOptions(name, options){
+                let input = this.$.form.querySelector('[name=' + name + ']');
+                input.options = options;
+            }
 
         }
 
