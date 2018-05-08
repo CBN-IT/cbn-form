@@ -355,6 +355,7 @@
                 for(let i=0; i<keysModel.length;i++){
                     params[keysModel[i]] = this.model[keysModel[i]];
                 }
+
                 let haveFile=false;
                 for (let i = 0; i < this.config.elements.length; i++) {
                     let field = this.config.elements[i];
@@ -427,10 +428,28 @@
                     this.$.wrapper.request.contentType = undefined;
                     this._generatedPreUploadUrl=null;
                 } else {
+                    let encodedStr = [];
+                    for (let name in params) {
+                        if (!params.hasOwnProperty(name)) {
+                            continue;
+                        }
+                        if (params[name] instanceof Array) {
+                            for (let j = 0; j < params[name].length; j++) {
+                                let val = params[name][j];
+                                if (val.blobKey !== undefined) {
+                                    encodedStr.push(name + ".blobKey"+"="+ window.encodeURIComponent(val.blobKey));
+                                } else {
+                                    encodedStr.push(name+"="+ window.encodeURIComponent(val));
+                                }
+                            }
+                        } else {
+                            encodedStr.push(name+"="+ window.encodeURIComponent(params[name]));
+                        }
+                    }
                     if (this.method.toLowerCase() === "get") {
-                        this.$.wrapper.request.params = params;
+                        this.$.wrapper.request.params = encodedStr.join("&");
                     } else if (this.method.toLowerCase() === "post") {
-                        this.$.wrapper.request.body = params;
+                        this.$.wrapper.request.body = encodedStr.join("&");
                     }
                 }
             }
