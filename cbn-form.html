@@ -295,7 +295,7 @@
                 if(this.config != undefined){
                     for(let i=0; i< this.config.elements.length; i++){
                         if(this.model != undefined){
-                            let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
+                            let input = this.shadowRoot.querySelector("[name='" + this.config.elements[i]["name"] + "']");
                             if(input != undefined && ((input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined))){
                             // || (this.model[this.config.elements[i]["name"]] === undefined)
                                 let newValue = "";
