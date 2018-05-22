@@ -151,9 +151,6 @@
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("auto-validate", true);
                         input.options = field.options !== undefined ? field.options : [];
-                        if (field["validation"] !== undefined && field["validation"] !== null) {
-                            input.required = field["validation"]["required"] === true;
-                        }
                     }else if (field["type"] === "file") {
                         input = document.createElement('paper-upload');
                         input.addEventListener("cbn-selected-changed",this.changedValue.bind(this), true);
