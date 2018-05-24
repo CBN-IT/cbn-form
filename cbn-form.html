@@ -9,6 +9,8 @@
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="../datetime-picker/overlay-date-picker.html">
 <link rel="import" href="../cbn-datepicker/cbn-datepicker.html">
+<link rel="import" href="../cbn-datepicker/cbn-timepicker.html">
+
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
 
@@ -23,7 +25,7 @@
                 padding: 10px;
                 min-width: 100px;
             }
-            paper-input,paper-dropdown-menu-light,cbn-datepicker,paper-checkbox,cbn-select,paper-upload,paper-textarea{
+            paper-input,paper-dropdown-menu-light,cbn-datepicker,cbn-timepicker,paper-checkbox,cbn-select,paper-upload,paper-textarea{
                 padding: 0 10px;
             }
             paper-checkbox{
@@ -117,7 +119,7 @@
             static get observers() {
                 return [
                     'changedConfig(config)',
-                    'changedModel(model)'
+                    'changedModel(model.*)'
                 ]
             }
 
@@ -151,6 +153,9 @@
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("auto-validate", true);
                         input.options = field.options !== undefined ? field.options : [];
+                        if (field["validation"] !== undefined && field["validation"] !== null) {
+                            input.required = field["validation"]["required"] === true;
+                        }
                     }else if (field["type"] === "file") {
                         input = document.createElement('paper-upload');
                         input.addEventListener("cbn-selected-changed",this.changedValue.bind(this), true);
@@ -258,6 +263,29 @@
 //                        input.setAttribute("class", field["className"]);
                         input.setAttribute("no-overlap", true);
 
+                    }else if (field["type"] === "time") {
+                        input = document.createElement("cbn-timepicker");
+                        input.addEventListener("value-changed",this.changedValue.bind(this), true);
+
+                        input.setAttribute("name", field["name"]);
+                        input.setAttribute("label", label);
+                        input.setAttribute("class", field["className"]);
+                        input.disabled = field["disabled"] === true;
+                        if (field["validation"] != undefined) {
+                            input.required = field["validation"]["required"] === true;
+                        }
+                        if (field["minDate"] != undefined) {
+                            input.setAttribute("min-date", field["minDate"]);
+                        }
+                        if (field["maxDate"] != undefined) {
+                            input.setAttribute("max-date", field["maxDate"]);
+                        }
+                        if (field["defaultValue"] != undefined) {
+                            input.setAttribute("default-value", field["defaultValue"]);
+                        }
+//                        input.setAttribute("class", field["className"]);
+                        input.setAttribute("no-overlap", true);
+
                     } else if (field["type"] === "checkbox") {
                         input = document.createElement("paper-checkbox");
                         input.setAttribute("class", field["className"]);
@@ -299,11 +327,12 @@
                             if(input != undefined && ((input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined))){
                             // || (this.model[this.config.elements[i]["name"]] === undefined)
                                 let newValue = "";
-                                if(this.model[this.config.elements[i]["name"]] != undefined){
+                                if(this.model[this.config.elements[i]["name"]] !== "" && this.model[this.config.elements[i]["name"]] != undefined){
                                     newValue = this.model[this.config.elements[i]["name"]];
-                                } else if(this.config.elements[i]["defaultValue"] != undefined){
+                                } else if(input.style.display !== "none" && this.config.elements[i]["defaultValue"] != undefined){
                                     newValue = this.config.elements[i]["defaultValue"];
-                                    this.set("model." + this.config.elements[i]["name"], newValue);
+                                    this.model[this.config.elements[i]["name"]] = newValue;
+                                    // this.set("model." + this.config.elements[i]["name"], newValue);
                                 }
                                 // this.fireEvent(input, this.config.elements[i]["name"], newValue);
                                 if(this.config.elements[i]["type"] === "checkbox"){
@@ -320,19 +349,21 @@
             changedValue(event){
                 setTimeout(function(target, detail){
                     if(this.model !== undefined){
-                        this.set("model." + target.name, detail.value);
+                        this.model[target.name] = detail.value;
+                        // this.set("model." + target.name, detail.value);
                     }
-                    this.fireEvent(target, target.name, detail.value)
+                    this.fireEvent(target, target.name, detail.value, detail.fullValue)
                 }.bind(this, event.target, event.detail));
             }
 
-            fireEvent(target, name, value){
+            fireEvent(target, name, value, fullValue){
                 target.dispatchEvent(new CustomEvent("cbn-value-changed", {
                     bubbles: true,
                     composed: true,
                     detail: {
                         value: value,
-                        name: name
+                        name: name,
+                        fullValue: fullValue
                     }
                 }));
             }
@@ -442,6 +473,9 @@
                                     encodedStr.push(name+"="+ window.encodeURIComponent(val));
                                 }
                             }
+                            if(params[name].length === 0){
+                                encodedStr.push(name+"=");
+                            }
                         } else {
                             encodedStr.push(name+"="+ window.encodeURIComponent(params[name]));
                         }
@@ -465,8 +499,8 @@
             hideFormElement (form) {
                 for (let i = 0; i < arguments.length; i++) {
                     let name = arguments[i];
-                    delete this.model[name];
-                    // this.set("model." + name,"");
+                    // delete this.model[name];
+                    this.model[name] = "";
                     let el = this.$.form.querySelector("[name=" + name + "]");
                     if (el != null && el.style.display !== "none") {
                         el.oldDisplay = el.style.display;
