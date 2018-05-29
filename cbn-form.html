@@ -110,7 +110,7 @@
             static get observers() {
                 return [
                     'changedConfig(config)',
-                    'changedModel(model.*)'
+                    'changedPropertyModel(model.*)'
                 ]
             }
 
@@ -337,6 +337,32 @@
                 }
             }
 
+            changedPropertyModel(event){
+                if(event.path.indexOf(".") > -1){
+                    let name = event.path.split(".")[0];
+                    let input = this.shadowRoot.querySelector("[name='" + name + "']");
+                    if(input != undefined && ((input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined))){
+                        // || (this.model[this.config.elements[i]["name"]] === undefined)
+                        let newValue = "";
+                        if(this.model[this.config.elements[i]["name"]] !== "" && this.model[this.config.elements[i]["name"]] != undefined){
+                            newValue = this.model[this.config.elements[i]["name"]];
+                        } else if(input.style.display !== "none" && this.config.elements[i]["defaultValue"] != undefined){
+                            newValue = this.config.elements[i]["defaultValue"];
+                            this.model[this.config.elements[i]["name"]] = newValue;
+                            // this.set("model." + this.config.elements[i]["name"], newValue);
+                        }
+                        // this.fireEvent(input, this.config.elements[i]["name"], newValue);
+                        if(this.config.elements[i]["type"] === "checkbox"){
+                            input.checked = newValue;
+                        } else {
+                            input.value = newValue;
+                        }
+                    }
+                } else{
+                    this.changedModel();
+                }
+            }
+
             changedValue(event){
                 setTimeout(function(target, detail){
                     if(this.model !== undefined){
@@ -441,7 +467,6 @@
                             }
                         } else {
                             formData.append(name, params[name]);
-                            console.log(name, params[name]);
                         }
                     }
                     this.$.wrapper.request.url = this._generatedPreUploadUrl;
