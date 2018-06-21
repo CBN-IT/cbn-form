@@ -1,5 +1,4 @@
 <link rel="import" href="../polymer/polymer-element.html">
-
 <link rel="import" href="../iron-form/iron-form.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../cbn-grid/cbn-grid.html">
@@ -339,20 +338,21 @@
 
             changedPropertyModel(event){
                 if(event.path.indexOf(".") > -1){
-                    let name = event.path.split(".")[0];
+                    let name = event.path.split(".")[1];
                     let input = this.shadowRoot.querySelector("[name='" + name + "']");
-                    if(input != undefined && ((input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined))){
+                    let inputConfig = this.getInputConfig(name);
+                    if(input !== undefined && ((input.value !== this.model[name]) || (this.model[name] === undefined))){
                         // || (this.model[this.config.elements[i]["name"]] === undefined)
                         let newValue = "";
-                        if(this.model[this.config.elements[i]["name"]] !== "" && this.model[this.config.elements[i]["name"]] != undefined){
-                            newValue = this.model[this.config.elements[i]["name"]];
-                        } else if(input.style.display !== "none" && this.config.elements[i]["defaultValue"] != undefined){
-                            newValue = this.config.elements[i]["defaultValue"];
-                            this.model[this.config.elements[i]["name"]] = newValue;
+                        if(this.model[name] !== "" && this.model[name] !== undefined){
+                            newValue = this.model[name];
+                        } else if(input.style.display !== "none" && inputConfig["defaultValue"] != undefined){
+                            newValue = inputConfig["defaultValue"];
+                            this.model[name] = newValue;
                             // this.set("model." + this.config.elements[i]["name"], newValue);
                         }
                         // this.fireEvent(input, this.config.elements[i]["name"], newValue);
-                        if(this.config.elements[i]["type"] === "checkbox"){
+                        if(inputConfig["type"] === "checkbox"){
                             input.checked = newValue;
                         } else {
                             input.value = newValue;
@@ -360,6 +360,14 @@
                     }
                 } else{
                     this.changedModel();
+                }
+            }
+
+            getInputConfig(name){
+                for(let i=0; i< this.config.elements.length; i++){
+                    if(this.config.elements[i]["name"] === name){
+                        return this.config.elements[i];
+                    }
                 }
             }
 
@@ -516,7 +524,8 @@
                 for (let i = 0; i < arguments.length; i++) {
                     let name = arguments[i];
                     // delete this.model[name];
-                    this.model[name] = "";
+                    // this.model[name] = "";
+                    this.set("model." + name, "");
                     let el = this.$.form.querySelector("[name=" + name + "]");
                     if (el != null && el.style.display !== "none") {
                         el.oldDisplay = el.style.display;
