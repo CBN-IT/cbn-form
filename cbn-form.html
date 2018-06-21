@@ -314,7 +314,7 @@
                     for(let i=0; i< this.config.elements.length; i++){
                         if(this.model != undefined){
                             let input = this.shadowRoot.querySelector("[name='" + this.config.elements[i]["name"] + "']");
-                            if(input != undefined && ((input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined))){
+                            if(input != null && ((input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined))){
                             // || (this.model[this.config.elements[i]["name"]] === undefined)
                                 let newValue = "";
                                 if(this.model[this.config.elements[i]["name"]] !== "" && this.model[this.config.elements[i]["name"]] != undefined){
@@ -341,7 +341,7 @@
                     let name = event.path.split(".")[1];
                     let input = this.shadowRoot.querySelector("[name='" + name + "']");
                     let inputConfig = this.getInputConfig(name);
-                    if(input !== undefined && ((input.value !== this.model[name]) || (this.model[name] === undefined))){
+                    if(input !== null && ((input.value !== this.model[name]) || (this.model[name] === undefined))){
                         // || (this.model[this.config.elements[i]["name"]] === undefined)
                         let newValue = "";
                         if(this.model[name] !== "" && this.model[name] !== undefined){
