@@ -1,16 +1,8 @@
 <link rel="import" href="../polymer/polymer-element.html">
-
 <link rel="import" href="../iron-form/iron-form.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../cbn-grid/cbn-grid.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
-<link rel="import" href="../datetime-picker/overlay-date-picker.html">
-<link rel="import" href="../cbn-datepicker/cbn-datepicker.html">
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../paper-input/paper-textarea.html">
 
 
 <dom-module id="cbn-form">
@@ -23,7 +15,7 @@
                 padding: 10px;
                 min-width: 100px;
             }
-            paper-input,paper-dropdown-menu-light,cbn-datepicker,paper-checkbox,cbn-select,paper-upload,paper-textarea{
+            paper-input,paper-dropdown-menu-light,cbn-datepicker,cbn-timepicker,paper-checkbox,cbn-select,paper-upload,paper-textarea{
                 padding: 0 10px;
             }
             paper-checkbox{
@@ -117,7 +109,7 @@
             static get observers() {
                 return [
                     'changedConfig(config)',
-                    'changedModel(model)'
+                    'changedPropertyModel(model.*)'
                 ]
             }
 
@@ -151,6 +143,9 @@
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("auto-validate", true);
                         input.options = field.options !== undefined ? field.options : [];
+                        if (field["validation"] !== undefined && field["validation"] !== null) {
+                            input.required = field["validation"]["required"] === true;
+                        }
                     }else if (field["type"] === "file") {
                         input = document.createElement('paper-upload');
                         input.addEventListener("cbn-selected-changed",this.changedValue.bind(this), true);
@@ -258,6 +253,29 @@
 //                        input.setAttribute("class", field["className"]);
                         input.setAttribute("no-overlap", true);
 
+                    }else if (field["type"] === "time") {
+                        input = document.createElement("cbn-timepicker");
+                        input.addEventListener("value-changed",this.changedValue.bind(this), true);
+
+                        input.setAttribute("name", field["name"]);
+                        input.setAttribute("label", label);
+                        input.setAttribute("class", field["className"]);
+                        input.disabled = field["disabled"] === true;
+                        if (field["validation"] != undefined) {
+                            input.required = field["validation"]["required"] === true;
+                        }
+                        if (field["minDate"] != undefined) {
+                            input.setAttribute("min-date", field["minDate"]);
+                        }
+                        if (field["maxDate"] != undefined) {
+                            input.setAttribute("max-date", field["maxDate"]);
+                        }
+                        if (field["defaultValue"] != undefined) {
+                            input.setAttribute("default-value", field["defaultValue"]);
+                        }
+//                        input.setAttribute("class", field["className"]);
+                        input.setAttribute("no-overlap", true);
+
                     } else if (field["type"] === "checkbox") {
                         input = document.createElement("paper-checkbox");
                         input.setAttribute("class", field["className"]);
@@ -295,15 +313,16 @@
                 if(this.config != undefined){
                     for(let i=0; i< this.config.elements.length; i++){
                         if(this.model != undefined){
-                            let input = this.shadowRoot.querySelector("[name=" + this.config.elements[i]["name"] + "]");
-                            if(input != undefined && ((input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined))){
+                            let input = this.shadowRoot.querySelector("[name='" + this.config.elements[i]["name"] + "']");
+                            if(input != null && ((input.value != this.model[this.config.elements[i]["name"]]) || (this.model[this.config.elements[i]["name"]] === undefined))){
                             // || (this.model[this.config.elements[i]["name"]] === undefined)
                                 let newValue = "";
-                                if(this.model[this.config.elements[i]["name"]] != undefined){
+                                if(this.model[this.config.elements[i]["name"]] !== "" && this.model[this.config.elements[i]["name"]] != undefined){
                                     newValue = this.model[this.config.elements[i]["name"]];
-                                } else if(this.config.elements[i]["defaultValue"] != undefined){
+                                } else if(input.style.display !== "none" && this.config.elements[i]["defaultValue"] != undefined){
                                     newValue = this.config.elements[i]["defaultValue"];
-                                    this.set("model." + this.config.elements[i]["name"], newValue);
+                                    this.model[this.config.elements[i]["name"]] = newValue;
+                                    // this.set("model." + this.config.elements[i]["name"], newValue);
                                 }
                                 // this.fireEvent(input, this.config.elements[i]["name"], newValue);
                                 if(this.config.elements[i]["type"] === "checkbox"){
@@ -317,22 +336,59 @@
                 }
             }
 
+            changedPropertyModel(event){
+                if(event.path.indexOf(".") > -1){
+                    let name = event.path.split(".")[1];
+                    let input = this.shadowRoot.querySelector("[name='" + name + "']");
+                    let inputConfig = this.getInputConfig(name);
+                    if(input !== null && ((input.value !== this.model[name]) || (this.model[name] === undefined))){
+                        // || (this.model[this.config.elements[i]["name"]] === undefined)
+                        let newValue = "";
+                        if(this.model[name] !== "" && this.model[name] !== undefined){
+                            newValue = this.model[name];
+                        } else if(input.style.display !== "none" && inputConfig["defaultValue"] != undefined){
+                            newValue = inputConfig["defaultValue"];
+                            this.model[name] = newValue;
+                            // this.set("model." + this.config.elements[i]["name"], newValue);
+                        }
+                        // this.fireEvent(input, this.config.elements[i]["name"], newValue);
+                        if(inputConfig["type"] === "checkbox"){
+                            input.checked = newValue;
+                        } else {
+                            input.value = newValue;
+                        }
+                    }
+                } else{
+                    this.changedModel();
+                }
+            }
+
+            getInputConfig(name){
+                for(let i=0; i< this.config.elements.length; i++){
+                    if(this.config.elements[i]["name"] === name){
+                        return this.config.elements[i];
+                    }
+                }
+            }
+
             changedValue(event){
                 setTimeout(function(target, detail){
                     if(this.model !== undefined){
-                        this.set("model." + target.name, detail.value);
+                        this.model[target.name] = detail.value;
+                        // this.set("model." + target.name, detail.value);
                     }
-                    this.fireEvent(target, target.name, detail.value)
+                    this.fireEvent(target, target.name, detail.value, detail.fullValue)
                 }.bind(this, event.target, event.detail));
             }
 
-            fireEvent(target, name, value){
+            fireEvent(target, name, value, fullValue){
                 target.dispatchEvent(new CustomEvent("cbn-value-changed", {
                     bubbles: true,
                     composed: true,
                     detail: {
                         value: value,
-                        name: name
+                        name: name,
+                        fullValue: fullValue
                     }
                 }));
             }
@@ -419,7 +475,6 @@
                             }
                         } else {
                             formData.append(name, params[name]);
-                            console.log(name, params[name]);
                         }
                     }
                     this.$.wrapper.request.url = this._generatedPreUploadUrl;
@@ -441,6 +496,9 @@
                                 } else {
                                     encodedStr.push(name+"="+ window.encodeURIComponent(val));
                                 }
+                            }
+                            if(params[name].length === 0){
+                                encodedStr.push(name+"=");
                             }
                         } else {
                             encodedStr.push(name+"="+ window.encodeURIComponent(params[name]));
@@ -465,8 +523,9 @@
             hideFormElement (form) {
                 for (let i = 0; i < arguments.length; i++) {
                     let name = arguments[i];
-                    delete this.model[name];
-                    // this.set("model." + name,"");
+                    // delete this.model[name];
+                    // this.model[name] = "";
+                    this.set("model." + name, "");
                     let el = this.$.form.querySelector("[name=" + name + "]");
                     if (el != null && el.style.display !== "none") {
                         el.oldDisplay = el.style.display;
