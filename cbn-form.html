@@ -289,8 +289,8 @@
                         }
                         input.addEventListener("checked-changed", this.changedValue.bind(this), true);
                     }
-                    input.noLabelFloat = field["noLabelFloat"];
                     if (input != undefined) {
+                        input.noLabelFloat = field["noLabelFloat"];
                         this.$.form.appendChild(input);
                     }
                 }
