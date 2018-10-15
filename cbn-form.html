@@ -560,6 +560,8 @@
                 let input = this.$.form.querySelector('[name=' + name + ']');
                 if(input !=  null){
                     input.options = options;
+                } else {
+                    console.warn("This field does not exists!");
                 }
             }
 
