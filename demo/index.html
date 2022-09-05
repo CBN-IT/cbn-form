@@ -14,6 +14,8 @@
     <link rel="import" href="../cbn-form.html">
     <link rel="import" href="../../cbn-select/cbn-select.html">
     <link rel="import" href="../../cbn-datepicker/cbn-datepicker.html" >
+    <link rel="import" href="../../datetime-picker/overlay-date-picker.html">
+
 
     <custom-style>
       <style is="custom-style" include="demo-pages-shared-styles">
@@ -25,6 +27,8 @@
       <h3>Basic cbn-form demo</h3><iron-icon icon="alarm" ></iron-icon>
       <demo-snippet>
         <template>
+          <overlay-date-picker></overlay-date-picker>
+
           <cbn-form method="post" url="test"></cbn-form>
           <input type="button" value="Save" onclick="document.querySelector('cbn-form').submit()" />
           <script>

@@ -168,15 +168,21 @@
                         input.setAttribute("class", field["className"]);
                         input.setAttribute("auto-validate", true);
                         input.disabled = field["disabled"];
-                        if (field["validation"] != undefined) {
+                        if (field["validation"] !== undefined) {
                             input.required = field["validation"]["required"];
                             input.minlength = field["validation"]["minLength"];
                             input.maxlength = field["validation"]["maxLength"];
                             input.allowedPattern =  field["validation"]["pattern"];
-                            if (field["validation"]["number"] != undefined && field["validation"]["number"]["validate"]) {
+                            if (field["validation"]["number"] !== undefined && field["validation"]["number"]["validate"]) {
                                 input.setAttribute("type", "number");
                                 if(field["validation"]["number"]["type"] === "float"){
                                     input.setAttribute("step", "0.01");
+                                }
+                                if(field["validation"]["min"] !== undefined){
+                                    input.setAttribute("min", field["validation"]["min"]);
+                                }
+                                if(field["validation"]["max"] !== undefined){
+                                    input.setAttribute("max", field["validation"]["max"]);
                                 }
                             }
                         }
@@ -290,6 +296,7 @@
                         input.addEventListener("checked-changed", this.changedValue.bind(this), true);
                     }
                     if (input != undefined) {
+                        input.noLabelFloat = field["noLabelFloat"];
                         this.$.form.appendChild(input);
                     }
                 }
@@ -551,7 +558,11 @@
 
             changeOptions(name, options){
                 let input = this.$.form.querySelector('[name=' + name + ']');
-                input.options = options;
+                if(input !=  null){
+                    input.options = options;
+                } else {
+                    console.warn("This field does not exists!");
+                }
             }
 
         }
